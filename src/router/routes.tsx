@@ -1,11 +1,10 @@
 import { lazy } from "react";   
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-import DashboardHome from '../pages/dashboard/DashboardHome';
-import Register from '../pages/auth/Register';
+const DashboardHome = lazy(()=> import('../pages/dashboard/DashboardHome'));
 
 const Login = lazy(()=> import('../pages/auth/Login'))   
-
+const Register = lazy(()=> import('../pages/auth/Register'));
 const ForgotPassword = lazy(()=> import('../pages/auth/ForgotPassword'));
 
 const CustomerDetails = lazy(()=> import('../pages/customers/CustomerDetails'));

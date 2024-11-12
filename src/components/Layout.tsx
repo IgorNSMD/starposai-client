@@ -1,18 +1,40 @@
+import { useState } from 'react';
 import { useLocation, Outlet, Link as RouterLink } from 'react-router-dom';
-import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText, IconButton, Button } from '@mui/material';
+import {
+  Box,
+  CssBaseline,
+  AppBar,
+  Toolbar,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Button,
+  Collapse,
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import PeopleIcon from '@mui/icons-material/People';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
+
+import BreadcrumbsNav from './BreadcrumbsNav';
 
 const drawerWidth = 240;
 
 export default function Layout() {
   const location = useLocation();
+  const [openInventory, setOpenInventory] = useState(false);
+
+  const handleInventoryClick = () => {
+    setOpenInventory(!openInventory);
+  };
 
   return (
     <Box sx={{ display: 'flex' }}>
-      {/* Barra de navegación superior */}
       <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#333333' }}>
         <Toolbar>
@@ -25,7 +47,6 @@ export default function Layout() {
         </Toolbar>
       </AppBar>
 
-      {/* Menú lateral */}
       <Drawer
         variant="permanent"
         sx={{
@@ -47,21 +68,16 @@ export default function Layout() {
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: 0,
-                  backgroundColor: location.pathname === '/dashboard' ? '#333333' : 'transparent',
+                  backgroundColor: location.pathname === '/' ? '#333333' : 'transparent',
                   '&:hover': {
                     backgroundColor: '#555555',
                   },
                 }}
               >
                 <ListItemIcon sx={{ marginLeft: 2 }}>
-                  <DashboardIcon sx={{ color: location.pathname === '/dashboard' ? '#00ff00' : '#fff' }} />
+                  <DashboardIcon sx={{ color: '#fff' }} />
                 </ListItemIcon>
-                <ListItemText
-                  primary="Dashboard"
-                  sx={{
-                    color: location.pathname === '/' ? '#00ff00' : '#fff',
-                  }}
-                />
+                <ListItemText primary="Dashboard" sx={{ color: location.pathname === '/' ? '#00ff00' : '#fff' }} />
               </Button>
             </ListItem>
 
@@ -82,51 +98,65 @@ export default function Layout() {
                 }}
               >
                 <ListItemIcon sx={{ marginLeft: 2 }}>
-                  <PeopleIcon sx={{ color: location.pathname === '/clients' ? '#00ff00' : '#fff' }} />
+                  <PeopleIcon sx={{ color: '#fff' }} />
                 </ListItemIcon>
-                <ListItemText
-                  primary="Clientes"
-                  sx={{
-                    color: location.pathname === '/clients' ? '#00ff00' : '#fff',
-                  }}
-                />
+                <ListItemText primary="Clientes" sx={{ color: location.pathname === '/clients' ? '#00ff00' : '#fff' }} />
               </Button>
             </ListItem>
 
-            {/* Inventario */}
-            <ListItem disableGutters>
-              <Button
-                component={RouterLink}
-                to="/inventory"
-                sx={{
-                  textDecoration: 'none',
-                  width: '100%',
-                  justifyContent: 'flex-start',
-                  padding: 0,
-                  backgroundColor: location.pathname === '/inventory' ? '#333333' : 'transparent',
-                  '&:hover': {
-                    backgroundColor: '#555555',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ marginLeft: 2 }}>
-                  <InventoryIcon sx={{ color: location.pathname === '/inventory' ? '#00ff00' : '#fff' }} />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Inventario"
-                  sx={{
-                    color: location.pathname === '/inventory' ? '#00ff00' : '#fff',
-                  }}
-                />
-              </Button>
+            {/* Inventario con Submenú */}
+            <ListItem disableGutters onClick={handleInventoryClick}>
+              <ListItemIcon sx={{ marginLeft: 2 }}>
+                <InventoryIcon sx={{ color: '#fff' }} />
+              </ListItemIcon>
+              <ListItemText primary="Inventario" sx={{ color: '#fff' }} />
+              {openInventory ? <ExpandLess sx={{ color: '#fff' }} /> : <ExpandMore sx={{ color: '#fff' }} />}
             </ListItem>
+            <Collapse in={openInventory} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding>
+                <ListItem disableGutters sx={{ pl: 4 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/inventory/products"
+                    sx={{
+                      textDecoration: 'none',
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      padding: 0,
+                      backgroundColor: location.pathname === '/inventory/products' ? '#333333' : 'transparent',
+                      '&:hover': { backgroundColor: '#555555' },
+                    }}
+                  >
+                    <ListItemText primary="Productos" sx={{ color: location.pathname === '/inventory/products' ? '#00ff00' : '#fff' }} />
+                  </Button>
+                </ListItem>
+                <ListItem disableGutters sx={{ pl: 4 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/inventory/categories"
+                    sx={{
+                      textDecoration: 'none',
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      padding: 0,
+                      backgroundColor: location.pathname === '/inventory/categories' ? '#333333' : 'transparent',
+                      '&:hover': { backgroundColor: '#555555' },
+                    }}
+                  >
+                    <ListItemText primary="Categorías" sx={{ color: location.pathname === '/inventory/categories' ? '#00ff00' : '#fff' }} />
+                  </Button>
+                </ListItem>
+              </List>
+            </Collapse>
           </List>
         </Box>
       </Drawer>
 
-      {/* Contenido principal */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: '#f9f9f9', minHeight: '100vh' }}>
         <Toolbar />
+        {/* Agregar Breadcrumbs */}
+        <BreadcrumbsNav />
+        {/* Cargar contenido dinámico */}        
         <Outlet />
       </Box>
     </Box>

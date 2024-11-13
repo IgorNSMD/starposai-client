@@ -171,17 +171,7 @@ export default function Layout() {
         </Box>
       </Drawer>
 
-      <Box 
-        component="main" 
-        sx={{ 
-          flexGrow: 1, 
-          pt: 3, 
-          px: 3, 
-          bgcolor: '#f9f9f9', 
-          minHeight: 'calc(100vh - 64px - 24px)', 
-          marginLeft: `${drawerWidth}px`  // Ajusta para evitar que quede detrás del sidebar
-        }}
-        >
+      <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: '#f9f9f9', minHeight: 'calc(100vh - 64px - 24px)' }}>
         <Toolbar />
         {/* Agregar Breadcrumbs */}
         <BreadcrumbsNav />

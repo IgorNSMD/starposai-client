@@ -1,35 +1,19 @@
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Layout from './components/Layout';
-import Dashboard from './pages/dashboard/Dashboard';
-import Clients from './pages/customers/Clients';
-import Products from './pages/products/Products';
-import Categories from './pages/Categories/Categories';
+import HomeLayout from './components/home/HomeLayout';
+import DashboardLayout from './components/dashboard/DashboardLayout';
 
-function App() {
+const App: React.FC = () => {
+  const isAuthenticated = true; // Simula el estado de autenticación
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="clients" element={<Clients />} />
-          <Route path="inventory/products" element={<Products />} />
-          <Route path="inventory/categories" element={<Categories />} />
-        </Route>
+        <Route path="/" element={<HomeLayout />} />
+        {isAuthenticated && <Route path="/dashboard" element={<DashboardLayout />} />}
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;
-
-//import './App.css'
-// import RoutesConfig from './router/routes'
-
-// function App() {
-
-//   return (
-//     <RoutesConfig /> 
-//   )
-// }
-
-// export default App

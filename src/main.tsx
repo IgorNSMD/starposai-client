@@ -1,28 +1,46 @@
-import React,{ Suspense } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { Toaster } from 'react-hot-toast';
-import store from './store/store'; // Importa el store configurado con Redux
+import { ThemeProvider, CssBaseline, GlobalStyles } from '@mui/material';
+import App from './App';
+import homeTheme from './styles/HomeTheme';
+import dashboardTheme from './styles/DashboardTheme';
 
-import App from './App.tsx'
-//import './index.css'
+const isAuthenticated = false; // Cambia según tu lógica de autenticación
 
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <Suspense>
-        <App />
-        <Toaster
-          toastOptions={{
-            position : 'top-right',
-            style : {
-              background : '#283046',
-              color : 'white'
-            }
-          }} 
+    <ThemeProvider theme={isAuthenticated ? dashboardTheme : homeTheme}>
+      <CssBaseline />
+      {!isAuthenticated && (
+        <GlobalStyles
+          styles={{
+            ':root': {
+              scrollBehavior: 'smooth',
+            },
+            body: {
+              color: '#444444', // --default-color
+              backgroundColor: '#f5f6f8', // Fondo claro por defecto
+              fontFamily: '"Open Sans", sans-serif', // Fuente predeterminada
+            },
+            a: {
+              color: '#47b2e4', // Color de enlaces
+              textDecoration: 'none',
+              transition: '0.3s',
+            },
+            'a:hover': {
+              color: 'rgba(71, 178, 228, 0.75)', // Simula color-mix
+              textDecoration: 'none',
+            },
+            'h6': {
+              color: '#ffffff', // --heading-color
+              fontFamily: '"Jost", sans-serif', // --heading-font
+            },
+            
+          }}
         />
-      </Suspense>
-    </Provider>
+      )}
+      <App />
+    </ThemeProvider>
   </React.StrictMode>
 );

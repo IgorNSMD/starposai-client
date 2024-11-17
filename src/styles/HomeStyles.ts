@@ -30,6 +30,10 @@ export const headerStyle: SxProps<Theme> = {
       letterSpacing: '2px',
       textTransform: 'uppercase',
     },
+    // Media Query para .logo
+    '@media (max-width: 1200px)': {
+      order: 1,
+    },
   },
 
   '.btn-getstarted, .btn-getstarted:focus': {
@@ -40,11 +44,26 @@ export const headerStyle: SxProps<Theme> = {
     margin: '0 0 0 30px',
     borderRadius: '50px',
     transition: '0.3s',
+
+    // Media Query para .btn-getstarted
+    '@media (max-width: 1200px)': {
+      order: 2,
+      margin: '0 15px 0 0',
+      padding: '6px 15px',
+    },
   },
 
   '.btn-getstarted:hover, .btn-getstarted:focus:hover': {
     color: '#ffffff', // var(--contrast-color)
     backgroundColor: 'rgba(71, 178, 228, 0.85)', // Simula color-mix
+  },
+
+  '.navmenu': {
+    // Media Query para .navmenu
+    '@media (max-width: 1200px)': {
+      order: 3,
+    },
+
   },
 };
 
@@ -88,4 +107,78 @@ export const containerStyle: SxProps<Theme> = {
   position: 'relative', // position-relative
   display: 'flex', // d-flex
   alignItems: 'center', // align-items-center
+};
+
+export const navMenuStyle: SxProps<Theme> = {
+  padding: 0,
+  zIndex: 9997,
+  listStyle: 'none',
+  display: 'flex',
+  flexDirection: { xs: 'column', md: 'row' },
+  alignItems: { xs: 'flex-start', md: 'center' },
+
+  '& li': {
+    position: 'relative',
+    '&:last-child a': {
+      paddingRight: 0,
+    },
+  },
+
+  '& a, & a:focus': {
+    color: '#ffffff', // var(--nav-color)
+    padding: { xs: '10px 20px', md: '18px 15px' },
+    fontSize: { xs: '17px', md: '15px' },
+    fontFamily: '"Poppins", sans-serif', // var(--nav-font)
+    fontWeight: 400,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    whiteSpace: 'nowrap',
+    transition: '0.3s',
+    '&:hover': {
+      color: '#47b2e4', // var(--nav-hover-color)
+    },
+  },
+
+  // Dropdown styles
+  '& .dropdown ul': {
+    position: { xs: 'static', md: 'absolute' },
+    padding: '10px 0',
+    margin: { xs: '10px 20px', md: 0 },
+    backgroundColor: '#ffffff', // var(--nav-dropdown-background-color)
+    borderRadius: '6px',
+    visibility: { xs: 'visible', md: 'hidden' },
+    opacity: { xs: 1, md: 0 },
+    zIndex: 99,
+    transition: 'opacity 0.3s, visibility 0.3s',
+    boxShadow: '0px 0px 30px rgba(0, 0, 0, 0.1)',
+  },
+
+  '& .dropdown:hover > ul': {
+    visibility: 'visible',
+    opacity: 1,
+  },
+
+  '& .dropdown ul li': {
+    minWidth: '200px',
+  },
+
+  '& .dropdown ul a': {
+    padding: '10px 20px',
+    fontSize: '15px',
+    color: '#444444', // var(--nav-dropdown-color)
+    '&:hover': {
+      color: '#47b2e4', // var(--nav-dropdown-hover-color)
+    },
+  },
+
+  '& .mobile-nav-toggle': {
+    color: '#ffffff', // var(--nav-color)
+    fontSize: '28px',
+    lineHeight: 0,
+    marginRight: '10px',
+    cursor: 'pointer',
+    display: { xs: 'block', md: 'none' },
+    transition: 'color 0.3s',
+  },
 };

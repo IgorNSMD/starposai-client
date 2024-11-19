@@ -13,6 +13,7 @@ const HomeNavMenu: React.FC = () => {
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
+    setSubAnchorEl(null); // Cierra también el submenú al cerrar el menú principal
   };
 
   const handleOpenSubMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -79,7 +80,13 @@ const HomeNavMenu: React.FC = () => {
               'aria-labelledby': 'basic-button',
             }}
           >
-            <MenuItem onClick={handleCloseMenu}>Dropdown 1</MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu(); // Cierra ambos menús
+              }}
+            >
+              Dropdown 1
+            </MenuItem>
             <MenuItem onClick={handleOpenSubMenu}>
               Deep Dropdown {subAnchorEl ? <ExpandLess /> : <ExpandMore />}
             </MenuItem>
@@ -91,7 +98,7 @@ const HomeNavMenu: React.FC = () => {
               sx={{
                 '& .MuiPaper-root': {
                   backgroundColor: '#3d4d6a',
-                  color: 'black',
+                  color: '#ffffff',
                   boxShadow: '0px 0px 30px rgba(0, 0, 0, 0.1)',
                   borderRadius: '6px',
                 },
@@ -105,11 +112,37 @@ const HomeNavMenu: React.FC = () => {
                 vertical: 'top',
               }}
             >
-              <MenuItem onClick={handleCloseSubMenu}>Deep Dropdown 1</MenuItem>
-              <MenuItem onClick={handleCloseSubMenu}>Deep Dropdown 2</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleCloseSubMenu();
+                  handleCloseMenu(); // Cierra ambos menús
+                }}
+              >
+                Deep Dropdown 1
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleCloseSubMenu();
+                  handleCloseMenu(); // Cierra ambos menús
+                }}
+              >
+                Deep Dropdown 2
+              </MenuItem>
             </Menu>
-            <MenuItem onClick={handleCloseMenu}>Dropdown 2</MenuItem>
-            <MenuItem onClick={handleCloseMenu}>Dropdown 3</MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu(); // Cierra ambos menús
+              }}
+            >
+              Dropdown 2
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                handleCloseMenu(); // Cierra ambos menús
+              }}
+            >
+              Dropdown 3
+            </MenuItem>
           </Menu>
         </ListItem>
 

@@ -1,9 +1,9 @@
 import { SxProps, Theme } from '@mui/material/styles';
 
 // Header Styles
-export const headerStyle: SxProps<Theme> = {
-  color: '#444444', // Color por defecto para el texto
-  backgroundColor: '#3d4d6a', // Fondo del header
+export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
+  color: theme.palette.text.primary, // '#444444' Color por defecto para el texto
+  backgroundColor: theme.palette.background.default, // '#3d4d6a' Fondo del header
   padding: '15px 0', // Espaciado interno superior e inferior
   transition: 'all 0.5s', // Transición suave para cambios visuales
   zIndex: 997, // Asegura que el header esté sobre otros elementos
@@ -26,7 +26,7 @@ export const headerStyle: SxProps<Theme> = {
       fontSize: '30px',
       margin: 0,
       fontWeight: 500,
-      color: '#ffffff', // var(--heading-color)
+      color: theme.palette.text.secondary, //'#ffffff', // var(--heading-color)
       letterSpacing: '2px',
       textTransform: 'uppercase',
     },
@@ -37,8 +37,8 @@ export const headerStyle: SxProps<Theme> = {
   },
 
   '.btn-getstarted, .btn-getstarted:focus': {
-    color: '#ffffff', // var(--contrast-color)
-    backgroundColor: '#47b2e4', // var(--accent-color)
+    color: theme.palette.secondary.main, //'#ffffff', // var(--contrast-color)
+    backgroundColor: theme.palette.primary.main, //'#47b2e4', // var(--accent-color)
     fontSize: '14px',
     padding: '8px 25px',
     margin: '0 0 0 30px',
@@ -54,7 +54,7 @@ export const headerStyle: SxProps<Theme> = {
   },
 
   '.btn-getstarted:hover, .btn-getstarted:focus:hover': {
-    color: '#ffffff', // var(--contrast-color)
+    color: theme.palette.secondary.main, //'#ffffff', // var(--contrast-color)
     backgroundColor: 'rgba(71, 178, 228, 0.85)', // Simula color-mix
   },
 
@@ -65,12 +65,12 @@ export const headerStyle: SxProps<Theme> = {
     },
 
   },
-};
+});
 
 // Button Get Started Style
-export const btnGetStartedStyle: SxProps<Theme> = {
-  color: '#ffffff', // --contrast-color
-  backgroundColor: '#47b2e4', // --accent-color
+export const btnGetStartedStyle: SxProps<Theme> = (theme: Theme) => ({
+  color: theme.palette.secondary.main, //'#ffffff', // --contrast-color
+  backgroundColor: theme.palette.primary.main, //'#47b2e4', // --accent-color
   fontSize: '14px',
   padding: '8px 25px',
   marginLeft: '30px',
@@ -84,20 +84,20 @@ export const btnGetStartedStyle: SxProps<Theme> = {
     margin: '0 15px 0 0',
     padding: '6px 15px',
   },
-};
+});
 
 // Home Container Style
-export const homeContainer: SxProps<Theme> = {
+export const homeContainer: SxProps<Theme> = (theme: Theme) => ({
   display: 'flex', // Define el layout principal como flexbox
   flexDirection: 'column', // Los elementos se apilan verticalmente
   alignItems: 'center', // Centra los elementos horizontalmente
   justifyContent: 'center', // Centra los elementos verticalmente
   minHeight: '100vh', // Ocupa toda la altura de la ventana
-  backgroundColor: '#f5f6f8', // Fondo claro
-  color: '#444444', // Texto oscuro
+  backgroundColor: theme.palette.secondary.main, //'#f5f6f8', // Fondo claro
+  color: theme.palette.text.primary, //'#444444', // Texto oscuro
   textAlign: 'center',
   padding: '20px', // Espaciado interno
-};
+});
 
 // Container Style
 export const containerStyle: SxProps<Theme> = {
@@ -109,7 +109,7 @@ export const containerStyle: SxProps<Theme> = {
   alignItems: 'center', // align-items-center
 };
 
-export const navMenuStyle: SxProps<Theme> = {
+export const navMenuStyle: SxProps<Theme> = (theme: Theme) => ({
   padding: 0,
   zIndex: 9997,
   listStyle: 'none',
@@ -125,7 +125,7 @@ export const navMenuStyle: SxProps<Theme> = {
   },
 
   '& a, & a:focus': {
-    color: '#ffffff', // var(--nav-color)
+    color: theme.palette.text.secondary, //'#ffffff', // var(--nav-color)
     padding: { xs: '10px 20px', md: '18px 15px' },
     fontSize: { xs: '17px', md: '15px' },
     fontFamily: '"Poppins", sans-serif', // var(--nav-font)
@@ -136,7 +136,7 @@ export const navMenuStyle: SxProps<Theme> = {
     whiteSpace: 'nowrap',
     transition: '0.3s',
     '&:hover': {
-      color: '#47b2e4', // var(--nav-hover-color)
+      color: theme.palette.primary.main, //''#47b2e4', // var(--nav-hover-color)
     },
   },
 
@@ -145,7 +145,7 @@ export const navMenuStyle: SxProps<Theme> = {
     position: { xs: 'static', md: 'absolute' },
     padding: '10px 0',
     margin: { xs: '10px 20px', md: 0 },
-    backgroundColor: '#ffffff', // var(--nav-dropdown-background-color)
+    backgroundColor: theme.palette.text.secondary, //'#ffffff', // var(--nav-dropdown-background-color)
     borderRadius: '6px',
     visibility: { xs: 'visible', md: 'hidden' },
     opacity: { xs: 1, md: 0 },
@@ -166,14 +166,14 @@ export const navMenuStyle: SxProps<Theme> = {
   '& .dropdown ul a': {
     padding: '10px 20px',
     fontSize: '15px',
-    color: '#444444', // var(--nav-dropdown-color)
+    color: theme.palette.text.primary,//'#444444', // var(--nav-dropdown-color)
     '&:hover': {
       color: '#47b2e4', // var(--nav-dropdown-hover-color)
     },
   },
 
   '& .mobile-nav-toggle': {
-    color: '#ffffff', // var(--nav-color)
+    color: theme.palette.text.secondary, //'#ffffff', // var(--nav-color)
     fontSize: '28px',
     lineHeight: 0,
     marginRight: '10px',
@@ -181,4 +181,4 @@ export const navMenuStyle: SxProps<Theme> = {
     display: { xs: 'block', md: 'none' },
     transition: 'color 0.3s',
   },
-};
+});

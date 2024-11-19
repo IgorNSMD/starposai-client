@@ -12,34 +12,13 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={isAuthenticated ? dashboardTheme : homeTheme}>
       <CssBaseline />
-      {!isAuthenticated && (
-        <GlobalStyles
-          styles={{
-            ':root': {
-              scrollBehavior: 'smooth',
-            },
-            body: {
-              color: '#444444', // --default-color
-              backgroundColor: '#f5f6f8', // Fondo claro por defecto
-              fontFamily: '"Open Sans", sans-serif', // Fuente predeterminada
-            },
-            a: {
-              color: '#47b2e4', // Color de enlaces
-              textDecoration: 'none',
-              transition: '0.3s',
-            },
-            'a:hover': {
-              color: 'rgba(71, 178, 228, 0.75)', // Simula color-mix
-              textDecoration: 'none',
-            },
-            'h6': {
-              color: '#ffffff', // --heading-color
-              fontFamily: '"Jost", sans-serif', // --heading-font
-            },
-            
-          }}
-        />
-      )}
+      <GlobalStyles
+        styles={{
+          ':root': {
+            scrollBehavior: 'smooth',
+          },
+        }}
+      />
       <App />
     </ThemeProvider>
   </React.StrictMode>

@@ -1,21 +1,33 @@
 import React from 'react';
-import { Box, List, ListItem, ListItemButton, ListItemText, IconButton } from '@mui/material';
+import { Box, List, ListItem, ListItemButton, ListItemText, Menu, MenuItem } from '@mui/material';
 import { ExpandMore, ExpandLess } from '@mui/icons-material';
-
 import { navMenuStyle } from '../../styles/HomeStyles';
 
 const HomeNavMenu: React.FC = () => {
-  const [openDropdown, setOpenDropdown] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [subAnchorEl, setSubAnchorEl] = React.useState<null | HTMLElement>(null);
 
-  const toggleDropdown = () => {
-    setOpenDropdown(!openDropdown);
+  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
+  const handleOpenSubMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setSubAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseSubMenu = () => {
+    setSubAnchorEl(null);
   };
 
   return (
-    <Box component="nav" id="navmenu" sx={navMenuStyle}>
-      <List sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, padding: 0 }}>
+    <Box component="nav" id="navmenu" sx={{ position: 'relative', display: 'flex' }}>
+      <List sx={navMenuStyle}>
         <ListItem disablePadding>
-          <ListItemButton href="#hero" className="active">
+          <ListItemButton href="#hero">
             <ListItemText primary="Home" />
           </ListItemButton>
         </ListItem>
@@ -44,50 +56,69 @@ const HomeNavMenu: React.FC = () => {
             <ListItemText primary="Pricing" />
           </ListItemButton>
         </ListItem>
+
         {/* Dropdown */}
         <ListItem disablePadding>
-          <ListItemButton onClick={toggleDropdown}>
+          <ListItemButton onClick={handleOpenMenu}>
             <ListItemText primary="Dropdown" />
-            {openDropdown ? <ExpandLess /> : <ExpandMore />}
+            {anchorEl ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
-          {openDropdown && (
-            <List sx={{ pl: 2 }}>
-              <ListItem disablePadding>
-                <ListItemButton href="#">
-                  <ListItemText primary="Dropdown 1" />
-                </ListItemButton>
-              </ListItem>
-              <ListItem disablePadding>
-                <ListItemButton href="#">
-                  <ListItemText primary="Deep Dropdown" />
-                </ListItemButton>
-                {/* Sub-dropdown */}
-                <List sx={{ pl: 2 }}>
-                  <ListItem disablePadding>
-                    <ListItemButton href="#">
-                      <ListItemText primary="Deep Dropdown 1" />
-                    </ListItemButton>
-                  </ListItem>
-                  <ListItem disablePadding>
-                    <ListItemButton href="#">
-                      <ListItemText primary="Deep Dropdown 2" />
-                    </ListItemButton>
-                  </ListItem>
-                </List>
-              </ListItem>
-            </List>
-          )}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            sx={{
+              '& .MuiPaper-root': {
+                backgroundColor: '#3d4d6a', // Fondo del menú principal
+                color: '#ffffff', // Texto blanco
+                boxShadow: '0px 0px 30px rgba(0, 0, 0, 0.1)',
+                borderRadius: '6px',
+              },
+            }}
+            MenuListProps={{
+              'aria-labelledby': 'basic-button',
+            }}
+          >
+            <MenuItem onClick={handleCloseMenu}>Dropdown 1</MenuItem>
+            <MenuItem onClick={handleOpenSubMenu}>
+              Deep Dropdown {subAnchorEl ? <ExpandLess /> : <ExpandMore />}
+            </MenuItem>
+            {/* Sub Dropdown */}
+            <Menu
+              anchorEl={subAnchorEl}
+              open={Boolean(subAnchorEl)}
+              onClose={handleCloseSubMenu}
+              sx={{
+                '& .MuiPaper-root': {
+                  backgroundColor: '#3d4d6a',
+                  color: 'black',
+                  boxShadow: '0px 0px 30px rgba(0, 0, 0, 0.1)',
+                  borderRadius: '6px',
+                },
+              }}
+              transformOrigin={{
+                horizontal: 'left',
+                vertical: 'top',
+              }}
+              anchorOrigin={{
+                horizontal: 'right',
+                vertical: 'top',
+              }}
+            >
+              <MenuItem onClick={handleCloseSubMenu}>Deep Dropdown 1</MenuItem>
+              <MenuItem onClick={handleCloseSubMenu}>Deep Dropdown 2</MenuItem>
+            </Menu>
+            <MenuItem onClick={handleCloseMenu}>Dropdown 2</MenuItem>
+            <MenuItem onClick={handleCloseMenu}>Dropdown 3</MenuItem>
+          </Menu>
         </ListItem>
+
         <ListItem disablePadding>
           <ListItemButton href="#contact">
             <ListItemText primary="Contact" />
           </ListItemButton>
         </ListItem>
       </List>
-      {/* Toggle for mobile view */}
-      <IconButton className="mobile-nav-toggle d-xl-none">
-        <i className="bi bi-list" />
-      </IconButton>
     </Box>
   );
 };

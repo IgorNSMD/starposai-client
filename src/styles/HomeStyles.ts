@@ -182,3 +182,37 @@ export const navMenuStyle: SxProps<Theme> = (theme: Theme) => ({
     transition: 'color 0.3s',
   },
 });
+
+export const dropdownStyle: SxProps<Theme> = (theme: Theme) => ({
+  position: 'absolute',
+  top: '100%',
+  left: 0,
+  backgroundColor: theme.palette.text.secondary, //'#ffffff',
+  boxShadow: '0px 0px 30px rgba(0, 0, 0, 0.1)',
+  zIndex: 99,
+  visibility: 'hidden',
+  opacity: 0,
+  transition: 'opacity 0.3s ease, visibility 0.3s ease',
+});
+
+export const dropdownActiveStyle: SxProps<Theme> = {
+  visibility: 'visible',
+  opacity: 1,
+};
+
+export const subDropdownStyle: SxProps<Theme> = (theme: Theme) => ({
+  position: 'absolute',
+  top: 0,
+  left: '100%',
+  backgroundColor: theme.palette.text.secondary, //'#ffffff',
+  boxShadow: '0px 0px 30px rgba(0, 0, 0, 0.1)',
+  zIndex: 99,
+  visibility: 'hidden',
+  opacity: 0,
+  transition: 'opacity 0.3s ease, visibility 0.3s ease',
+});
+
+export const subDropdownActiveStyle: SxProps<Theme> = {
+  visibility: 'visible',
+  opacity: 1,
+};

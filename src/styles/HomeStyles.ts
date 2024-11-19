@@ -2,18 +2,30 @@ import { SxProps, Theme } from '@mui/material/styles';
 
 // Header Styles
 export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
+  display: 'flex', // Diseño flexible
+  justifyContent: 'space-between', // Distribución horizontal con espacio entre elementos  
+  alignItems: 'center', // Centrado vertical del contenido
+  padding: '15px 0', // Espaciado interno superior e inferior  
   color: theme.palette.text.primary, // '#444444' Color por defecto para el texto
   backgroundColor: theme.palette.background.default, // '#3d4d6a' Fondo del header
-  padding: '15px 0', // Espaciado interno superior e inferior
+  position: 'fixed', // Fijado en la parte superior  
   transition: 'all 0.5s', // Transición suave para cambios visuales
-  zIndex: 997, // Asegura que el header esté sobre otros elementos
-  position: 'fixed', // Fijado en la parte superior
   top: 0,
   left: 0,
   width: '100%', // Ocupa todo el ancho
-  display: 'flex', // Diseño flexible
-  alignItems: 'center', // Centrado vertical del contenido
-  justifyContent: 'space-between', // Distribución horizontal con espacio entre elementos
+  zIndex: 999, // Asegura que el header esté sobre otros elementos
+
+  '.navmenu': {
+    display: 'flex',
+    justifyContent: 'flex-end', // Alinea el menú y el botón hacia la derecha
+    flexGrow: 1,
+    marginLeft: 'auto', // Empuja el menú hacia la derecha
+    alignItems: 'center',
+
+    '& li': {
+      marginRight: '20px',
+    },
+  },
 
   // Estilos contextuales
   '.logo': {
@@ -41,7 +53,7 @@ export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
     backgroundColor: theme.palette.primary.main, //'#47b2e4', // var(--accent-color)
     fontSize: '14px',
     padding: '8px 25px',
-    margin: '0 0 0 30px',
+    margin: '0 0 0 50px',
     borderRadius: '50px',
     transition: '0.3s',
 
@@ -56,14 +68,6 @@ export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
   '.btn-getstarted:hover, .btn-getstarted:focus:hover': {
     color: theme.palette.secondary.main, //'#ffffff', // var(--contrast-color)
     backgroundColor: 'rgba(71, 178, 228, 0.85)', // Simula color-mix
-  },
-
-  '.navmenu': {
-    // Media Query para .navmenu
-    '@media (max-width: 1200px)': {
-      order: 3,
-    },
-
   },
 });
 

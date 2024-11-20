@@ -29,7 +29,7 @@ const HomeNavMenu: React.FC = () => {
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
-    setSubAnchorEl(null);
+    setSubAnchorEl(null); // Cierra también el submenú al cerrar el menú principal
   };
 
   const handleOpenSubMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -41,6 +41,9 @@ const HomeNavMenu: React.FC = () => {
   };
 
   const toggleDrawer = (open: boolean) => () => {
+    if (!open) {
+      handleCloseMenu(); // Cierra el menú principal y el submenú al cerrar el Drawer
+    }
     setIsDrawerOpen(open);
   };
 

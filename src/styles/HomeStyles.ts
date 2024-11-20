@@ -2,74 +2,95 @@ import { SxProps, Theme } from '@mui/material/styles';
 
 // Header Styles
 export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
-  display: 'flex', // Diseño flexible
-  justifyContent: 'space-between', // Distribución horizontal con espacio entre elementos  
-  alignItems: 'center', // Centrado vertical del contenido
-  padding: '15px 0', // Espaciado interno superior e inferior  
-  color: theme.palette.text.primary, // '#444444' Color por defecto para el texto
-  backgroundColor: theme.palette.background.default, // '#3d4d6a' Fondo del header
-  position: 'fixed', // Fijado en la parte superior  
-  transition: 'all 0.5s', // Transición suave para cambios visuales
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: '15px 20px', // Espaciado interno ajustado para mayor flexibilidad
+  color: theme.palette.text.primary,
+  backgroundColor: theme.palette.background.default,
+  position: 'fixed',
   top: 0,
   left: 0,
-  width: '100%', // Ocupa todo el ancho
-  zIndex: 999, // Asegura que el header esté sobre otros elementos
+  width: '100%',
+  zIndex: 999,
+  transition: 'all 0.5s ease-in-out',
 
-  '.navmenu': {
-    display: 'flex',
-    justifyContent: 'flex-end', // Alinea el menú y el botón hacia la derecha
-    flexGrow: 1,
-    marginLeft: 'auto', // Empuja el menú hacia la derecha
-    alignItems: 'center',
-
-    '& li': {
-      marginRight: '20px',
-    },
+  // Media Query para el contenedor principal del header
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'flex-start', // Alinea los elementos al inicio en pantallas pequeñas
+    padding: '10px 15px',
   },
 
-  // Estilos contextuales
   '.logo': {
+    display: 'flex',
+    alignItems: 'center',
     lineHeight: 1,
     img: {
       maxHeight: '36px',
       marginRight: '8px',
     },
     h1: {
-      fontSize: '30px',
+      fontSize: '24px', // Tamaño reducido para pantallas pequeñas
       margin: 0,
       fontWeight: 500,
-      color: theme.palette.text.secondary, //'#ffffff', // var(--heading-color)
+      color: theme.palette.text.secondary,
       letterSpacing: '2px',
       textTransform: 'uppercase',
     },
-    // Media Query para .logo
-    '@media (max-width: 1200px)': {
-      order: 1,
+    // Media Query para la logo
+    [theme.breakpoints.down('sm')]: {
+      justifyContent: 'center',
+      width: '100%', // Centra el logo en pantallas muy pequeñas
+      marginBottom: theme.spacing(1),
     },
   },
 
-  '.btn-getstarted, .btn-getstarted:focus': {
-    color: theme.palette.secondary.main, //'#ffffff', // var(--contrast-color)
-    backgroundColor: theme.palette.primary.main, //'#47b2e4', // var(--accent-color)
+  '.navmenu': {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    flexGrow: 1,
+    alignItems: 'center',
+    marginLeft: 'auto',
+
+    '& li': {
+      marginRight: '20px',
+    },
+    // Media Query para el menú
+    [theme.breakpoints.down('md')]: {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      width: '100%',
+      '& li': {
+        margin: theme.spacing(0.5, 0),
+      },
+    },
+  },
+
+  '.btn-getstarted': {
+    color: theme.palette.secondary.main,
+    backgroundColor: theme.palette.primary.main,
     fontSize: '14px',
     padding: '8px 25px',
     margin: '0 0 0 50px',
     borderRadius: '50px',
     transition: '0.3s',
 
-    // Media Query para .btn-getstarted
-    '@media (max-width: 1200px)': {
-      order: 2,
-      margin: '0 15px 0 0',
+    '&:hover': {
+      backgroundColor: 'rgba(71, 178, 228, 0.85)',
+    },
+    // Media Query para el botón
+    [theme.breakpoints.down('md')]: {
+      margin: '15px 0 0 0', // Ajusta el margen para pantallas medianas
       padding: '6px 15px',
     },
-  },
-
-  '.btn-getstarted:hover, .btn-getstarted:focus:hover': {
-    color: theme.palette.secondary.main, //'#ffffff', // var(--contrast-color)
-    backgroundColor: 'rgba(71, 178, 228, 0.85)', // Simula color-mix
+    [theme.breakpoints.down('sm')]: {
+      width: '100%', // Botón ocupa todo el ancho en pantallas pequeñas
+      textAlign: 'center',
+    },
   },
 });
+
 
 // Button Get Started Style
 export const btnGetStartedStyle: SxProps<Theme> = (theme: Theme) => ({

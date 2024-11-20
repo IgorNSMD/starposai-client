@@ -257,7 +257,7 @@ export const sectionStyle = (theme: Theme): SxProps => ({
 });
 
 export const darkBackgroundStyle = (theme: Theme): SxProps => ({
-  backgroundColor: theme.typography.h1.color, //'#37517e', // Color asignado directamente
+  backgroundColor: theme.palette.background.default, //'#37517e', // Color asignado directamente
   color: theme.palette.text.secondary, //'#ffffff', // Texto blanco
   '& h1, & h2, & h3, & h4, & h5, & h6': {
     color: theme.palette.text.secondary, //'#ffffff', // Encabezados

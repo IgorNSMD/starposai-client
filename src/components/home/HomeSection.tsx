@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+
 import { homeSectionStyle, heroImgStyle } from '../../styles/HomeStyles';
+import heroImg from '../../assets/img/hero-img.png';
 
 const HomeSection: React.FC = () => {
   return (
@@ -25,7 +27,7 @@ const HomeSection: React.FC = () => {
         </Box>
         {/* Imagen */}
         <Box sx={heroImgStyle}>
-          <img src="assets/img/hero-img.png" alt="Hero" style={{ width: '100%' }} />
+          <img src={heroImg} alt="Hero" style={{ width: '100%' }} />
         </Box>
       </Box>
     </Box>

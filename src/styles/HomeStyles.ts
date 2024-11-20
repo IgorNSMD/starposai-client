@@ -220,3 +220,39 @@ export const subDropdownActiveStyle: SxProps<Theme> = {
   visibility: 'visible',
   opacity: 1,
 };
+
+export const sectionStyle = (theme: Theme): SxProps => ({
+  color: theme.palette.text.primary, // Mapea a 'var(--default-color)'
+  backgroundColor: theme.palette.background.default, // Mapea a 'var(--background-color)'
+  padding: '60px 0',
+  scrollMarginTop: '88px',
+  overflow: 'clip',
+
+  [theme.breakpoints.down('lg')]: {
+    scrollMarginTop: '66px',
+  },
+});
+
+export const darkBackgroundStyle = (theme: Theme): SxProps => ({
+  backgroundColor: theme.typography.h1.color, //'#37517e', // Color asignado directamente
+  color: theme.palette.text.secondary, //'#ffffff', // Texto blanco
+  '& h1, & h2, & h3, & h4, & h5, & h6': {
+    color: theme.palette.text.secondary, //'#ffffff', // Encabezados
+  },
+  '& .surface': {
+    backgroundColor: '#4668a2', // Superficie
+    color: theme.palette.text.secondary, //'#ffffff', // Texto de la superficie
+  },
+});
+
+export const mainStyle: SxProps<Theme> = (theme: Theme) => ({
+  width: '100%', // Ocupa el ancho completo
+  display: 'flex', // Flexbox para contenido interno
+  flexDirection: 'column', // Organiza las secciones verticalmente
+  alignItems: 'center', // Centra el contenido horizontalmente
+  justifyContent: 'flex-start', // Comienza desde la parte superior
+  padding: '0', // Margen interno personalizado
+  backgroundColor: theme.palette.background.default, // Fondo general basado en el tema
+  color: theme.palette.text.primary, // Color del texto general
+  minHeight: '100vh', // Asegura que ocupe toda la altura de la ventana
+});

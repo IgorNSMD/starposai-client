@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
 import { homeContainer } from '../../styles/HomeStyles';
 import HomeHeader from './HomeHeader';

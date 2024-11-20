@@ -2,6 +2,8 @@ import React from 'react';
 import { Box } from '@mui/material';
 import { mainStyle, sectionStyle, darkBackgroundStyle } from '../../styles/HomeStyles';
 
+import HomeSection from './HomeSection';
+
 const HomeMain: React.FC = () => {
   return (
     <Box component="main" sx={mainStyle}>
@@ -14,6 +16,7 @@ const HomeMain: React.FC = () => {
             })}
         >
             {/* Contenido del Hero */}
+            <HomeSection />
         </Box>
       {/* Otras secciones */}
     </Box>

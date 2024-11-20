@@ -14,7 +14,7 @@ export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
   width: '100%',
   zIndex: 999,
   transition: 'all 0.5s ease-in-out',
-
+  
   // Media Query para el contenedor principal del header
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
@@ -121,7 +121,9 @@ export const homeContainer: SxProps<Theme> = (theme: Theme) => ({
   backgroundColor: theme.palette.secondary.main, //'#f5f6f8', // Fondo claro
   color: theme.palette.text.primary, //'#444444', // Texto oscuro
   textAlign: 'center',
-  padding: '20px', // Espaciado interno
+  //padding: '20px', // Espaciado interno
+  overflow: 'hidden', // Oculta ambos scrolls iniciales
+  overflowX: 'hidden', // Previene el desplazamiento horizontal específicamente
 });
 
 // Container Style
@@ -267,13 +269,33 @@ export const darkBackgroundStyle = (theme: Theme): SxProps => ({
 });
 
 export const mainStyle: SxProps<Theme> = (theme: Theme) => ({
-  width: '100%', // Ocupa el ancho completo
-  display: 'flex', // Flexbox para contenido interno
+  width: '100vw', // Asegura que ocupe todo el ancho de la ventana
+  display: 'flex', // Flexbox para el contenido interno
   flexDirection: 'column', // Organiza las secciones verticalmente
   alignItems: 'center', // Centra el contenido horizontalmente
   justifyContent: 'flex-start', // Comienza desde la parte superior
-  padding: '0', // Margen interno personalizado
+  padding: '0', // Elimina cualquier margen interno
+  margin: '0', // Elimina cualquier margen externo
   backgroundColor: theme.palette.background.default, // Fondo general basado en el tema
   color: theme.palette.text.primary, // Color del texto general
   minHeight: '100vh', // Asegura que ocupe toda la altura de la ventana
+  overflow: 'hidden', // Oculta ambos scrolls iniciales
+  overflowX: 'hidden', // Previene el desplazamiento horizontal específicamente
+});
+
+export const homeSectionStyle: SxProps<Theme> = (theme: Theme) => ({
+  width: '100%',
+  padding: '0',
+  margin: '0',
+  backgroundColor: theme.palette.background.default,
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  minHeight: '80vh', // Ajusta para ocupar toda la altura visible si es necesario
+});
+
+export const heroImgStyle: SxProps<Theme> = () => ({
+  maxWidth: '100%',
+  height: 'auto',
+  animation: 'fadeIn 2s ease-out',
 });

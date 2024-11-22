@@ -3,9 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 const DashboardHome = lazy(()=> import('../pages/dashboard/DashboardHome'));
 
-const Login = lazy(()=> import('../pages/auth/Login'))   
-const Register = lazy(()=> import('../pages/auth/Register'));
-const ForgotPassword = lazy(()=> import('../pages/auth/ForgotPassword'));
+const Login = lazy(()=> import('../auth/pages/Login'))   
+const Register = lazy(()=> import('../auth/pages/Register'));
+const ForgotPassword = lazy(()=> import('../auth/pages/ForgotPassword'));
 
 const CustomerDetails = lazy(()=> import('../pages/customers/CustomerDetails'));
 const CustomerList = lazy(()=> import('../pages/customers/CustomerList'));

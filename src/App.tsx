@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomeLayout from './components/home/HomeLayout';
-import DashboardLayout from './components/dashboard/DashboardLayout';
+import HomeLayout from './layout/HomeLayout';
+import DashboardLayout from './layout/AdminLayout';
 
 const App: React.FC = () => {
   const isAuthenticated = true; // Simula el estado de autenticación

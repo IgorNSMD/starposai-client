@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
 
-import { headerStyle, containerStyle } from '../../styles/HomeStyles';
+import { headerStyle, containerStyle } from '../styles/HomeStyles';
 //import HomeNavMenu from './HomeNavMenu';
 
 const HomeHeader: React.FC = () => {

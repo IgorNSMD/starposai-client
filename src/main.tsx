@@ -10,7 +10,7 @@ const isAuthenticated = false; // Cambia según tu lógica de autenticación
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <Suspense>
+    <Suspense fallback={<div>Loading...</div>}>
       <ThemeProvider theme={isAuthenticated ? dashboardTheme : homeTheme}>
         <CssBaseline />
         <GlobalStyles

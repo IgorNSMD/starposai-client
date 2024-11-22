@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-import { homeSectionStyle, heroImgStyle } from '../../styles/HomeStyles';
-import heroImg from '../../assets/img/hero-img.png';
+import { homeSectionStyle, heroImgStyle } from '../styles/HomeStyles';
+import heroImg from '../assets/img/hero-img.png';
 
 const HomeSection: React.FC = () => {
   return (

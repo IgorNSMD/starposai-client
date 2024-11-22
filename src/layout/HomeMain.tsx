@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { mainStyle, sectionStyle, darkBackgroundStyle } from '../../styles/HomeStyles';
+import { mainStyle, sectionStyle, darkBackgroundStyle } from '../styles/HomeStyles';
 
 import HomeSection from './HomeSection';
 

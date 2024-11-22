@@ -22,7 +22,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 
-import BreadcrumbsNav from './BreadcrumbsNav';
+import BreadcrumbsNav from '../layout/AdminBreadcrumbsNav';
 
 const drawerWidth = 240;
 

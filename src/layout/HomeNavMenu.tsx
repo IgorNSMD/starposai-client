@@ -11,7 +11,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { ExpandMore, ExpandLess, Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
-import { navMenuStyle } from '../../styles/HomeStyles';
+import { navMenuStyle } from '../styles/HomeStyles';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 

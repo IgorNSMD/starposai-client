@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 
-import { homeContainer } from '../../styles/HomeStyles';
+import { homeContainer } from '../styles/HomeStyles';
 
 import HomeHeader from './HomeHeader';
 import HomeMain from './HomeMain';

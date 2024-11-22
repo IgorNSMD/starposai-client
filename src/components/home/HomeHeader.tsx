@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, Typography } from '@mui/material';
 
 import { headerStyle, containerStyle } from '../../styles/HomeStyles';
-import HomeNavMenu from './HomeNavMenu';
+//import HomeNavMenu from './HomeNavMenu';
 
 const HomeHeader: React.FC = () => {
   return (
@@ -10,14 +10,15 @@ const HomeHeader: React.FC = () => {
       <Box sx={containerStyle}>
           {/* Logo */}
           <Box className="logo">
-            {/* <img src="/logo.png" alt="Logo" /> */}
             <Typography component="h1">STARPOS.AI</Typography>
           </Box>
-          <Box className="navmenu">
-            {/* Contenido del menú de navegación */}
+
+          {/* Contenido del menú de navegación */}
+          {/* <Box className="navmenu">
             <HomeNavMenu />
-          </Box>
-          <Button className="btn-getstarted">Get Started</Button>
+          </Box> */}
+
+          <Button className="btn-getstarted">Sign in</Button>
       </Box>
     </Box>
   );

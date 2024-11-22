@@ -72,6 +72,7 @@ export const headerStyle: SxProps<Theme> = (theme: Theme) => ({
     backgroundColor: theme.palette.primary.main,
     fontSize: '14px',
     padding: '8px 25px',
+    marginLeft: 'auto', // Empuja el botón al extremo derecho
     margin: '0 0 0 50px',
     borderRadius: '50px',
     transition: '0.3s',
@@ -134,6 +135,7 @@ export const containerStyle: SxProps<Theme> = {
   position: 'relative', // position-relative
   display: 'flex', // d-flex
   alignItems: 'center', // align-items-center
+  justifyContent: 'space-between',
 };
 
 export const navMenuStyle: SxProps<Theme> = (theme: Theme) => ({

@@ -2,7 +2,7 @@
 import { Breadcrumbs, Link, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
-export default function AdminBreadcrumbsNav() {
+export default function AdminBreadcrumbs() {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 

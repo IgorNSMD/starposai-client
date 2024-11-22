@@ -1,8 +1,8 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { dashboardContainer, sidebarStyle, mainContentStyle } from '../styles/DashboardStyles';
+import { dashboardContainer, sidebarStyle, mainContentStyle } from '../styles/AdminStyles';
 
-const DashboardLayout: React.FC = () => {
+const AdminLayout: React.FC = () => {
   return (
     <Box sx={dashboardContainer}>
       {/* Sidebar */}
@@ -24,4 +24,4 @@ const DashboardLayout: React.FC = () => {
   );
 };
 
-export default DashboardLayout;
+export default AdminLayout;

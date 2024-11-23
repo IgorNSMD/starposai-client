@@ -1,13 +1,22 @@
 import { lazy } from "react";   
 
+import PrivateRoute from "./PrivateRoute";
+
 const HomeLayout = lazy(() => import('../layout/HomeLayout'));
 const AdminLayout = lazy(() => import('../layout/AdminLayout'));
 const Login = lazy(()=> import('../auth/pages/Login'))   
 
-const Routes = [
+const RoutesList = [
   { path: '/', element: <HomeLayout /> },
   { path: '/login', element: <Login /> },
-  { path: '/dashboard', element: <AdminLayout />, private: true },
+  {
+    path: '/dashboard',
+    element: (
+      <PrivateRoute isAuthenticated={true}>
+        <AdminLayout />
+      </PrivateRoute>
+    ),
+  },
 ];
 
-export default Routes;
+export default RoutesList;

@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomeLayout from './layout/HomeLayout';
-import AdminLayout from './layout/AdminLayout';
+import RoutesList from './router/index';
 
 const App: React.FC = () => {
-  const isAuthenticated = true; // Simula el estado de autenticación
-
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<HomeLayout />} />
-        {isAuthenticated && <Route path="/dashboard" element={<AdminLayout />} />}
-      </Routes>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
+          {RoutesList.map(({ path, element }, index) => (
+            <Route key={index} path={path} element={element} />
+          ))}
+        </Routes>
+      </Suspense>
     </Router>
   );
 };

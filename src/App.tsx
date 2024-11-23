@@ -1,18 +1,14 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import RoutesList from './router/index';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './router/routes'; // Archivo de rutas
 
 const App: React.FC = () => {
   return (
-    <Router>
+    <BrowserRouter>
       <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          {RoutesList.map(({ path, element }, index) => (
-            <Route key={index} path={path} element={element} />
-          ))}
-        </Routes>
+        <AppRoutes />
       </Suspense>
-    </Router>
+  </BrowserRouter>
   );
 };
 

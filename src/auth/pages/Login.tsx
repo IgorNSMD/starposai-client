@@ -1,7 +1,10 @@
 import React from 'react';
-import { Box, TextField, Button, Typography, Paper } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, Link } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
+    const navigate = useNavigate();
+
     const handleLogin = (event: React.FormEvent) => {
         event.preventDefault();
         console.log('Login submitted');
@@ -11,9 +14,10 @@ const Login: React.FC = () => {
         <Box
             sx={{
                 display: 'flex',
-                justifyContent: 'center', // Centrado horizontal
-                alignItems: 'center', // Centrado vertical
-                minHeight: '100vh', // Asegura que ocupe el espacio de la ventana
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '100vh',
+                backgroundColor: 'transparent', // Mantiene el fondo visible
             }}
         >
             <Paper
@@ -22,8 +26,8 @@ const Login: React.FC = () => {
                     padding: 4,
                     borderRadius: '8px',
                     width: '100%',
-                    maxWidth: 400, // Define el ancho máximo del contenedor
-                    backgroundColor: '#ffffff', // Fondo blanco para contraste
+                    maxWidth: 400,
+                    backgroundColor: '#ffffff',
                 }}
             >
                 <Typography variant="h4" gutterBottom align="center">
@@ -50,6 +54,28 @@ const Login: React.FC = () => {
                         Sign In
                     </Button>
                 </Box>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mt: 2,
+                    }}
+                >
+                    <Link href="/register" underline="hover" sx={{ fontSize: '0.875rem' }}>
+                        Create an Account
+                    </Link>
+                    <Link href="/forgot-password" underline="hover" sx={{ fontSize: '0.875rem' }}>
+                        Forgot Password?
+                    </Link>
+                </Box>
+                <Button
+                    onClick={() => navigate('/')}
+                    variant="text"
+                    fullWidth
+                    sx={{ mt: 2, textTransform: 'none', color: 'primary.main' }}
+                >
+                    Back to Home
+                </Button>
             </Paper>
         </Box>
     );

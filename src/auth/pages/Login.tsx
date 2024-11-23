@@ -1,36 +1,58 @@
 import React from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 
-const Login: React.FC = () => (
-  <Box
-    sx={{
-      maxWidth: '700px',
-      margin: '0 auto',
-      padding: '20px',
-      backgroundColor: 'white',
-      borderRadius: '10px',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    }}
-  >
-    <Typography variant="h4" gutterBottom>
-      Login
-    </Typography>
-    <Box component="form">
-      <Box sx={{ marginBottom: '16px' }}>
-        <TextField fullWidth label="Your Email" variant="outlined" />
-      </Box>
-      <Box sx={{ marginBottom: '16px' }}>
-        <TextField fullWidth label="Password" type="password" variant="outlined" />
-      </Box>
-      <Button
-        fullWidth
-        variant="contained"
-        sx={{ padding: '10px', fontWeight: 'bold', textTransform: 'none' }}
-      >
-        Sign In
-      </Button>
-    </Box>
-  </Box>
-);
+const Login: React.FC = () => {
+    const handleLogin = (event: React.FormEvent) => {
+        event.preventDefault();
+        console.log('Login submitted');
+    };
+
+    return (
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center', // Centrado horizontal
+                alignItems: 'center', // Centrado vertical
+                minHeight: '100vh', // Asegura que ocupe el espacio de la ventana
+            }}
+        >
+            <Paper
+                elevation={3}
+                sx={{
+                    padding: 4,
+                    borderRadius: '8px',
+                    width: '100%',
+                    maxWidth: 400, // Define el ancho máximo del contenedor
+                    backgroundColor: '#ffffff', // Fondo blanco para contraste
+                }}
+            >
+                <Typography variant="h4" gutterBottom align="center">
+                    Login
+                </Typography>
+                <Box component="form" onSubmit={handleLogin} sx={{ mt: 2 }}>
+                    <TextField
+                        label="Email"
+                        type="email"
+                        fullWidth
+                        margin="normal"
+                        variant="outlined"
+                        required
+                    />
+                    <TextField
+                        label="Password"
+                        type="password"
+                        fullWidth
+                        margin="normal"
+                        variant="outlined"
+                        required
+                    />
+                    <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
+                        Sign In
+                    </Button>
+                </Box>
+            </Paper>
+        </Box>
+    );
+};
 
 export default Login;

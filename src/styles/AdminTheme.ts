@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-const dashboardTheme = createTheme({
+const adminTheme = createTheme({
   palette: {
     background: {
       default: '#f9f9f9', // Fondo gris claro para Dashboard
@@ -25,4 +25,4 @@ const dashboardTheme = createTheme({
   },
 });
 
-export default dashboardTheme;
+export default adminTheme;

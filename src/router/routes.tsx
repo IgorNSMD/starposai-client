@@ -5,8 +5,8 @@ import PrivateRoute from "./PrivateRoute";
 
 const HomeLayout = lazy(() => import('../layout/HomeLayout'));
 const AdminLayout = lazy(() => import('../layout/AdminLayout'));
-const Login = lazy(()=> import('../auth/pages/Login'))   
-const Register = lazy(() => import('../auth/pages/Register'));
+const Login = lazy(()=> import('../pages/auth/Login'))   
+const Register = lazy(() => import('../pages/auth/Register'));
 
 const routes = [
   { path: '/', element: <HomeLayout /> },

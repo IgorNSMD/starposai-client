@@ -1,6 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider, CssBaseline, GlobalStyles } from '@mui/material';
+
+import store, { persistor } from './store/store'; // Usamos `store` como default y `persistor` como export nombrado
+
 import App from './App';
 import homeTheme from './styles/HomeTheme';
 import adminTheme from './styles/AdminTheme';
@@ -8,18 +13,23 @@ import adminTheme from './styles/AdminTheme';
 const isAuthenticated = false; // Cambia según tu lógica de autenticación
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={isAuthenticated ? adminTheme : homeTheme}>
-      <CssBaseline />
-      <GlobalStyles
-        styles={{
-          ':root': {
-            scrollBehavior: 'smooth',
-          },
-        }}
-      />
-      <App />
-    </ThemeProvider>
+    <Provider store={store}>
+      <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
+        <ThemeProvider theme={isAuthenticated ? adminTheme : homeTheme}>
+          <CssBaseline />
+          <GlobalStyles
+            styles={{
+              ':root': {
+                scrollBehavior: 'smooth',
+              },
+            }}
+          />
+          <App />
+        </ThemeProvider>    
+      </PersistGate>
+    </Provider>
   </React.StrictMode>
 );

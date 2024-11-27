@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
-import { loginUser } from '../../store/slices/authSlice';
+import { loginUser, clearErrorMessage  } from '../../store/slices/authSlice';
 
 const Login: React.FC = () => {
-    const navigate = useNavigate()
-    const dispatch = useAppDispatch();
-    const { errorMessage } = useAppSelector((state) => state.auth);
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch();
+  const { errorMessage } = useAppSelector((state) => state.auth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    // Limpia el mensaje de error al cargar el componente
+    dispatch(clearErrorMessage());
+  }, [dispatch]);
 
   const handleLogin = (event: React.FormEvent) => {
     event.preventDefault();

@@ -15,17 +15,31 @@ const initialState: AuthState = {
   errorMessage: null,
 };
 
+// Interfaz para los argumentos del thunk
+interface RegisterUserArgs {
+  name: string;
+  email: string;
+  password: string;
+}
+
+// Interfaz para el payload del login exitoso
+interface LoginSuccessPayload {
+  token: string;
+  id: string;
+  email: string;
+  role: string;
+}
+
 // Thunk para registrar usuario
 export const registerUser = createAsyncThunk<
   void, // El caso `fulfilled` no devuelve datos (puede ser `void`)
-  { name: string; email: string; password: string }, // Argumentos del thunk
+  RegisterUserArgs, // Argumentos del thunk
   { rejectValue: string } // Tipo del valor en caso de error
 >('auth/registerUser', async (userData, { rejectWithValue }) => {
   try {
     await axios.post('http://localhost:4000/api/users/register', userData);
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      // Verifica si el error es de Axios y accede a las propiedades específicas
       return rejectWithValue(error.response?.data?.message || 'Error al registrar usuario');
     }
   }
@@ -33,7 +47,7 @@ export const registerUser = createAsyncThunk<
 
 // Thunk para iniciar sesión
 export const loginUser = createAsyncThunk<
-  { token: string; id: string; email: string; role: string }, // Tipo para el caso `fulfilled`
+  LoginSuccessPayload, // Tipo para el caso `fulfilled`
   { email: string; password: string }, // Argumentos del thunk
   { rejectValue: string } // Tipo para el caso `rejected`
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
@@ -42,8 +56,7 @@ export const loginUser = createAsyncThunk<
     return response.data; // Supongamos que la API devuelve `{ token, id, email, role }`
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      // Verifica si el error es de Axios y accede a las propiedades específicas
-      return rejectWithValue(error.response?.data?.message || 'Error al registrar usuario');
+      return rejectWithValue(error.response?.data?.message || 'Error al iniciar sesión');
     }
   }
 });
@@ -66,20 +79,24 @@ const authSlice = createSlice({
         state.errorMessage = null;
       })
       // Registro fallido
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(registerUser.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || 'Error desconocido'; // Maneja el caso en que `payload` sea `undefined`
       })
       // Login exitoso
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginSuccessPayload>) => {
         state.isAuthenticated = true;
         state.token = action.payload.token;
-        state.userInfo = { id: action.payload.id, email: action.payload.email, role: action.payload.role };
+        state.userInfo = {
+          id: action.payload.id,
+          email: action.payload.email,
+          role: action.payload.role,
+        };
         state.errorMessage = null;
       })
       // Login fallido
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(loginUser.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || 'Error desconocido al iniciar sesión';
-      })
+      });
   },
 });
 

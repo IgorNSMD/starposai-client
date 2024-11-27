@@ -1,91 +1,85 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
 
-// Define la estructura de los datos de autenticación
 interface AuthState {
-  user: { id: string; name: string; email: string } | null; // Cambia según los datos reales
   isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
+  userInfo: { id: string; email: string; role: string } | null;
+  token: string | null;
+  errorMessage: string | null;
 }
 
-// Define el estado inicial
 const initialState: AuthState = {
-  user: JSON.parse(localStorage.getItem('user') || 'null'),
-  isAuthenticated: Boolean(localStorage.getItem('user')),
-  isLoading: false,
-  error: null,
+  isAuthenticated: false,
+  userInfo: null,
+  token: null,
+  errorMessage: null,
 };
 
-// Define el tipo del payload esperado en el login
-interface LoginPayload {
-  id: string;
-  name: string;
-  email: string;
-}
-
-// Define las credenciales para login
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-// Async Thunk para login
-export const login = createAsyncThunk<
-  LoginPayload, // Tipo de retorno esperado en caso de éxito
-  LoginCredentials, // Tipo de los argumentos esperados
-  { rejectValue: string } // Tipo del valor devuelto en caso de error
->(
-  'auth/login',
-  async (credentials, { rejectWithValue }) => {
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        body: JSON.stringify(credentials),
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        throw new Error('Error en la autenticación');
-      }
-
-      const data: LoginPayload = await response.json();
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        return rejectWithValue(error.message);
-      }
-      return rejectWithValue('Error desconocido');
+// Thunk para registrar usuario
+export const registerUser = createAsyncThunk<
+  void, // El caso `fulfilled` no devuelve datos (puede ser `void`)
+  { name: string; email: string; password: string }, // Argumentos del thunk
+  { rejectValue: string } // Tipo del valor en caso de error
+>('auth/registerUser', async (userData, { rejectWithValue }) => {
+  try {
+    await axios.post('http://localhost:4000/api/users/register', userData);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Verifica si el error es de Axios y accede a las propiedades específicas
+      return rejectWithValue(error.response?.data?.message || 'Error al registrar usuario');
     }
   }
-);
+});
 
-// Slice para manejar la autenticación
+// Thunk para iniciar sesión
+export const loginUser = createAsyncThunk<
+  { token: string; id: string; email: string; role: string }, // Tipo para el caso `fulfilled`
+  { email: string; password: string }, // Argumentos del thunk
+  { rejectValue: string } // Tipo para el caso `rejected`
+>('auth/loginUser', async (credentials, { rejectWithValue }) => {
+  try {
+    const response = await axios.post('http://localhost:4000/api/users/login', credentials);
+    return response.data; // Supongamos que la API devuelve `{ token, id, email, role }`
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      // Verifica si el error es de Axios y accede a las propiedades específicas
+      return rejectWithValue(error.response?.data?.message || 'Error al registrar usuario');
+    }
+  }
+});
+
+// Slice de autenticación
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout: (state) => {
-      state.user = null;
+    logout(state) {
       state.isAuthenticated = false;
-      localStorage.removeItem('user');
+      state.userInfo = null;
+      state.token = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(login.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+      // Registro exitoso no utiliza `action`, se puede omitir
+      .addCase(registerUser.fulfilled, (state) => {
+        state.errorMessage = null;
       })
-      .addCase(login.fulfilled, (state, action: PayloadAction<LoginPayload>) => {
-        state.isLoading = false;
-        state.user = action.payload;
+      // Registro fallido
+      .addCase(registerUser.rejected, (state, action) => {
+        state.errorMessage = action.payload || 'Error desconocido'; // Maneja el caso en que `payload` sea `undefined`
+      })
+      // Login exitoso
+      .addCase(loginUser.fulfilled, (state, action) => {
         state.isAuthenticated = true;
-        localStorage.setItem('user', JSON.stringify(action.payload));
+        state.token = action.payload.token;
+        state.userInfo = { id: action.payload.id, email: action.payload.email, role: action.payload.role };
+        state.errorMessage = null;
       })
-      .addCase(login.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.isLoading = false;
-        state.error = action.payload || 'Error desconocido';
-      });
+      // Login fallido
+      .addCase(loginUser.rejected, (state, action) => {
+        state.errorMessage = action.payload || 'Error desconocido al iniciar sesión';
+      })
   },
 });
 

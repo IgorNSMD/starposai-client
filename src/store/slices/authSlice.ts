@@ -6,6 +6,7 @@ interface AuthState {
   userInfo: { id: string; email: string; role: string } | null;
   token: string | null;
   errorMessage: string | null;
+  successMessage: string | null; // Nuevo campo para mensajes de éxito
 }
 
 const initialState: AuthState = {
@@ -13,6 +14,7 @@ const initialState: AuthState = {
   userInfo: null,
   token: null,
   errorMessage: null,
+  successMessage: null, // Inicializado como `null`
 };
 
 // Interfaz para los argumentos del thunk
@@ -74,16 +76,25 @@ const authSlice = createSlice({
     clearErrorMessage(state) {
       state.errorMessage = null; // Limpia el mensaje de error
     },
+    clearSuccessMessage(state) {
+      state.successMessage = null; // Limpia el mensaje de éxito
+    },
+    clearMessages(state){
+      state.errorMessage = null
+      state.successMessage = null; // Limpia el mensaje de éxito
+  },
   },
   extraReducers: (builder) => {
     builder
       // Registro exitoso no utiliza `action`, se puede omitir
       .addCase(registerUser.fulfilled, (state) => {
+        state.successMessage = 'Registro exitoso'; // Mensaje de éxito
         state.errorMessage = null;
       })
       // Registro fallido
       .addCase(registerUser.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || 'Error desconocido'; // Maneja el caso en que `payload` sea `undefined`
+        state.successMessage = null; // Asegura que el mensaje de éxito esté limpio
       })
       // Login exitoso
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginSuccessPayload>) => {
@@ -95,13 +106,15 @@ const authSlice = createSlice({
           role: action.payload.role,
         };
         state.errorMessage = null;
+        state.successMessage = 'Inicio de sesión exitoso'; // Mensaje de éxito
       })
       // Login fallido
       .addCase(loginUser.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || 'Error desconocido al iniciar sesión';
+        state.successMessage = null; // Limpia el mensaje de éxito
       });
   },
 });
 
-export const { logout, clearErrorMessage } = authSlice.actions;
+export const { logout, clearErrorMessage, clearSuccessMessage, clearMessages } = authSlice.actions;
 export default authSlice.reducer;

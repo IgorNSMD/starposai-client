@@ -1,16 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Typography, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
+import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
+import { registerUser, clearMessages } from '../../store/slices/authSlice';
 
 const Register: React.FC = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch();
+  const { successMessage, errorMessage } = useAppSelector((state) => state.auth);
 
-    const handleRegister = (event: React.FormEvent) => {
-        event.preventDefault();
-        console.log('Register submitted');
-    };
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
 
-    return (
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+        ...formData,
+        [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleRegister = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const resultAction = await dispatch(registerUser(formData));
+
+    if (registerUser.fulfilled.match(resultAction)) {
+        navigate('/login'); // Redirige al login tras el registro exitoso
+    }
+  };
+
+  useEffect(() => {
+
+    if (successMessage) {
+        toast.success(successMessage)
+        dispatch(clearMessages())  
+        navigate('/')
+    }
+    if (errorMessage) {
+        toast.error(errorMessage)
+        dispatch(clearMessages())
+    }
+    
+
+  },[successMessage,errorMessage, dispatch, navigate])
+
+  return (
         <Box
             sx={{
                 display: 'flex',
@@ -35,12 +73,15 @@ const Register: React.FC = () => {
                 </Typography>
                 <Box component="form" onSubmit={handleRegister} sx={{ mt: 2 }}>
                     <TextField
+                        name="name" // Agregado para que coincida con la propiedad en formData
                         label="Name"
-                        type="Name"
+                        type="text"
                         fullWidth
                         margin="normal"
                         variant="outlined"
                         required
+                        value={formData.name}
+                        onChange={handleChange}                        
                         slotProps={{
                             input: {
                             sx: {
@@ -68,12 +109,15 @@ const Register: React.FC = () => {
                         }}
                     />
                     <TextField
+                      name="email" // Agregado para que coincida con la propiedad en formData
                       label="Email address"
                       type="email"
                       fullWidth
                       margin="normal"
                       variant="outlined"
                       required
+                      value={formData.email}
+                      onChange={handleChange}                      
                       slotProps={{
                         input: {
                           sx: {
@@ -101,12 +145,15 @@ const Register: React.FC = () => {
                       }}
                     />
                     <TextField
+                      name="password" // Agregado para que coincida con la propiedad en formData
                       label="Password"
                       type="password"
                       fullWidth
                       margin="normal"
                       variant="outlined"
                       required
+                      value={formData.password}
+                      onChange={handleChange}                      
                       slotProps={{
                         input: {
                           sx: {
@@ -147,7 +194,7 @@ const Register: React.FC = () => {
                 </Button>
             </Paper>
         </Box>
-    );
+  );
 };
 
 export default Register;

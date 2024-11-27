@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider, CssBaseline, GlobalStyles } from '@mui/material';
+import { Toaster } from 'react-hot-toast';
 
 import store, { persistor } from './store/store'; // Usamos `store` como default y `persistor` como export nombrado
 
@@ -28,6 +29,15 @@ root.render(
             }}
           />
           <App />
+          <Toaster
+            toastOptions={{
+              position : 'top-right',
+              style : {
+                background : '#283046',
+                color : 'white'
+              }
+            }} 
+          />
         </ThemeProvider>    
       </PersistGate>
     </Provider>

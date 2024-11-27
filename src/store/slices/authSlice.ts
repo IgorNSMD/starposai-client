@@ -37,7 +37,7 @@ export const registerUser = createAsyncThunk<
   { rejectValue: string } // Tipo del valor en caso de error
 >('auth/registerUser', async (userData, { rejectWithValue }) => {
   try {
-    await axios.post('http://localhost:4000/api/users/register', userData);
+    await axios.post('/users/register', userData);
   } catch (error) {
     if (axios.isAxiosError(error)) {
       return rejectWithValue(error.response?.data?.message || 'Error al registrar usuario');
@@ -52,7 +52,7 @@ export const loginUser = createAsyncThunk<
   { rejectValue: string } // Tipo para el caso `rejected`
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
-    const response = await axios.post('http://localhost:4000/api/users/login', credentials);
+    const response = await axios.post('/users/login', credentials);
     return response.data; // Supongamos que la API devuelve `{ token, id, email, role }`
   } catch (error) {
     if (axios.isAxiosError(error)) {

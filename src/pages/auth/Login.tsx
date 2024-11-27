@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
+import { loginUser } from '../../store/slices/authSlice';
 
 const Login: React.FC = () => {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
+    const dispatch = useAppDispatch();
+    const { errorMessage } = useAppSelector((state) => state.auth);
 
-    const handleLogin = (event: React.FormEvent) => {
-        event.preventDefault();
-        console.log('Login submitted');
-    };
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = (event: React.FormEvent) => {
+    event.preventDefault();
+    dispatch(loginUser({ email, password }));
+  };
 
     return (
         <Box
@@ -41,6 +48,8 @@ const Login: React.FC = () => {
                       margin="normal"
                       variant="outlined"
                       required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       slotProps={{
                         input: {
                           sx: {
@@ -74,6 +83,8 @@ const Login: React.FC = () => {
                       margin="normal"
                       variant="outlined"
                       required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}                      
                       slotProps={{
                         input: {
                           sx: {
@@ -100,7 +111,11 @@ const Login: React.FC = () => {
                         },
                       }}
                     />
-
+                    {errorMessage && (
+                      <Typography color="error" variant="body2" align="center" sx={{ mt: 2 }}>
+                        {errorMessage}
+                      </Typography>
+                    )}
                     <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
                         Sign In
                     </Button>

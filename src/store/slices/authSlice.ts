@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
+
+import axiosInstance from '../../api/axiosInstance';
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -39,9 +40,12 @@ export const registerUser = createAsyncThunk<
   { rejectValue: string } // Tipo del valor en caso de error
 >('auth/registerUser', async (userData, { rejectWithValue }) => {
   try {
-    await axios.post('/users/register', userData);
+    console.log('axios.post...',userData)
+    console.log('Base URL:', axiosInstance.defaults.baseURL);
+    await axiosInstance.post('/users/register', userData);
+    console.log('save data...')
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
       return rejectWithValue(error.response?.data?.message || 'Error al registrar usuario');
     }
   }
@@ -54,10 +58,10 @@ export const loginUser = createAsyncThunk<
   { rejectValue: string } // Tipo para el caso `rejected`
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
-    const response = await axios.post('/users/login', credentials);
+    const response = await axiosInstance.post('/login', credentials);
     return response.data; // Supongamos que la API devuelve `{ token, id, email, role }`
   } catch (error) {
-    if (axios.isAxiosError(error)) {
+    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
       return rejectWithValue(error.response?.data?.message || 'Error al iniciar sesión');
     }
   }

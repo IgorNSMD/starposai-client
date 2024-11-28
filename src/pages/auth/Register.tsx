@@ -25,7 +25,9 @@ const Register: React.FC = () => {
   };
 
   const handleRegister = async (event: React.FormEvent) => {
+    console.log('handledRegister..')
     event.preventDefault();
+    console.log('preventDefault..')
     const resultAction = await dispatch(registerUser(formData));
 
     if (registerUser.fulfilled.match(resultAction)) {

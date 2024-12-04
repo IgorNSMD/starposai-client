@@ -5,6 +5,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { Link as RouterLink } from 'react-router-dom'; // Importa RouterLink para navegación
 
+import { sidebarStyle } from '../styles/AdminStyles';
+
 interface AdminSidebarProps {
   isOpen: boolean;
 }
@@ -12,13 +14,14 @@ interface AdminSidebarProps {
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   return (
     <Box
-      sx={{
-        width: isOpen ? '250px' : '70px',
-        backgroundColor: '#37517e',
-        color: '#ffffff',
-        height: '100vh',
-        transition: 'width 0.3s',
-      }}
+      sx={{...sidebarStyle, width: isOpen ? '250px' : '70px', transition: 'width 0.3s'}}
+      // sx={{
+      //   width: isOpen ? '250px' : '70px',
+      //   backgroundColor: '#37517e',
+      //   color: '#ffffff',
+      //   height: '100vh',
+      //   transition: 'width 0.3s',
+      // }}
     >
       <List>
         {/* Dashboard */}

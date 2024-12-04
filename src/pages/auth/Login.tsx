@@ -17,9 +17,12 @@ const Login: React.FC = () => {
     dispatch(clearErrorMessage());
   }, [dispatch]);
 
-  const handleLogin = (event: React.FormEvent) => {
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-    dispatch(loginUser({ email, password }));
+    const resultAction = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(resultAction)) {
+      navigate('/admin');
+    }
   };
 
     return (

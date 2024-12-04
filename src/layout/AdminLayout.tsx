@@ -1,24 +1,28 @@
-import React from 'react';
-import { Box } from '@mui/material';
-import { dashboardContainer, sidebarStyle, mainContentStyle } from '../styles/AdminStyles';
+import React, { useState, ReactNode } from 'react';
+import { Box, CssBaseline } from '@mui/material';
+import AdminHeader from './AdminHeader';
+import AdminSidebar from './AdminSidebar';
+import { dashboardContainer, mainContentStyle } from '../styles/AdminStyles';
 
-const AdminLayout: React.FC = () => {
+// Define las props que acepta AdminLayout
+interface AdminLayoutProps {
+  children: ReactNode;
+}
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    setSidebarOpen((prev) => !prev);
+  };
+
   return (
     <Box sx={dashboardContainer}>
-      {/* Sidebar */}
-      <Box sx={sidebarStyle}>
-        <h2>Dashboard</h2>
-        <ul>
-          <li>Overview</li>
-          <li>Reports</li>
-          <li>Settings</li>
-        </ul>
-      </Box>
-
-      {/* Main Content */}
-      <Box sx={mainContentStyle}>
-        <h1>Welcome to the Dashboard</h1>
-        {/* Aquí puedes añadir contenido dinámico */}
+      <CssBaseline />
+      <AdminSidebar isOpen={isSidebarOpen} />
+      <Box sx={{ ...mainContentStyle, marginLeft: isSidebarOpen ? '250px' : '70px' }}>
+        <AdminHeader toggleSidebar={toggleSidebar} />
+        <Box sx={{ padding: '20px' }}>{children}</Box>
       </Box>
     </Box>
   );

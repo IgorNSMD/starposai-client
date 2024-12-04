@@ -58,7 +58,7 @@ export const loginUser = createAsyncThunk<
   { rejectValue: string } // Tipo para el caso `rejected`
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post('/login', credentials);
+    const response = await axiosInstance.post('/users/login', credentials);
     return response.data; // Supongamos que la API devuelve `{ token, id, email, role }`
   } catch (error) {
     if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {

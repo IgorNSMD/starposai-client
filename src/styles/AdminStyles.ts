@@ -47,8 +47,8 @@ export const formContainer: SxProps<Theme> = {
   backgroundColor: '#f9f9f9',
   borderRadius: '8px',
   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  maxWidth: '600px',
-  margin: '0 auto',
+  maxWidth: '800px', // Ajuste del ancho máximo
+  margin: '20px auto',
 };
 
 // Estilo para los campos de texto (inputs y textarea)
@@ -78,6 +78,7 @@ export const submitButton: SxProps<Theme> = {
   textTransform: 'none',
   fontSize: '16px',
   fontWeight: 'bold',
+  alignSelf: 'flex-end', // Alineación del botón a la derecha
   '&:hover': {
     backgroundColor: '#3699c9',
   },
@@ -90,4 +91,36 @@ export const formTitle: SxProps<Theme> = {
   marginBottom: '20px',
   color: '#333333',
   textAlign: 'center',
+};
+
+// Estilo para las etiquetas de los campos
+export const labelStyle: SxProps<Theme> = {
+  fontSize: '14px',
+  fontWeight: 'bold',
+  color: '#333333',
+  marginBottom: '8px',
+  alignSelf: 'flex-start',
+};
+
+// Estilo para los contenedores de los campos de texto (alineados)
+export const inputContainer: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '20px',
+  width: '100%',
+};
+
+// Estilo para la tabla de permisos
+export const permissionsTable: SxProps<Theme> = {
+  marginTop: '20px',
+  width: '100%',
+  '& .MuiDataGrid-root': {
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: '#f1f1f1',
+    fontWeight: 'bold',
+  },
 };

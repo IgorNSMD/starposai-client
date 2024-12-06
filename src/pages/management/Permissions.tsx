@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { formContainer, submitButton, inputField, inputContainer, formTitle, permissionsTable } from '../../styles/AdminStyles';
 
 interface Permission {
   id: number;
@@ -54,41 +55,75 @@ const Permissions: React.FC = () => {
   };
 
   return (
-    <Box sx={{ padding: '20px' }}>
-      <Paper sx={{ padding: '20px', marginBottom: '20px' }}>
-        <Typography variant="h6" gutterBottom>
+    <Box sx={formContainer}>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
+        <Typography sx={formTitle}>
           {editingId ? 'Edit Permission' : 'Add New Permission'}
         </Typography>
-        <Box display="flex" flexDirection="column" gap={2}>
+        <Box sx={inputContainer}>
           <TextField
             label="Permission Name"
             name="name"
             value={formData.name}
             onChange={handleChange}
-            fullWidth
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
           />
           <TextField
             label="Description"
             name="description"
             value={formData.description}
             onChange={handleChange}
-            fullWidth
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
           />
-          <Box display="flex" gap={2}>
-            <Button variant="contained" color="primary" onClick={handleSubmit} startIcon={<SaveIcon />}>
-              Save
+        </Box>
+        <Box display="flex" gap={2} marginTop="16px">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            startIcon={<SaveIcon />}
+            sx={submitButton}
+          >
+            Save
+          </Button>
+          {editingId && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleCancel}
+              startIcon={<CancelIcon />}
+              sx={{ alignSelf: 'flex-end' }}
+            >
+              Cancel
             </Button>
-            {editingId && (
-              <Button variant="outlined" color="secondary" onClick={handleCancel} startIcon={<CancelIcon />}>
-                Cancel
-              </Button>
-            )}
-          </Box>
+          )}
         </Box>
       </Paper>
 
-      <Paper>
-        <Typography variant="h6" sx={{ padding: '20px' }}>
+      <Paper sx={permissionsTable}>
+        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Permissions List
         </Typography>
         <Table>
@@ -118,6 +153,7 @@ const Permissions: React.FC = () => {
         </Table>
       </Paper>
     </Box>
+
   );
 };
 

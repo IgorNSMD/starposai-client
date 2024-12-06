@@ -73,7 +73,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
             <ListItem disableGutters>
               <Button
                 component={RouterLink}
-                to="/management/permissions"
+                to="/admin/permissions"
                 sx={{
                   textDecoration: 'none',
                   width: '100%',

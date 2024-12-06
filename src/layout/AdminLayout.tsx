@@ -1,15 +1,13 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState } from 'react';
 import { Box, CssBaseline } from '@mui/material';
+import { Outlet } from 'react-router-dom';
+
 import AdminHeader from './AdminHeader';
 import AdminSidebar from './AdminSidebar';
 import { dashboardContainer, mainContentStyle } from '../styles/AdminStyles';
 
-// Define las props que acepta AdminLayout
-interface AdminLayoutProps {
-  children: ReactNode;
-}
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
 
   const toggleSidebar = () => {
@@ -22,7 +20,9 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <AdminSidebar isOpen={isSidebarOpen} />
       <Box sx={{ ...mainContentStyle, marginLeft: isSidebarOpen ? '250px' : '70px' }}>
         <AdminHeader toggleSidebar={toggleSidebar} />
-        <Box sx={{ padding: '20px' }}>{children}</Box>
+        <Box sx={{ padding: '20px' }}>
+          <Outlet /> {/* Renderiza las rutas hijas aquí */}
+        </Box>
       </Box>
     </Box>
   );

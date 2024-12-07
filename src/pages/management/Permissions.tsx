@@ -1,21 +1,52 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { formContainer, submitButton, inputField, inputContainer, formTitle, permissionsTable } from '../../styles/AdminStyles';
+import toast from 'react-hot-toast';
 
-interface Permission {
-  id: number;
-  name: string;
-  description: string;
-}
+import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
+import {
+  fetchPermissions,
+  createPermission,
+  updatePermission,
+  deletePermission,
+  clearMessages,
+} from '../../store/slices/permissionSlice';
+import {
+  formContainer,
+  submitButton,
+  inputField,
+  inputContainer,
+  formTitle,
+  permissionsTable,
+} from '../../styles/AdminStyles';
 
 const Permissions: React.FC = () => {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [formData, setFormData] = useState({ name: '', description: '' });
-  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const dispatch = useAppDispatch();
+  const { permissions, errorMessage, successMessage } = useAppSelector((state) => state.permissions);
+
+  const [formData, setFormData] = useState({ key: '', description: '' });
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Cargar permisos al montar el componente
+  useEffect(() => {
+    dispatch(fetchPermissions());
+  }, [dispatch]);
+
+  // Manejar mensajes de éxito y error con notificaciones
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, errorMessage, dispatch]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -23,34 +54,29 @@ const Permissions: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (editingId !== null) {
-      setPermissions((prev) =>
-        prev.map((perm) => (perm.id === editingId ? { ...perm, ...formData } : perm))
-      );
+    if (editingId) {
+      dispatch(updatePermission({ id: editingId, key: formData.key, description: formData.description }));
       setEditingId(null);
     } else {
-      setPermissions((prev) => [
-        ...prev,
-        { id: Date.now(), name: formData.name, description: formData.description },
-      ]);
+      dispatch(createPermission({ key: formData.key, description: formData.description }));
     }
-    setFormData({ name: '', description: '' });
+    setFormData({ key: '', description: '' });
   };
 
-  const handleEdit = (id: number) => {
+  const handleEdit = (id: string) => {
     const permission = permissions.find((perm) => perm.id === id);
     if (permission) {
-      setFormData({ name: permission.name, description: permission.description });
+      setFormData({ key: permission.key, description: permission.description });
       setEditingId(id);
     }
   };
 
-  const handleDelete = (id: number) => {
-    setPermissions((prev) => prev.filter((perm) => perm.id !== id));
+  const handleDelete = (id: string) => {
+    dispatch(deletePermission(id));
   };
 
   const handleCancel = () => {
-    setFormData({ name: '', description: '' });
+    setFormData({ key: '', description: '' });
     setEditingId(null);
   };
 
@@ -63,8 +89,8 @@ const Permissions: React.FC = () => {
         <Box sx={inputContainer}>
           <TextField
             label="Permission Name"
-            name="name"
-            value={formData.name}
+            name="key"
+            value={formData.key}
             onChange={handleChange}
             sx={inputField}
             slotProps={{
@@ -122,6 +148,7 @@ const Permissions: React.FC = () => {
         </Box>
       </Paper>
 
+      {/* Tabla de permisos */}
       <Paper sx={permissionsTable}>
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Permissions List
@@ -129,7 +156,7 @@ const Permissions: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
+              <TableCell>Key</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -137,7 +164,7 @@ const Permissions: React.FC = () => {
           <TableBody>
             {permissions.map((perm) => (
               <TableRow key={perm.id}>
-                <TableCell>{perm.name}</TableCell>
+                <TableCell>{perm.key}</TableCell>
                 <TableCell>{perm.description}</TableCell>
                 <TableCell>
                   <IconButton color="primary" onClick={() => handleEdit(perm.id)}>

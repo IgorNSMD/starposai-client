@@ -4,7 +4,7 @@ import axios from "axios";
 
 // Interfaces
 interface Permission {
-  id: string;
+  _id: string;
   key: string;
   description: string;
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, IconButton } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, IconButton } from '@mui/material';
+import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
@@ -80,6 +81,42 @@ const Permissions: React.FC = () => {
     setEditingId(null);
   };
 
+   // Mapear datos para DataGrid
+   const rows = permissions.map((permission) => ({
+    id: permission._id, // Usa `_id` como `id` para DataGrid
+    key: permission.key,
+    description: permission.description,
+  }));
+
+  const columns = [
+    { field: 'key', headerName: 'Key', flex: 1 },
+    { field: 'description', headerName: 'Description', flex: 1 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      flex: 0.5,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row.id)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleDelete(params.row.id)}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
+  
+
+
   return (
     <Box sx={formContainer}>
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
@@ -153,31 +190,22 @@ const Permissions: React.FC = () => {
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Permissions List
         </Typography>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Key</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {permissions.map((perm) => (
-              <TableRow key={perm.id}>
-                <TableCell>{perm.key}</TableCell>
-                <TableCell>{perm.description}</TableCell>
-                <TableCell>
-                  <IconButton color="primary" onClick={() => handleEdit(perm.id)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(perm.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5, // Configura el tamaño de página inicial
+              },
+            },
+          }}
+          pageSizeOptions={[5, 10, 20]} // Opciones para cambiar el tamaño de página
+          disableRowSelectionOnClick 
+          sx={{
+            height: 'auto', // Ajustar la altura si es necesario
+          }}
+        />
       </Paper>
     </Box>
 

@@ -66,7 +66,7 @@ const Permissions: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    const permission = permissions.find((perm) => perm.id === id);
+    const permission = permissions.find((perm) => perm._id === id);
     if (permission) {
       setFormData({ key: permission.key, description: permission.description });
       setEditingId(id);

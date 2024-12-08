@@ -7,7 +7,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SecurityIcon from '@mui/icons-material/Security';
 import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
 
@@ -17,10 +17,13 @@ interface AdminSidebarProps {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const [managementOpen, setManagementOpen] = React.useState(false);
+  const location = useLocation(); // Hook para obtener la ruta actual
 
   const toggleManagementMenu = () => {
     setManagementOpen(!managementOpen);
   };
+
+  const isActive = (path: string) => location.pathname === path; // Verifica si la ruta actual coincide con `path`
 
   return (
     <Box
@@ -41,6 +44,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
               width: '100%',
               justifyContent: 'flex-start',
               padding: 0,
+              backgroundColor: isActive('/dashboard') ? '#1e3a8a' : 'transparent', // Resalta el activo
+              '&:hover': { backgroundColor: '#314e8a' },
             }}
           >
             <ListItemIcon sx={{ marginLeft: 2 }}>
@@ -79,6 +84,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: 0,
+                  backgroundColor: isActive('/admin/permissions') ? '#1e3a8a' : 'transparent', // Resalta el activo
+                  '&:hover': { backgroundColor: '#314e8a' },
                 }}
               >
                 <ListItemIcon sx={{ marginLeft: 4 }}>
@@ -96,6 +103,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: 0,
+                  backgroundColor: isActive('/management/roles') ? '#1e3a8a' : 'transparent', // Resalta el activo
+                  '&:hover': { backgroundColor: '#314e8a' },
                 }}
               >
                 <ListItemIcon sx={{ marginLeft: 4 }}>
@@ -113,6 +122,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: 0,
+                  backgroundColor: isActive('/management/users') ? '#1e3a8a' : 'transparent', // Resalta el activo
+                  '&:hover': { backgroundColor: '#314e8a' },
                 }}
               >
                 <ListItemIcon sx={{ marginLeft: 4 }}>
@@ -136,6 +147,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
               width: '100%',
               justifyContent: 'flex-start',
               padding: 0,
+              backgroundColor: isActive('/settings') ? '#1e3a8a' : 'transparent', // Resalta el activo
+              '&:hover': { backgroundColor: '#314e8a' },
             }}
           >
             <ListItemIcon sx={{ marginLeft: 2 }}>

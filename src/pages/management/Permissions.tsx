@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, IconButton } from '@mui/material';
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Paper,
+  IconButton,
+} from '@mui/material';
 import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -33,6 +40,8 @@ const Permissions: React.FC = () => {
 
   const [formData, setFormData] = useState({ key: '', description: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
+
 
   // Cargar permisos al montar el componente
   useEffect(() => {
@@ -56,11 +65,34 @@ const Permissions: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Función para mostrar el cuadro de diálogo
+  const handleDialogOpen = () => {
+    setIsDialogOpen(true);
+  };
+
+    // Función para cerrar el cuadro de diálogo
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+  };
+
+  const handleConfirmUpdate  = () => {
+    if (editingId) { 
+      console.log('handleConfirmUpdate editingId -> ', editingId)
+      dispatch(updatePermission({ id: editingId, key: formData.key, description: formData.description }))
+          .then(() => dispatch(fetchPermissions())); // Actualiza la lista después de editar
+      setEditingId(null);
+      //setConfirmDialogOpen(false); // Cierra el diálogo
+    }
+    setFormData({ key: '', description: '' });
+    handleDialogClose();
+  };
+
   const handleSubmit = () => {
     if (editingId) {
       dispatch(updatePermission({ id: editingId, key: formData.key, description: formData.description }))
-        .then(() => dispatch(fetchPermissions())); // Actualiza la lista después de editar
+      .then(() => dispatch(fetchPermissions())); // Actualiza la lista después de editar
       setEditingId(null);
+      setFormData({ key: '', description: '' });
     } else {
       dispatch(createPermission({ key: formData.key, description: formData.description }))
         .then(() => dispatch(fetchPermissions())); // Actualiza la lista después de crear
@@ -73,7 +105,7 @@ const Permissions: React.FC = () => {
     if (permission) {
       setFormData({ key: permission.key, description: permission.description });
       setEditingId(id);
-      console.log('Set editingId:', id); // Debug para confirmar
+      //console.log('Set editingId:', id); // Debug para confirmar
     } else {
       console.log('Permission not found for id:', id); // Debug para confirmar
     }
@@ -176,11 +208,11 @@ const Permissions: React.FC = () => {
             variant="contained"
             color="primary"
             type="button" // Asegura que no envíe un formulario por defecto
-            onClick={handleSubmit}
+            onClick={editingId ? handleDialogOpen : handleSubmit} // Abrir cuadro de diálogo si es edición
             startIcon={<SaveIcon />}
             sx={submitButton}
           >
-            Save
+             {editingId ? 'Update' : 'Save'}
           </Button>
           {editingId && (
             <Button
@@ -216,6 +248,40 @@ const Permissions: React.FC = () => {
           sx={datagridStyle}
         />
       </Paper>
+
+
+      {/* Cuadro de diálogo de confirmación */}
+      {isDialogOpen && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: '#fff',
+            padding: '20px',
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            borderRadius: '8px',
+            textAlign: 'center',
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: '16px' }}>
+            Confirm Update
+          </Typography>
+          <Typography variant="body1" sx={{ marginBottom: '24px' }}>
+            Are you sure you want to update this permission?
+          </Typography>
+          <Box display="flex" justifyContent="center" gap={2}>
+            <Button variant="outlined" color="error" onClick={handleDialogClose}>
+              Cancel
+            </Button>
+            <Button variant="contained" color="primary" onClick={handleConfirmUpdate}>
+              Confirm
+            </Button>
+          </Box>
+        </Box>
+      )}
+
     </Box>
 
   );

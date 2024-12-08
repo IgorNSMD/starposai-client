@@ -32,6 +32,8 @@ import {
   datagridStyle,
   cancelButton,
 } from '../../styles/AdminStyles';
+import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
+
 
 const Permissions: React.FC = () => {
 
@@ -274,68 +276,22 @@ const Permissions: React.FC = () => {
 
 
       {/* Cuadro de diálogo de confirmación */}
-      {isDialogOpen && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: '#fff',
-            padding: '20px',
-            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: '16px' }}>
-            Confirm Update
-          </Typography>
-          <Typography variant="body1" sx={{ marginBottom: '24px' }}>
-            Are you sure you want to update this permission?
-          </Typography>
-          <Box display="flex" justifyContent="center" gap={2}>
-            <Button variant="outlined" color="error" onClick={handleDialogClose}>
-              Cancel
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleConfirmUpdate}>
-              Confirm
-            </Button>
-          </Box>
-        </Box>
-      )}
+      <Dialog
+        isOpen={isDialogOpen}
+        title="Confirm Update"
+        message="Are you sure you want to update this permission?"
+        onClose={handleDialogClose}
+        onConfirm={handleConfirmUpdate}
+      />
 
       {/* Cuadro de diálogo para eliminar */}
-      {isDeleteDialogOpen && (
-        <Box
-          sx={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: '#fff',
-            padding: '20px',
-            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="h6" sx={{ marginBottom: '16px' }}>
-            Confirm Delete
-          </Typography>
-          <Typography variant="body1" sx={{ marginBottom: '24px' }}>
-            Are you sure you want to delete this permission?
-          </Typography>
-          <Box display="flex" justifyContent="center" gap={2}>
-            <Button variant="outlined" color="error" onClick={handleDeleteDialogClose}>
-              Cancel
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleConfirmDelete}>
-              Confirm
-            </Button>
-          </Box>
-        </Box>
-      )}
+      <Dialog
+        isOpen={isDeleteDialogOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this permission?"
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
+      />
 
     </Box>
 

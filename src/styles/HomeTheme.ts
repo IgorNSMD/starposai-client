@@ -62,7 +62,7 @@ const homeTheme = createTheme({
       color: '#37517e',
     },
     body1: {
-      color: '#ffffff', // Texto del cuerpo
+      //color: '#ffffff', // Texto del cuerpo
     },
     h6: {
       color: '#ffffff', // Usado para headers más pequeños

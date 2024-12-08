@@ -19,7 +19,7 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
-        <ThemeProvider theme={isAuthenticated ? adminTheme : homeTheme}>
+        <ThemeProvider theme={homeTheme}>
           <CssBaseline />
           <GlobalStyles
             styles={{

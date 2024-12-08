@@ -5,20 +5,31 @@ export const dashboardContainer: SxProps<Theme> = {
   flexDirection: 'row',
   height: '100vh',
   backgroundColor: '#f9f9f9',
+  '@media (max-width: 960px)': {
+    flexDirection: 'column', // Cambia a diseño vertical
+  },
 };
 
 export const sidebarStyle: SxProps<Theme> = {
-  //width: '250px',
   backgroundColor: '#37517e',
   color: '#fff',
   display: 'flex',
   flexDirection: 'column',
   padding: '20px',
-  position: 'fixed', // Para mantener el Sidebar fijo
-  top: '64px', // Altura del Header
-  height: 'calc(100vh - 64px)', // Resta la altura del Header
+  position: 'fixed',
+  top: '64px',
+  height: 'calc(100vh - 64px)',
   overflowY: 'auto',
+  '@media (max-width: 960px)': {
+    position: 'relative', // Cambia a diseño no fijo
+    height: 'auto',
+    top: '0',
+    flexDirection: 'row', // Opcional: Cambiar a diseño horizontal
+    justifyContent: 'space-around',
+    padding: '10px',
+  },
 };
+
 
 export const headerStyle: SxProps<Theme> = {
   height: '64px',
@@ -28,14 +39,23 @@ export const headerStyle: SxProps<Theme> = {
   justifyContent: 'space-between',
   position: 'fixed',
   width: '100%',
-  zIndex: 1100, // Asegura que el Header esté sobre el Sidebar
+  zIndex: 1100,
+  '@media (max-width: 600px)': {
+    height: '56px',
+    padding: '0 10px',
+  },
 };
 
 export const mainContentStyle: SxProps<Theme> = {
   flexGrow: 1,
   padding: '20px',
   overflow: 'auto',
+  marginLeft: '250px',
+  '@media (max-width: 960px)': {
+    marginLeft: '0',
+  },
 };
+
 
 // Estilo para el contenedor general del formulario
 export const formContainer: SxProps<Theme> = {
@@ -47,8 +67,12 @@ export const formContainer: SxProps<Theme> = {
   backgroundColor: '#f9f9f9',
   borderRadius: '8px',
   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  maxWidth: '800px', // Ajuste del ancho máximo
+  maxWidth: '800px',
   margin: '20px auto',
+  width: '100%',
+  '@media (max-width: 600px)': {
+    padding: '10px',
+  },
 };
 
 // Estilo para los campos de texto (inputs y textarea)
@@ -67,6 +91,12 @@ export const inputField: SxProps<Theme> = {
       borderColor: '#47b2e4',
     },
   },
+  '@media (max-width: 600px)': {
+    marginBottom: '8px',
+    '& .MuiOutlinedInput-root': {
+      fontSize: '14px', // Reduce el tamaño del texto
+    },
+  },
 };
 
 // Estilo para el botón de enviar
@@ -78,9 +108,13 @@ export const submitButton: SxProps<Theme> = {
   textTransform: 'none',
   fontSize: '16px',
   fontWeight: 'bold',
-  alignSelf: 'flex-end', // Alineación del botón a la derecha
+  alignSelf: 'flex-end',
   '&:hover': {
     backgroundColor: '#3699c9',
+  },
+  '@media (max-width: 600px)': {
+    fontSize: '14px',
+    padding: '8px 16px',
   },
 };
 
@@ -91,6 +125,9 @@ export const formTitle: SxProps<Theme> = {
   marginBottom: '20px',
   color: '#333333',
   textAlign: 'center',
+  '@media (max-width: 600px)': {
+    fontSize: '20px',
+  },
 };
 
 // Estilo para las etiquetas de los campos
@@ -108,11 +145,14 @@ export const inputContainer: SxProps<Theme> = {
   flexDirection: 'row',
   gap: '20px',
   width: '100%',
+  '@media (max-width: 960px)': { // md breakpoint
+    flexDirection: 'column',
+    gap: '10px',
+  },
 };
 
 // Estilo para la tabla de permisos
 export const permissionsTable: SxProps<Theme> = {
-  //marginTop: '20px',
   width: '100%',
   '& .MuiDataGrid-root': {
     backgroundColor: '#ffffff',
@@ -120,54 +160,62 @@ export const permissionsTable: SxProps<Theme> = {
     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
   },
   '& .MuiDataGrid-columnHeaders': {
-    backgroundColor: '#f1f1f1',
+    backgroundColor: '#37517e',
     fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  '@media (max-width: 960px)': { // md breakpoint
+    '& .MuiDataGrid-root': {
+      fontSize: '12px',
+    },
+  },
+  '@media (max-width: 600px)': { // xs breakpoint
+    '& .MuiDataGrid-root': {
+      fontSize: '10px',
+    },
+    overflowX: 'auto',
   },
 };
 
 export const datagridStyle: SxProps<Theme> = {
-  height: 'auto', // Ajustar la altura si es necesario
+  height: 'auto',
   '& .MuiDataGrid-columnHeaders': {
-    backgroundColor: '#37517e', // Fondo del encabezado
-    color: '#ffffff', // Texto de los encabezados
-    fontWeight: 'bold', // Texto en negrita
-  },
-  '& .MuiDataGrid-row': {
-    color: '#000000', // Color del texto de las filas
+    backgroundColor: '#37517e',
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
   '& .MuiDataGrid-footerContainer': {
-    backgroundColor: '#f4f4f4', // Fondo de la paginación
-    color: '#444444', // Color del texto en la paginación
+    backgroundColor: '#f4f4f4',
   },
-  '& .MuiTablePagination-root': {
-    color: '#444444', // Color del texto en la sección de paginación
-  },
-  '& .MuiTablePagination-menuItem': {
-    color: '#444444', // Color del texto en el menú desplegable
-    '&.Mui-selected': {
-      backgroundColor: '#e0e0e0', // Fondo para el elemento seleccionado
-      color: '#000000', // Color del texto del elemento seleccionado
-    },
-    '&:hover': {
-      backgroundColor: '#d3d3d3', // Fondo cuando el elemento se encuentra en hover
+  '@media (max-width: 960px)': {
+    '& .MuiDataGrid-columnHeaders': {
+      fontSize: '14px',
     },
   },
-  '& .MuiSelect-select': {
-    color: '#444444', // Color del texto dentro del desplegable
-    backgroundColor: '#ffffff', // Fondo del desplegable
-  },  
+  '@media (max-width: 600px)': {
+    '& .MuiDataGrid-columnHeaders': {
+      fontSize: '12px',
+    },
+    '& .MuiDataGrid-row': {
+      fontSize: '10px',
+    },
+  },
 };
 
 export const cancelButton: SxProps<Theme> = {
-  backgroundColor: '#e57373', // Fondo rojo claro
-  color: '#ffffff', // Texto blanco
+  backgroundColor: '#e57373',
+  color: '#ffffff',
   borderRadius: '20px',
   padding: '10px 20px',
   textTransform: 'none',
   fontSize: '16px',
   fontWeight: 'bold',
-  alignSelf: 'flex-end', // Alineación del botón a la derecha
+  alignSelf: 'flex-end',
   '&:hover': {
-    backgroundColor: '#d32f2f', // Fondo más oscuro al hacer hover
+    backgroundColor: '#d32f2f',
+  },
+  '@media (max-width: 600px)': {
+    fontSize: '14px',
+    padding: '8px 16px',
   },
 };

@@ -157,3 +157,17 @@ export const datagridStyle: SxProps<Theme> = {
     backgroundColor: '#ffffff', // Fondo del desplegable
   },  
 };
+
+export const cancelButton: SxProps<Theme> = {
+  backgroundColor: '#e57373', // Fondo rojo claro
+  color: '#ffffff', // Texto blanco
+  borderRadius: '20px',
+  padding: '10px 20px',
+  textTransform: 'none',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  alignSelf: 'flex-end', // Alineación del botón a la derecha
+  '&:hover': {
+    backgroundColor: '#d32f2f', // Fondo más oscuro al hacer hover
+  },
+};

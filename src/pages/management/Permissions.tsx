@@ -23,6 +23,7 @@ import {
   formTitle,
   permissionsTable,
   datagridStyle,
+  cancelButton,
 } from '../../styles/AdminStyles';
 
 const Permissions: React.FC = () => {
@@ -70,6 +71,9 @@ const Permissions: React.FC = () => {
     if (permission) {
       setFormData({ key: permission.key, description: permission.description });
       setEditingId(id);
+      console.log('Set editingId:', id); // Debug para confirmar
+    } else {
+      console.log('Permission not found for id:', id); // Debug para confirmar
     }
   };
 
@@ -174,11 +178,11 @@ const Permissions: React.FC = () => {
           </Button>
           {editingId && (
             <Button
-              variant="outlined"
-              color="secondary"
+              variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
+              color="secondary" // O el color que prefieras
               onClick={handleCancel}
               startIcon={<CancelIcon />}
-              sx={{ alignSelf: 'flex-end' }}
+              sx={cancelButton}
             >
               Cancel
             </Button>

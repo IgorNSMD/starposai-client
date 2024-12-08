@@ -58,13 +58,15 @@ const Permissions: React.FC = () => {
 
   const handleSubmit = () => {
     if (editingId) {
-      dispatch(updatePermission({ id: editingId, key: formData.key, description: formData.description }));
+      dispatch(updatePermission({ id: editingId, key: formData.key, description: formData.description }))
+        .then(() => dispatch(fetchPermissions())); // Actualiza la lista después de editar
       setEditingId(null);
     } else {
-      dispatch(createPermission({ key: formData.key, description: formData.description }));
+      dispatch(createPermission({ key: formData.key, description: formData.description }))
+        .then(() => dispatch(fetchPermissions())); // Actualiza la lista después de crear
     }
     setFormData({ key: '', description: '' });
-  };
+  };  
 
   const handleEdit = (id: string) => {
     const permission = permissions.find((perm) => perm._id === id);
@@ -87,11 +89,14 @@ const Permissions: React.FC = () => {
   };
 
    // Mapear datos para DataGrid
-   const rows = permissions.map((permission) => ({
-    id: permission._id, // Usa `_id` como `id` para DataGrid
-    key: permission.key,
-    description: permission.description,
-  }));
+   const rows = permissions.filter((permission) => permission._id && permission.key && permission.description) // Filtra registros válidos
+   .map((permission) => ({
+     id: permission._id, // Usa `_id` como identificador único
+     key: permission.key,
+     description: permission.description,
+   }));
+
+  console.log('rows:', rows);
 
   const columns = [
     { field: 'key', headerName: 'Key', flex: 1 },
@@ -170,6 +175,7 @@ const Permissions: React.FC = () => {
           <Button
             variant="contained"
             color="primary"
+            type="button" // Asegura que no envíe un formulario por defecto
             onClick={handleSubmit}
             startIcon={<SaveIcon />}
             sx={submitButton}

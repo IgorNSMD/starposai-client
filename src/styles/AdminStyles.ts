@@ -112,7 +112,7 @@ export const inputContainer: SxProps<Theme> = {
 
 // Estilo para la tabla de permisos
 export const permissionsTable: SxProps<Theme> = {
-  marginTop: '20px',
+  //marginTop: '20px',
   width: '100%',
   '& .MuiDataGrid-root': {
     backgroundColor: '#ffffff',
@@ -123,4 +123,37 @@ export const permissionsTable: SxProps<Theme> = {
     backgroundColor: '#f1f1f1',
     fontWeight: 'bold',
   },
+};
+
+export const datagridStyle: SxProps<Theme> = {
+  height: 'auto', // Ajustar la altura si es necesario
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: '#37517e', // Fondo del encabezado
+    color: '#ffffff', // Texto de los encabezados
+    fontWeight: 'bold', // Texto en negrita
+  },
+  '& .MuiDataGrid-row': {
+    color: '#000000', // Color del texto de las filas
+  },
+  '& .MuiDataGrid-footerContainer': {
+    backgroundColor: '#f4f4f4', // Fondo de la paginación
+    color: '#444444', // Color del texto en la paginación
+  },
+  '& .MuiTablePagination-root': {
+    color: '#444444', // Color del texto en la sección de paginación
+  },
+  '& .MuiTablePagination-menuItem': {
+    color: '#444444', // Color del texto en el menú desplegable
+    '&.Mui-selected': {
+      backgroundColor: '#e0e0e0', // Fondo para el elemento seleccionado
+      color: '#000000', // Color del texto del elemento seleccionado
+    },
+    '&:hover': {
+      backgroundColor: '#d3d3d3', // Fondo cuando el elemento se encuentra en hover
+    },
+  },
+  '& .MuiSelect-select': {
+    color: '#444444', // Color del texto dentro del desplegable
+    backgroundColor: '#ffffff', // Fondo del desplegable
+  },  
 };

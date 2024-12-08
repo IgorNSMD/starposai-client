@@ -22,6 +22,7 @@ import {
   inputContainer,
   formTitle,
   permissionsTable,
+  datagridStyle,
 } from '../../styles/AdminStyles';
 
 const Permissions: React.FC = () => {
@@ -202,9 +203,7 @@ const Permissions: React.FC = () => {
           }}
           pageSizeOptions={[5, 10, 20]} // Opciones para cambiar el tamaño de página
           disableRowSelectionOnClick 
-          sx={{
-            height: 'auto', // Ajustar la altura si es necesario
-          }}
+          sx={datagridStyle}
         />
       </Paper>
     </Box>

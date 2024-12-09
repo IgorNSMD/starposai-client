@@ -6,6 +6,7 @@ import storage from 'redux-persist/lib/storage';
 import userReducer from './slices/userSlice';
 import authReducer from './slices/authSlice'; // authReducer persistido
 import permissionReducer from './slices/permissionSlice'; // Importa el nuevo reducer de permisos
+import roleReducer from './slices/roleSlice'; // Importa el nuevo reducer de permisos
 
 // Configuración de persistencia
 const persistConfig = {
@@ -22,6 +23,7 @@ const store = configureStore({
     auth: persistedAuthReducer, // Usamos el reducer persistido
     user: userReducer, // Reducer normal
     permissions: permissionReducer, // Reducer para permisos
+    roles: roleReducer, // Reducer para roles
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

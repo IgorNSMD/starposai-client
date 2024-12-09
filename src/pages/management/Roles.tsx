@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   TextField,
@@ -7,39 +7,53 @@ import {
   Paper,
   IconButton,
 } from '@mui/material';
-import { 
-  formContainer, 
-  submitButton, 
-  inputContainer, 
-  inputField, 
-  formTitle, 
-  permissionsTable, 
-  datagridStyle,
-  rolesTable } from '../../styles/AdminStyles';
 
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+//import SaveIcon from '@mui/icons-material/Save';
+//import CancelIcon from '@mui/icons-material/Cancel';
+//import toast from 'react-hot-toast';
+
+import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
+
+import {
+  fetchPermissions,
+  fetchRoles,
+  createRole,
+  updateRole,
+  deleteRole,
+  clearMessages,
+} from '../../store/slices/roleSlice';
+
+import {
+  formContainer,
+  submitButton,
+  inputField,
+  inputContainer,
+  formTitle,
+  permissionsTable,
+  datagridStyle,
+  rolesTable,
+} from '../../styles/AdminStyles';
+
+import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 
 
-interface Permission {
-  id: string;
-  name: string;
-  description: string;
-}
-
-interface Role {
-  id: string;
-  name: string;
-  description: string;
-  permissions: { id: string; key: string; description: string }[];
-}
 
 const Roles: React.FC = () => {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const dispatch = useAppDispatch();
+  const { permissions, roles, errorMessage, successMessage } = useAppSelector((state) => state.roles);
+  const [formData, setFormData] = useState({ name: '',  });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Para eliminar
+  const [selectedId, setSelectedId] = useState<string | null>(null); // ID seleccionado para eliminar
+
+  // Cargar permisos al montar el componente
+  useEffect(() => {
+    dispatch(fetchRoles());
+  }, [dispatch]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -48,38 +62,24 @@ const Roles: React.FC = () => {
 
   const handleSubmit = () => {
     if (editingId) {
-      setRoles((prev) =>
-        prev.map((role) =>
-          role.id === editingId
-            ? { ...role, name: formData.name, description: formData.description }
-            : role
-        )
-      );
       setEditingId(null);
     } else {
-      setRoles((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString(),
-          name: formData.name,
-          description: formData.description,
-          permissions: [],
-        },
-      ]);
+      setEditingId(null);
     }
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '',  });
   };
 
   const handleEdit = (id: string) => {
-    const role = roles.find((role) => role.id === id);
+    const role = roles.find((role) => role._id === id);
     if (role) {
-      setFormData({ name: role.name, description: role.description });
+      setFormData({ name: role.name, });
       setEditingId(id);
     }
   };
 
   const handleDelete = (id: string) => {
-    setRoles((prev) => prev.filter((role) => role.id !== id));
+    console.log('handledDelete',id)
+    //setRoles((prev) => prev.filter((role) => role.id !== id));
   };
 
   const columnsPermissions: GridColDef[] = [
@@ -98,19 +98,18 @@ const Roles: React.FC = () => {
         </>
       ),
     },    
-    { field: 'name', headerName: 'Permision', flex: 1 },
+    { field: 'key', headerName: 'Permision', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },
   ];
 
   const rowsPermissions = permissions.map((permission) => ({
-    id: permission.id,
-    name: permission.name,
+    id: permission._id,
+    key: permission.key,
     description: permission.description,
   }));
 
   const columns = [
-    { field: 'Role', headerName: 'Role', flex: 1 },
-    { field: 'description', headerName: 'Description', flex: 1 },
+    { field: 'name', headerName: 'Name', flex: 1 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -136,9 +135,8 @@ const Roles: React.FC = () => {
   ];
 
   const rows = roles.map((role) => ({
-    id: role.id,
+    id: role._id,
     name: role.name,
-    description: role.description,
   }));
 
   return (
@@ -152,24 +150,6 @@ const Roles: React.FC = () => {
             label="Role Name"
             name="name"
             value={formData.name}
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
-                  },
-                },
-              },
-            }}
-          />
-          <TextField
-            label="Description"
-            name="description"
-            value={formData.description}
             onChange={handleChange}
             sx={inputField}
             slotProps={{

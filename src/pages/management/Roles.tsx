@@ -6,6 +6,7 @@ import {
   Typography,
   Paper,
   IconButton,
+  Checkbox,
 } from '@mui/material';
 
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -46,14 +47,24 @@ const Roles: React.FC = () => {
   const { permissions, roles, errorMessage, successMessage } = useAppSelector((state) => state.roles);
   const [formData, setFormData] = useState({ name: '',  });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Para eliminar
   const [selectedId, setSelectedId] = useState<string | null>(null); // ID seleccionado para eliminar
 
   // Cargar permisos al montar el componente
   useEffect(() => {
+    dispatch(fetchPermissions());
     dispatch(fetchRoles());
   }, [dispatch]);
+
+  const handlePermissionToggle = (id: string) => {
+    setSelectedPermissions((prevSelected) =>
+      prevSelected.includes(id)
+        ? prevSelected.filter((permId) => permId !== id) // Quita si ya está seleccionado
+        : [...prevSelected, id] // Agrega si no está seleccionado
+    );
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -77,25 +88,28 @@ const Roles: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    console.log('handledDelete',id)
-    //setRoles((prev) => prev.filter((role) => role.id !== id));
-  };
+  // const handleDelete = (id: string) => {
+  //   console.log('handledDelete',id)
+  //   //setRoles((prev) => prev.filter((role) => role.id !== id));
+  // };
 
   const columnsPermissions: GridColDef[] = [
     {
-      field: 'actions',
+      field: 'select',
       headerName: 'Sel',
       flex: 0.5,
       renderCell: (params) => (
-        <>
-          <IconButton color="primary" onClick={() => handleEdit(params.row.id)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-            <DeleteIcon />
-          </IconButton>
-        </>
+        <Checkbox
+          color="primary"
+          checked={permissions.includes(params.row.id)} // Verifica si el permiso está seleccionado
+          onChange={() => handlePermissionToggle(params.row.id)} // Maneja el cambio de estado
+          sx={{
+            '&.Mui-checked': {
+              color: '#47b2e4', // Personaliza el color del checkbox seleccionado
+            },
+            color: '#444444', // Color para el estado sin seleccionar
+          }}          
+        />
       ),
     },    
     { field: 'key', headerName: 'Permision', flex: 1 },

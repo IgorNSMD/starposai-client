@@ -66,11 +66,11 @@ const Roles: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Role', flex: 1 },
+    { field: 'name', headerName: 'Permision', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: 'Sel',
       flex: 0.5,
       renderCell: (params) => (
         <>
@@ -149,7 +149,7 @@ const Roles: React.FC = () => {
 
       <Paper sx={permissionsTable}>
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
-          Roles List
+          Permisions List
         </Typography>
         <DataGrid
           rows={rows}

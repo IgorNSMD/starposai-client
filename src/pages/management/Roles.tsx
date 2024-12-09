@@ -59,10 +59,8 @@ const Roles: React.FC = () => {
   }, [dispatch]);
 
   const handlePermissionToggle = (id: string) => {
-    setSelectedPermissions((prevSelected) =>
-      prevSelected.includes(id)
-        ? prevSelected.filter((permId) => permId !== id) // Quita si ya está seleccionado
-        : [...prevSelected, id] // Agrega si no está seleccionado
+    setSelectedPermissions((prev) =>
+      prev.includes(id) ? prev.filter((permId) => permId !== id) : [...prev, id]
     );
   };
 
@@ -88,10 +86,6 @@ const Roles: React.FC = () => {
     }
   };
 
-  // const handleDelete = (id: string) => {
-  //   console.log('handledDelete',id)
-  //   //setRoles((prev) => prev.filter((role) => role.id !== id));
-  // };
 
   const columnsPermissions: GridColDef[] = [
     {
@@ -101,18 +95,18 @@ const Roles: React.FC = () => {
       renderCell: (params) => (
         <Checkbox
           color="primary"
-          checked={permissions.includes(params.row.id)} // Verifica si el permiso está seleccionado
-          onChange={() => handlePermissionToggle(params.row.id)} // Maneja el cambio de estado
+          checked={selectedPermissions.includes(params.row.id)} // Verifica si está seleccionado
+          onChange={() => handlePermissionToggle(params.row.id)} // Llama a la función al hacer clic
           sx={{
             '&.Mui-checked': {
-              color: '#47b2e4', // Personaliza el color del checkbox seleccionado
+              color: '#47b2e4',
             },
-            color: '#444444', // Color para el estado sin seleccionar
-          }}          
+            color: '#444444',
+          }}
         />
       ),
-    },    
-    { field: 'key', headerName: 'Permision', flex: 1 },
+    },
+    { field: 'key', headerName: 'Permission', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },
   ];
 

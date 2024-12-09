@@ -66,8 +66,6 @@ const Roles: React.FC = () => {
   };
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Permision', flex: 1 },
-    { field: 'description', headerName: 'Description', flex: 1 },
     {
       field: 'actions',
       headerName: 'Sel',
@@ -82,7 +80,9 @@ const Roles: React.FC = () => {
           </IconButton>
         </>
       ),
-    },
+    },    
+    { field: 'name', headerName: 'Permision', flex: 1 },
+    { field: 'description', headerName: 'Description', flex: 1 },
   ];
 
   const rows = roles.map((role) => ({
@@ -93,7 +93,7 @@ const Roles: React.FC = () => {
 
   return (
     <Box sx={formContainer}>
-      <Paper sx={{ padding: '20px', marginBottom: '10px', width: '100%' }}>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
         <Typography sx={formTitle}>
           {editingId ? 'Edit Role' : 'Add New Role'}
         </Typography>
@@ -135,16 +135,6 @@ const Roles: React.FC = () => {
             }}
           />
         </Box>
-        <Box display="flex" gap={2} marginTop="16px">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-            sx={submitButton}
-          >
-            {editingId ? 'Update' : 'Save'}
-          </Button>
-        </Box>
       </Paper>
 
       <Paper sx={permissionsTable}>
@@ -165,6 +155,16 @@ const Roles: React.FC = () => {
           disableRowSelectionOnClick
           sx={datagridStyle}
         />
+        <Box display="flex" gap={2} margin ="16px" >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSubmit}
+            sx={submitButton}
+          >
+            {editingId ? 'Update' : 'Save'}
+          </Button>
+        </Box>
       </Paper>
     </Box>
   );

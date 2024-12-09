@@ -97,13 +97,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
             <ListItem disableGutters>
               <Button
                 component={RouterLink}
-                to="/management/roles"
+                to="/admin/roles"
                 sx={{
                   textDecoration: 'none',
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: 0,
-                  backgroundColor: isActive('/management/roles') ? '#1e3a8a' : 'transparent', // Resalta el activo
+                  backgroundColor: isActive('/admin/roles') ? '#1e3a8a' : 'transparent', // Resalta el activo
                   '&:hover': { backgroundColor: '#314e8a' },
                 }}
               >

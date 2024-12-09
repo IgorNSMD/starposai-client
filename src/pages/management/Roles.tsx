@@ -7,10 +7,26 @@ import {
   Paper,
   IconButton,
 } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { 
+  formContainer, 
+  submitButton, 
+  inputContainer, 
+  inputField, 
+  formTitle, 
+  permissionsTable, 
+  datagridStyle,
+  rolesTable } from '../../styles/AdminStyles';
+
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { formContainer, submitButton, inputContainer, inputField, formTitle, permissionsTable, datagridStyle } from '../../styles/AdminStyles';
+
+
+interface Permission {
+  id: string;
+  name: string;
+  description: string;
+}
 
 interface Role {
   id: string;
@@ -20,6 +36,7 @@ interface Role {
 }
 
 const Roles: React.FC = () => {
+  const [permissions, setPermissions] = useState<Permission[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -65,7 +82,7 @@ const Roles: React.FC = () => {
     setRoles((prev) => prev.filter((role) => role.id !== id));
   };
 
-  const columns: GridColDef[] = [
+  const columnsPermissions: GridColDef[] = [
     {
       field: 'actions',
       headerName: 'Sel',
@@ -83,6 +100,39 @@ const Roles: React.FC = () => {
     },    
     { field: 'name', headerName: 'Permision', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },
+  ];
+
+  const rowsPermissions = permissions.map((permission) => ({
+    id: permission.id,
+    name: permission.name,
+    description: permission.description,
+  }));
+
+  const columns = [
+    { field: 'Role', headerName: 'Role', flex: 1 },
+    { field: 'description', headerName: 'Description', flex: 1 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      flex: 0.5,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row.id)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            //onClick={() => handleDeleteDialogOpen(params.row.id)} // Abre el diálogo de confirmación
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
   ];
 
   const rows = roles.map((role) => ({
@@ -138,12 +188,9 @@ const Roles: React.FC = () => {
       </Paper>
 
       <Paper sx={permissionsTable}>
-        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
-          Permisions List
-        </Typography>
         <DataGrid
-          rows={rows}
-          columns={columns}
+          rows={rowsPermissions}
+          columns={columnsPermissions}
           initialState={{
             pagination: {
               paginationModel: {
@@ -165,6 +212,25 @@ const Roles: React.FC = () => {
             {editingId ? 'Update' : 'Save'}
           </Button>
         </Box>
+      </Paper>
+      <Paper sx={rolesTable}>
+        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
+          Roles List
+        </Typography>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
+              },
+            },
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          disableRowSelectionOnClick
+          sx={datagridStyle}
+        />
       </Paper>
     </Box>
   );

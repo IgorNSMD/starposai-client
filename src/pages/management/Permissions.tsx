@@ -153,7 +153,7 @@ const Permissions: React.FC = () => {
      description: permission.description,
    }));
 
-  console.log('rows:', rows);
+  //console.log('rows:', rows);
 
   const columns = [
     { field: 'key', headerName: 'Key', flex: 1 },

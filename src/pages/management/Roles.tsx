@@ -13,8 +13,8 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 //import SaveIcon from '@mui/icons-material/Save';
-//import CancelIcon from '@mui/icons-material/Cancel';
-//import toast from 'react-hot-toast';
+import CancelIcon from '@mui/icons-material/Cancel';
+import toast from 'react-hot-toast';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 
@@ -35,6 +35,7 @@ import {
   formTitle,
   permissionsTable,
   datagridStyle,
+  cancelButton,
   rolesTable,
 } from '../../styles/AdminStyles';
 
@@ -57,6 +58,18 @@ const Roles: React.FC = () => {
     dispatch(fetchPermissions());
     dispatch(fetchRoles());
   }, [dispatch]);
+
+  // Manejar mensajes de éxito y error con notificaciones
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, errorMessage, dispatch]);
 
   const handlePermissionToggle = (id: string) => {
     setSelectedPermissions((prev) =>
@@ -119,6 +132,12 @@ const Roles: React.FC = () => {
       setSelectedPermissions(role.permissions.map((perm) => perm._id)); // Seleccionar permisos del rol
       setEditingId(id);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData({ name: '' });
+    setEditingId(null);
+    setSelectedPermissions([]);
   };
 
   // Función para cerrar el cuadro de diálogo
@@ -261,6 +280,17 @@ const Roles: React.FC = () => {
           >
             {editingId ? 'Update' : 'Save'}
           </Button>
+          {editingId && (
+            <Button
+              variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
+              color="secondary" // O el color que prefieras
+              onClick={handleCancel}
+              startIcon={<CancelIcon />}
+              sx={cancelButton}
+            >
+              Cancel
+            </Button>
+          )}
         </Box>
       </Paper>
       <Paper sx={rolesTable}>

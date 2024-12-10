@@ -7,6 +7,8 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SecurityIcon from '@mui/icons-material/Security';
 import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
+import PersonIcon from '@mui/icons-material/Person';
+
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
@@ -116,22 +118,41 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
             <ListItem disableGutters>
               <Button
                 component={RouterLink}
-                to="/management/users"
+                to="/admin/menus"
                 sx={{
                   textDecoration: 'none',
                   width: '100%',
                   justifyContent: 'flex-start',
                   padding: 0,
-                  backgroundColor: isActive('/management/users') ? '#1e3a8a' : 'transparent', // Resalta el activo
+                  backgroundColor: isActive('/admin/menus') ? '#1e3a8a' : 'transparent', // Resalta el activo
                   '&:hover': { backgroundColor: '#314e8a' },
                 }}
               >
                 <ListItemIcon sx={{ marginLeft: 4 }}>
                   <MenuIcon sx={{ color: '#ffffff' }} />
                 </ListItemIcon>
-                {isOpen && <ListItemText primary="Users" sx={{ color: '#ffffff' }} />}
+                {isOpen && <ListItemText primary="Menus" sx={{ color: '#ffffff' }} />}
               </Button>
             </ListItem>
+            <ListItem disableGutters>
+              <Button
+                component={RouterLink}
+                to="/admin/users"
+                sx={{
+                  textDecoration: 'none',
+                  width: '100%',
+                  justifyContent: 'flex-start',
+                  padding: 0,
+                  backgroundColor: isActive('/admin/users') ? '#1e3a8a' : 'transparent', // Resalta el activo
+                  '&:hover': { backgroundColor: '#314e8a' },
+                }}
+              >
+                <ListItemIcon sx={{ marginLeft: 4 }}>
+                  <PersonIcon sx={{ color: '#ffffff' }} />
+                </ListItemIcon>
+                {isOpen && <ListItemText primary="Users" sx={{ color: '#ffffff' }} />}
+              </Button>
+            </ListItem>            
           </List>
         </Collapse>
 

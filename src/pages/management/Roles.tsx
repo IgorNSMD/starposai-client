@@ -198,9 +198,15 @@ const Roles: React.FC = () => {
   ];
   
 
-  const rows = roles.map((role) => ({
-    id: role._id,
-    name: role.name,
+  // const rows = roles.map((role) => ({
+  //   id: role._id,
+  //   name: role.name,
+  // }));
+
+  const rows = roles.filter((role) => role._id && role.name ) // Filtra registros válidos
+  .map((role) => ({
+    id: role._id, // Usa `_id` como identificador único
+    name: role.name
   }));
 
   return (

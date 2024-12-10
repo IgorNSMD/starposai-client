@@ -69,23 +69,78 @@ const Roles: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = () => {
-    if (editingId) {
-      setEditingId(null);
-    } else {
-      setEditingId(null);
+      // Diálogo para eliminar
+  const handleDeleteDialogOpen = (id: string) => {
+        setSelectedId(id);
+        setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteDialogClose = () => {
+    setSelectedId(null);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedId) {
+      dispatch(deleteRole(selectedId))
+        .then(() => dispatch(fetchRoles())); // Actualiza la lista después de eliminar
+      setSelectedId(null);
     }
-    setFormData({ name: '',  });
+    handleDeleteDialogClose();
+  };
+
+  const handleSubmit = () => {
+
+    const data = {
+      name: formData.name,
+      permissions: selectedPermissions, // Enviar permisos seleccionados
+    };
+  
+    if (editingId) {
+      dispatch(updateRole({ id: editingId, ...data })).then(() => {
+        dispatch(fetchRoles());
+        setEditingId(null);
+        setFormData({ name: '' });
+        setSelectedPermissions([]);
+      });
+    } else {
+      dispatch(createRole(data)).then(() => {
+        dispatch(fetchRoles());
+        setFormData({ name: '' });
+        setSelectedPermissions([]);
+      });
+    }
   };
 
   const handleEdit = (id: string) => {
     const role = roles.find((role) => role._id === id);
     if (role) {
-      setFormData({ name: role.name, });
+      setFormData({ name: role.name });
+      setSelectedPermissions(role.permissions.map((perm) => perm._id)); // Seleccionar permisos del rol
       setEditingId(id);
     }
   };
 
+  // Función para cerrar el cuadro de diálogo
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+  };
+
+  const handleConfirmUpdate  = () => {
+    const data = {
+      name: formData.name,
+      permissions: selectedPermissions, // Enviar permisos seleccionados
+    };
+  
+    if (editingId) {
+      dispatch(updateRole({ id: editingId, ...data })).then(() => {
+        dispatch(fetchRoles());
+        setEditingId(null);
+        setFormData({ name: '' });
+        setSelectedPermissions([]);
+      });
+    } 
+  };
 
   const columnsPermissions: GridColDef[] = [
     {
@@ -133,7 +188,7 @@ const Roles: React.FC = () => {
           </IconButton>
           <IconButton
             color="error"
-            //onClick={() => handleDeleteDialogOpen(params.row.id)} // Abre el diálogo de confirmación
+            onClick={() => handleDeleteDialogOpen(params.row.id)}
           >
             <DeleteIcon />
           </IconButton>
@@ -141,6 +196,7 @@ const Roles: React.FC = () => {
       ),
     },
   ];
+  
 
   const rows = roles.map((role) => ({
     id: role._id,
@@ -220,6 +276,25 @@ const Roles: React.FC = () => {
           sx={datagridStyle}
         />
       </Paper>
+
+      {/* Cuadro de diálogo de confirmación */}
+      <Dialog
+        isOpen={isDialogOpen}
+        title="Confirm Update"
+        message="Are you sure you want to update this permission?"
+        onClose={handleDialogClose}
+        onConfirm={handleConfirmUpdate}
+      />
+
+      {/* Cuadro de diálogo para eliminar */}
+      <Dialog
+        isOpen={isDeleteDialogOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this role?"
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
+      />
+
     </Box>
   );
 };

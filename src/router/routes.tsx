@@ -10,6 +10,7 @@ const Login = lazy(()=> import('../pages/auth/Login'))
 const Register = lazy(() => import('../pages/auth/Register'));
 const Permissions = lazy(() => import('../pages/management/Permissions'));
 const Roles = lazy(() => import('../pages/management/Roles'));
+const Menus = lazy(() => import('../pages/management/Menus'));
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -26,6 +27,7 @@ const routes = [
       // Subrutas dentro de "/admin"
       { path: 'permissions', element: <Permissions /> },
       { path: 'roles', element: <Roles /> },
+      { path: 'menus', element: <Menus /> },
       // Puedes agregar más subrutas aquí
     ],
   },

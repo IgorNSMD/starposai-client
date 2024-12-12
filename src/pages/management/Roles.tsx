@@ -14,7 +14,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 //import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import toast from 'react-hot-toast';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 
@@ -24,7 +23,6 @@ import {
   createRole,
   updateRole,
   deleteRole,
-  clearMessages,
 } from '../../store/slices/roleSlice';
 
 import {
@@ -40,7 +38,7 @@ import {
 } from '../../styles/AdminStyles';
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
-
+import { useToastMessages } from '../../hooks/useToastMessage';
 
 
 const Roles: React.FC = () => {
@@ -59,17 +57,8 @@ const Roles: React.FC = () => {
     dispatch(fetchRoles());
   }, [dispatch]);
 
-  // Manejar mensajes de éxito y error con notificaciones
-  useEffect(() => {
-    if (successMessage) {
-      toast.success(successMessage);
-      dispatch(clearMessages());
-    }
-    if (errorMessage) {
-      toast.error(errorMessage);
-      dispatch(clearMessages());
-    }
-  }, [successMessage, errorMessage, dispatch]);
+  // Manejo de mensajes
+  useToastMessages(successMessage, errorMessage);
 
   const handlePermissionToggle = (id: string) => {
     setSelectedPermissions((prev) =>

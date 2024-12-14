@@ -19,6 +19,11 @@ interface MenuState {
     loading: boolean;
     error: string | null;
 }
+
+interface MenuRoot {
+  _id: string; // ID en la base de datos
+  label: string; // Nombre del menú
+}
   
 // Estado inicial con tipado explícito
 const initialState: MenuState = {
@@ -29,20 +34,29 @@ const initialState: MenuState = {
 };
 
 // Async Thunks con tipos definidos
-export const fetchMenusRoot = createAsyncThunk<Menu[], void, { rejectValue: string }>(
+export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: string }>(
   "menu/fetchMenusRoot",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/menus/root");
-      return response.data;
+      
+      // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
+      const data = response.data.map((menu: MenuRoot) => ({
+        id: menu._id, // Cambia `_id` a `id`
+        label: menu.label, // Conserva el campo `label`
+      }));
+
+      return data; // Devuelve solo `id` y `label`
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
-          return rejectWithValue(error.response?.data?.message || " Error fetching Menus Root");
+        return rejectWithValue(error.response?.data?.message || "Error fetching Menus Root");
       }
       return rejectWithValue("Unknown error occurred");
     }
   }
 );
+
+
 
 export const fetchMenus = createAsyncThunk<Menu[], void, { rejectValue: string }>(
     "menu/fetchMenus",

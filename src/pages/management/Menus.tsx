@@ -16,6 +16,7 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
@@ -38,7 +39,7 @@ const Menu = () => {
     label: "",
     path: "",
     icon: "",
-    parentId: null,
+    parentId: "",
   });
 
   // Cargar permisos al montar el componente
@@ -49,7 +50,19 @@ const Menu = () => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = event.target;
       setFormData({ ...formData, [name]: value });
-    };
+  };
+
+  // Adaptada para el menú, asegurando que el tipo sea correcto
+  // const handleInputChange = (event: SelectChangeEvent<string>) => {
+  //   const { name, value } = event.target;
+  //   setFormData((formData) => ({ ...formData, [name as string]: value }));
+  // };
+
+  // Manejador para Select
+  const handleInputChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    setFormData((prevForm) => ({ ...prevForm, [name]: value }));
+  };  
 
   return (
      <Box sx={formContainer}>
@@ -78,7 +91,7 @@ const Menu = () => {
           />
           <TextField
             label="Path"
-            name="patch"
+            name="path"
             value={formData.path}
             onChange={handleChange}
             sx={inputField}
@@ -115,21 +128,32 @@ const Menu = () => {
               }}
           />
           <FormControl sx={{ minWidth: 350 }}>
-            <InputLabel id="parent-select-label">Parent</InputLabel>
+            <InputLabel
+              id="parent-select-label"
+              shrink={true} // Esto fuerza que el label permanezca visible
+              sx={{
+                color: "#444444",
+                "&.Mui-focused": {
+                  color: "#47b2e4",
+                },
+              }}
+            >
+              Parent
+            </InputLabel>
             <Select
               labelId="parent-select-label"
               name="parentId"
-              value={formData.parentId || ""}
-              //onChange={handleInputChange}
+              value={formData.parentId}
+              onChange={handleInputChange}
             >
-              <MenuItem value="">
+              <MenuItem value="-1">
                 <em>None</em>
               </MenuItem>
-              {/* {menus.map((menu) => (
+              {menusRoot.map((menu) => (
                 <MenuItem key={menu.id} value={menu.id}>
                   {menu.label}
                 </MenuItem>
-              ))} */}
+              ))}
             </Select>
           </FormControl>
         </Box>

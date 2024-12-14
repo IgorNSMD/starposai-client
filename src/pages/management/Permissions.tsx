@@ -12,7 +12,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
-import toast from 'react-hot-toast';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import {
@@ -33,7 +32,7 @@ import {
   cancelButton,
 } from '../../styles/AdminStyles';
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
-
+import { useToastMessages } from '../../hooks/useToastMessage';
 
 const Permissions: React.FC = () => {
 
@@ -51,17 +50,8 @@ const Permissions: React.FC = () => {
     dispatch(fetchPermissions());
   }, [dispatch]);
 
-  // Manejar mensajes de éxito y error con notificaciones
-  useEffect(() => {
-    if (successMessage) {
-      toast.success(successMessage);
-      dispatch(clearMessages());
-    }
-    if (errorMessage) {
-      toast.error(errorMessage);
-      dispatch(clearMessages());
-    }
-  }, [successMessage, errorMessage, dispatch]);
+  // Manejo de mensajes
+  useToastMessages(successMessage, errorMessage);;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;

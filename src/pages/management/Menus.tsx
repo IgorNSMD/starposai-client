@@ -1,149 +1,146 @@
-import React, { useState } from 'react';
+// Componente React conectado a Redux
+import { useState, useEffect } from "react";
+
 import {
   Box,
-  TextField,
   Button,
-  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Collapse,
   Paper,
-  IconButton,
+  Typography,
+  TextField,
   Select,
-  MenuItem,
   FormControl,
   InputLabel,
-} from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+  MenuItem,
+} from "@mui/material";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
-const Menus: React.FC = () => {
+import {
+  fetchMenus,
+  fetchMenusRoot,
+  createMenu,
+//updateMenu,
+  deleteMenu,
+} from "../../store/slices/menuSlice";
+import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
+import { formContainer, formTitle, inputContainer, inputField, menusTable } from "../../styles/AdminStyles";
+
+const Menu = () => {
+  const dispatch = useAppDispatch();
+  const {menusRoot, loading, error } = useAppSelector((state) => state.menus);
+  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [editingId, setEditingId] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    url: '',
-    parentId: '',
+    label: "",
+    path: "",
+    icon: "",
+    parentId: null,
   });
-  const [menus, setMenus] = useState([]); // Aquí se cargará la lista de menús
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name as string]: value });
-  };
+  // Cargar permisos al montar el componente
+  useEffect(() => {
+    dispatch(fetchMenusRoot());
+  }, [dispatch]);
 
-  const handleSubmit = () => {
-    // Aquí irá la lógica para guardar o actualizar
-    console.log('Form Data:', formData);
-    setFormData({ name: '', url: '', parentId: '' });
-    setEditingId(null);
-  };
-
-  const handleEdit = (id: string) => {
-    // Aquí se llenará el formulario para editar
-    console.log('Editing menu:', id);
-    setEditingId(id);
-  };
-
-  const handleDelete = (id: string) => {
-    // Aquí irá la lógica para eliminar
-    console.log('Deleting menu:', id);
-  };
-
-  const columns: GridColDef[] = [
-    {
-      field: 'actions',
-      headerName: 'Action',
-      flex: 0.5,
-      renderCell: (params) => (
-        <Box>
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row.id)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            color="error"
-            onClick={() => handleDelete(params.row.id)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
-      ),
-    },
-    { field: 'name', headerName: 'Menú', flex: 1 },
-    { field: 'parentName', headerName: 'Padre', flex: 1 },
-  ];
-
-  const rows = menus.map(() => ({
-    // label: menu.label,
-    // name: menu.name,
-    // parentName: menu.parentName || 'N/A',
-  }));
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = event.target;
+      setFormData({ ...formData, [name]: value });
+    };
 
   return (
-    <Box sx={{ padding: '16px' }}>
-      <Typography variant="h4" gutterBottom>
-        MENUS
-      </Typography>
-      <Paper sx={{ padding: '16px', marginBottom: '16px' }}>
-        <Typography variant="h6">Formulario</Typography>
-        <Box display="flex" gap={2} marginTop="16px" flexDirection="column">
+     <Box sx={formContainer}>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
+        <Typography sx={formTitle}>
+            {editingId ? 'Edit Menu' : 'Add New Menu'}
+        </Typography>
+        <Box sx={inputContainer}>
           <TextField
-            label="Nombre del Menú"
-            name="name"
-            value={formData.name}
+            label="Label"
+            name="label"
+            value={formData.label}
             onChange={handleChange}
-            fullWidth
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
           />
           <TextField
-            label="URL"
-            name="url"
-            value={formData.url}
+            label="Path"
+            name="patch"
+            value={formData.path}
             onChange={handleChange}
-            fullWidth
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
           />
-          <FormControl fullWidth>
-            <InputLabel id="parent-label">Menú Padre</InputLabel>
-            <Select
-              labelId="parent-label"
-              name="parentId"
-              value={formData.parentId}
+        </Box>
+        <Box sx={inputContainer}>
+          <TextField
+              label="Icon"
+              name="icon"
+              value={formData.icon}
               onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
+                  },
+                },
+              }}
+          />
+          <FormControl sx={{ minWidth: 350 }}>
+            <InputLabel id="parent-select-label">Parent</InputLabel>
+            <Select
+              labelId="parent-select-label"
+              name="parentId"
+              value={formData.parentId || ""}
+              //onChange={handleInputChange}
             >
-              <MenuItem value="">Ninguno</MenuItem>
-              {/* Aquí puedes mapear los menús padres */}
-              {menus.map((menu) => (
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {/* {menus.map((menu) => (
                 <MenuItem key={menu.id} value={menu.id}>
-                  {menu.name}
+                  {menu.label}
                 </MenuItem>
-              ))}
+              ))} */}
             </Select>
           </FormControl>
-          <Box display="flex" gap={2}>
-            <Button variant="contained" color="primary" onClick={handleSubmit}>
-              {editingId ? 'Update' : 'Save'}
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => setFormData({ name: '', url: '', parentId: '' })}
-            >
-              Exit
-            </Button>
-          </Box>
         </Box>
       </Paper>
-      <Paper sx={{ padding: '16px' }}>
-        <Typography variant="h6">List Menús</Typography>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          pageSize={5}
-          rowsPerPageOptions={[5, 10, 20]}
-          autoHeight
-        />
+      <Paper sx={menusTable}>
+        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
+          Menus List
+        </Typography>
       </Paper>
     </Box>
   );
 };
 
-export default Menus;
+export default Menu;

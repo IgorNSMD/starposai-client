@@ -7,6 +7,7 @@ import userReducer from './slices/userSlice';
 import authReducer from './slices/authSlice'; // authReducer persistido
 import permissionReducer from './slices/permissionSlice'; // Importa el nuevo reducer de permisos
 import roleReducer from './slices/roleSlice'; // Importa el nuevo reducer de permisos
+import menuReducer from './slices/menuSlice'; // Importa el nuevo reducer de menus
 
 // Configuración de persistencia
 const persistConfig = {
@@ -24,6 +25,7 @@ const store = configureStore({
     user: userReducer, // Reducer normal
     permissions: permissionReducer, // Reducer para permisos
     roles: roleReducer, // Reducer para roles
+    menus: menuReducer, // Reducer para roles
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

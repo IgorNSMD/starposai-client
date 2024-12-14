@@ -245,3 +245,29 @@ export const rolesTable: SxProps<Theme> = {
     overflowX: 'auto',
   },
 };
+
+// Estilo para la tabla de permisos
+export const menusTable: SxProps<Theme> = {
+  width: '100%',
+  '& .MuiDataGrid-root': {
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: '#37517e',
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  '@media (max-width: 960px)': { // md breakpoint
+    '& .MuiDataGrid-root': {
+      fontSize: '12px',
+    },
+  },
+  '@media (max-width: 600px)': { // xs breakpoint
+    '& .MuiDataGrid-root': {
+      fontSize: '10px',
+    },
+    overflowX: 'auto',
+  },
+};

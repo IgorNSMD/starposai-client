@@ -30,15 +30,23 @@ import {
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import { formContainer, formTitle, inputContainer, inputField, menusTable } from "../../styles/AdminStyles";
 
+// Define la interfaz para el estado del formulario
+interface FormData {
+  label: string;
+  path: string;
+  icon: string | File; // Ahora acepta una string o un archivo File
+  parentId: string;
+}
 const Menu = () => {
   const dispatch = useAppDispatch();
   const {menusRoot, loading, error } = useAppSelector((state) => state.menus);
   const [selectedMenu, setSelectedMenu] = useState(null);
   const [editingId, setEditingId] = useState(false);
-  const [formData, setFormData] = useState({
+
+  const [formData, setFormData] = useState<FormData>({
     label: "",
     path: "",
-    icon: "",
+    icon: "", // Valor inicial como string
     parentId: "",
   });
 
@@ -62,7 +70,17 @@ const Menu = () => {
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
-  };  
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0]; // Obtén el archivo seleccionado
+      setFormData((prevForm) => ({
+        ...prevForm,
+        icon: file, // Asigna el archivo al campo `icon`
+      }));
+    }
+  };
 
   return (
      <Box sx={formContainer}>
@@ -109,24 +127,6 @@ const Menu = () => {
           />
         </Box>
         <Box sx={inputContainer}>
-          <TextField
-              label="Icon"
-              name="icon"
-              value={formData.icon}
-              onChange={handleChange}
-              sx={inputField}
-              slotProps={{
-                inputLabel: {
-                  shrink: true,
-                  sx: {
-                    color: '#444444',
-                    '&.Mui-focused': {
-                      color: '#47b2e4',
-                    },
-                  },
-                },
-              }}
-          />
           <FormControl sx={{ minWidth: 350 }}>
             <InputLabel
               id="parent-select-label"
@@ -157,6 +157,41 @@ const Menu = () => {
             </Select>
           </FormControl>
         </Box>
+      </Paper>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
+      <Box sx={inputContainer}>
+          <Button
+            variant="contained"
+            component="label"
+            sx={{
+              backgroundColor: "#47b2e4",
+              color: "#ffffff",
+              "&:hover": { backgroundColor: "#1e88e5" },
+            }}
+            >
+            Upload Icon
+            <input
+              type="file"
+              hidden
+              accept="image/png, image/jpeg"
+              onChange={handleFileChange}
+            />
+          </Button>
+          {/* Mostrar el nombre del archivo seleccionado */}
+          {formData.icon && (
+            <Typography
+              variant="body2"
+              sx={{
+                marginTop: "5px",
+                color: "#444444",
+                fontStyle: "italic",
+              }}
+            >
+              {formData.icon instanceof File ? `Selected: ${formData.icon.name}` : "No file selected"}
+            </Typography>
+          )}
+        </Box>
+        
       </Paper>
       <Paper sx={menusTable}>
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>

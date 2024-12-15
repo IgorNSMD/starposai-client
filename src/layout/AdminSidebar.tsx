@@ -8,6 +8,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from '@mui/icons-material/Menu';
 import PersonIcon from '@mui/icons-material/Person';
+import BoltIcon from '@mui/icons-material/Bolt';
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
@@ -30,6 +31,11 @@ const menuItems = [
         name: "Permissions",
         icon: SecurityIcon,
         route: "/admin/permissions"
+      },
+      {
+        name: "Actions",
+        icon: BoltIcon,
+        route: "/admin/actions"
       },
       {
         name: "Roles",

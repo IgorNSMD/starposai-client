@@ -21,7 +21,6 @@ interface Menu {
   path: string; // Ruta del menú (e.g., '/productos')
   icon: string;
   permissions: Permission[];
-  menusRoot: MenuRoot[];
 }
 
 interface MenuState {

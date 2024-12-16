@@ -109,11 +109,11 @@ export const deleteAction = createAsyncThunk<
   { rejectValue: string }
 >("actions/deleteAction", async (id, { rejectWithValue }) => {
   try {
-    await axiosInstance.delete(`/roles/${id}`);
+    await axiosInstance.delete(`/actions/${id}`);
     return id;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting role");
+      return rejectWithValue(error.response?.data?.message || "Error deleting action");
     }
     return rejectWithValue("Unknown error occurred");
   }

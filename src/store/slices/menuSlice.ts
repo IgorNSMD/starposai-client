@@ -1,23 +1,37 @@
-// Reducer y Slice para Redux
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-// Define la interfaz para el menú
-interface Menu {
-    id: string;
-    label: string;
-    path: string;
-    icon: string;
-    parentId: string | null;
-    subMenus?: Menu[];
+// Interfaces
+interface Permission {
+  _id: string;
+  key: string;
+  description: string;
 }
-  
-// Define la interfaz para el estado del slice
+
+interface MenuRoot {
+  _id: string; // ID en la base de datos
+  label: string; // Nombre del menú
+}
+
+interface Menu {
+  _id: string;
+  label: string;
+  parentId: string;
+  order: number;  
+  path: string; // Ruta del menú (e.g., '/productos')
+  icon: string;
+  permissions: Permission[];
+  menusRoot: MenuRoot[];
+}
+
 interface MenuState {
+    isLoaded: boolean;
     menus: Menu[];
-    menusRoot: Menu[];
-    loading: boolean;
-    error: string | null;
+    menuInfo: Menu | null;
+    permissions: Permission[]; // Agregamos los permisos aquí
+    menusRoot: MenuRoot[];
+    errorMessage: string | null;
+    successMessage: string | null;
 }
 
 interface MenuRoot {
@@ -25,13 +39,33 @@ interface MenuRoot {
   label: string; // Nombre del menú
 }
   
-// Estado inicial con tipado explícito
+
 const initialState: MenuState = {
-    menus: [],
-    menusRoot: [],
-    loading: false,
-    error: null,
+  isLoaded: false,
+  menus: [],
+  menuInfo: null,
+  permissions: [],
+  menusRoot: [],
+  errorMessage: null,
+  successMessage: null,
 };
+
+// Thunks
+export const fetchPermissions = createAsyncThunk<
+  Permission[],
+  void,
+  { rejectValue: string }
+>("permissions/fetchPermissions", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get("/permissions");
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || " Error fetching permisions");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
 // Async Thunks con tipos definidos
 export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: string }>(
@@ -57,113 +91,132 @@ export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: 
 );
 
 
-
-export const fetchMenus = createAsyncThunk<Menu[], void, { rejectValue: string }>(
-    "menu/fetchMenus",
-    async (_, { rejectWithValue }) => {
-      try {
-        const response = await axiosInstance.get("/menus");
-        return response.data;
-      } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error fetching Menus");
-        }
-        return rejectWithValue("Unknown error occurred");
-      }
+// Thunks
+export const fetchMenus = createAsyncThunk<
+  Menu[],
+  void,
+  { rejectValue: string }
+>("actions/fetchMenus", async (_, { rejectWithValue }) => {
+  try {
+    //console.log('inicio..fetchActions')
+    //console.log('Base URL:', axiosInstance.defaults.baseURL);
+    const response = await axiosInstance.get("/menus");
+    //console.log('response.data -> ',response.data)
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      console.log('error en axiosInstance -> ', error.response?.data?.message)
+      return rejectWithValue(error.response?.data?.message || " Error fetching menus");
     }
-);
+    console.log('error..axios')
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
-export const createMenu = createAsyncThunk<Menu, Omit<Menu, "id">, { rejectValue: string }>(
-    "menu/createMenu",
-    async (menuData, { rejectWithValue }) => {
-      try {
-        const response = await axiosInstance.post("/api/menus", menuData);
-        return response.data;
-      } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error create Menu");
-        }
-        return rejectWithValue("Unknown error occurred");
-      }
+export const createMenu = createAsyncThunk<
+  Menu,
+  { label: string; parentId: string, order: number, path: string, icon: string, permissions: string[] },
+  { rejectValue: string }
+>("menus/createMenu", async (data, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.post("/menus", data);
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || " Error creating menu");
     }
-);
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
-export const updateMenu = createAsyncThunk<Menu, Menu, { rejectValue: string }>(
-    "menu/updateMenu",
-    async (menuData, { rejectWithValue }) => {
-      try {
-        const { id, ...rest } = menuData;
-        const response = await axiosInstance.put(`/api/menus/${id}`, rest);
-        return response.data;
-      } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error update Menu");
-        }
-        return rejectWithValue("Unknown error occurred");
-      }
+export const updateMenu = createAsyncThunk<
+  Menu,
+  { id: string; label: string; parentId: string; order: number; path: string; icon: string; permissions: string[] },
+  { rejectValue: string }
+>("menus/updateAction", async ({ id, label, parentId, order, path, icon, permissions }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.put(`/actions/${id}`, { label, parentId, order, path, icon, permissions });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error updating menu");
     }
-);
-  
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
-export const deleteMenu = createAsyncThunk<string, string, { rejectValue: string }>(
-    "menu/deleteMenu",
-    async (id, { rejectWithValue }) => {
-      try {
-        await axiosInstance.delete(`/api/menus/${id}`);
-        return id;
-      } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error delete Menu");
-        }
-        return rejectWithValue("Unknown error occurred");
-      }
+export const deleteMenu = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("actions/deleteAction", async (id, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/menus/${id}`);
+    return id;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error deleting menu");
     }
-  );
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
 // Slice
-const menuSlice = createSlice({
-    name: "menu",
-    initialState,
-    reducers: {},
-    extraReducers: (builder) => {
-      builder
-        .addCase(fetchMenusRoot.pending, (state) => {
-          state.loading = true;
-          state.error = null;
-        })
-        .addCase(fetchMenusRoot.fulfilled, (state, action) => {
-          state.loading = false;
-          state.menusRoot = action.payload;
-        })
-        .addCase(fetchMenusRoot.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload || "Error fetching menus root";
-        })
-        .addCase(fetchMenus.pending, (state) => {
-          state.loading = true;
-          state.error = null;
-        })
-        .addCase(fetchMenus.fulfilled, (state, action) => {
-          state.loading = false;
-          state.menus = action.payload;
-        })
-        .addCase(fetchMenus.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload || "Error fetching menus";
-        })
-        .addCase(createMenu.fulfilled, (state, action) => {
-          state.menus.push(action.payload);
-        })
-        .addCase(updateMenu.fulfilled, (state, action) => {
-          const index = state.menus.findIndex((menu) => menu.id === action.payload.id);
-          if (index !== -1) {
-            state.menus[index] = action.payload;
-          }
-        })
-        .addCase(deleteMenu.fulfilled, (state, action) => {
-          state.menus = state.menus.filter((menu) => menu.id !== action.payload);
-        });
+const actionSlice = createSlice({
+  name: "menus",
+  initialState,
+  reducers: {
+    clearMessages(state) {
+      state.errorMessage = null;
+      state.successMessage = null;
     },
-  });
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMenus.fulfilled, (state, action: PayloadAction<Menu[]>) => {
+        state.isLoaded = true;
+        state.menus = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchMenus.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading roles";
+      })
+      .addCase(createMenu.fulfilled, (state, action: PayloadAction<Menu>) => {
+        state.menus.push(action.payload);
+        state.successMessage = "Action created successfully";
+        state.errorMessage = null;
+      })
+      .addCase(createMenu.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error creating role";
+      })
+      .addCase(updateMenu.fulfilled, (state, action: PayloadAction<Menu>) => {
+        state.menus = state.menus.map((menu) =>
+          menu._id === action.payload._id ? action.payload : menu
+        );
+        state.successMessage = "Role updated successfully";
+        state.errorMessage = null;
+      })
+      .addCase(updateMenu.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error updating role";
+      })
+      .addCase(deleteMenu.fulfilled, (state, action: PayloadAction<string>) => {
+        state.menus = state.menus.filter((menu) => menu._id !== action.payload);
+        state.successMessage = "Role deleted successfully";
+        state.errorMessage = null;
+      })
+      .addCase(deleteMenu.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error deleting role";
+      })
+      .addCase(fetchPermissions.fulfilled, (state, action: PayloadAction<Permission[]>) => {
+        state.permissions = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchMenusRoot.fulfilled, (state, action: PayloadAction<MenuRoot[]>) => {
+        state.menusRoot = action.payload;
+        state.errorMessage = null;
+      })
+  },
+});
 
-export default menuSlice.reducer;
+export const { clearMessages } = actionSlice.actions;
+export default actionSlice.reducer;

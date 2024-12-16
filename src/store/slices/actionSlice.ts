@@ -56,12 +56,17 @@ export const fetchActions = createAsyncThunk<
   { rejectValue: string }
 >("actions/fetchActions", async (_, { rejectWithValue }) => {
   try {
+    //console.log('inicio..fetchActions')
+    //console.log('Base URL:', axiosInstance.defaults.baseURL);
     const response = await axiosInstance.get("/actions");
+    //console.log('response.data -> ',response.data)
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
+      console.log('error en axiosInstance -> ', error.response?.data?.message)
       return rejectWithValue(error.response?.data?.message || " Error fetching actions");
     }
+    console.log('error..axios')
     return rejectWithValue("Unknown error occurred");
   }
 });

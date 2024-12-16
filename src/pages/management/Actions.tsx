@@ -205,6 +205,7 @@ const Actions: React.FC = () => {
     },
   ];
   
+  //console.log('actions -> ', actions)
 
   const rows = actions.filter((act) => act._id && act.name ) // Filtra registros válidos
   .map((act) => ({

@@ -130,7 +130,7 @@ export const createMenu = createAsyncThunk<
 
 export const updateMenu = createAsyncThunk<
   Menu,
-  { id: string; label: string; parentId: string; order: number; path: string; icon: string; permissions: string[] },
+  { id: string; label: string; parentId: string; order: number; path: string; icon: string | File; permissions: string[] },
   { rejectValue: string }
 >("menus/updateAction", async ({ id, label, parentId, order, path, icon, permissions }, { rejectWithValue }) => {
   try {

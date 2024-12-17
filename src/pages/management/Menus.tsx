@@ -7,6 +7,11 @@ import {
   Paper,
   IconButton,
   Checkbox,
+  Select,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
+  MenuItem,
 } from '@mui/material';
 
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -20,6 +25,7 @@ import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import {
   fetchPermissions,
   fetchMenus,
+  fetchMenusRoot,
   createMenu,
   updateMenu,
   deleteMenu,
@@ -45,13 +51,13 @@ interface FormData {
   parentId: string;
   order: number;
   path: string;
-  icon: string; // Ahora acepta una string o un archivo File
+  icon: string | File; // Ahora acepta una string o un archivo File
 }
 
 
 const Menus: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { permissions, menus, errorMessage, successMessage } = useAppSelector((state) => state.menus);
+  const { permissions, menus, menusRoot, errorMessage, successMessage } = useAppSelector((state) => state.menus);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
@@ -70,6 +76,8 @@ const Menus: React.FC = () => {
   useEffect(() => {
     dispatch(fetchPermissions());
     dispatch(fetchMenus());
+    dispatch(fetchMenusRoot());
+
   }, [dispatch]);
 
   // Manejo de mensajes
@@ -87,6 +95,18 @@ const Menus: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+    // Manejador para Select
+  const handleInputChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    setFormData((prevForm) => ({ ...prevForm, [name]: value }));
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0]; // Obtén el archivo seleccionado
+      setFormData((prevForm) => ({ ...prevForm, icon: file }));
+    }
+  };
       // Diálogo para eliminar
   const handleDeleteDialogOpen = (id: string) => {
         setSelectedId(id);
@@ -271,7 +291,7 @@ const Menus: React.FC = () => {
         </Typography>
         <Box sx={inputContainer}>
           <TextField
-            label="Menu Name"
+            label="Label"
             name="label"
             value={formData.label}
             onChange={handleChange}
@@ -288,6 +308,89 @@ const Menus: React.FC = () => {
               },
             }}
           />
+          <TextField
+            label="Path"
+            name="path"
+            value={formData.path}
+            onChange={handleChange}
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
+          />
+        </Box>
+        <Box sx={inputContainer}>
+          <FormControl sx={{ minWidth: 350 }}>
+            <InputLabel
+              id="parent-select-label"
+              shrink={true} // Esto fuerza que el label permanezca visible
+              sx={{
+                color: "#444444",
+                "&.Mui-focused": {
+                  color: "#47b2e4",
+                },
+              }}
+            >
+              Parent
+            </InputLabel>
+            <Select
+              labelId="parent-select-label"
+              name="parentId"
+              value={formData.parentId}
+              onChange={handleInputChange}
+            >
+              <MenuItem value="-1">
+                <em>None</em>
+              </MenuItem>
+              {menusRoot.map((menu) => (
+                <MenuItem key={menu._id} value={menu._id}>
+                  {menu.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
+      <Box sx={inputContainer}>
+          <Button
+            variant="contained"
+            component="label"
+            sx={{
+              backgroundColor: "#47b2e4",
+              color: "#ffffff",
+              "&:hover": { backgroundColor: "#1e88e5" },
+            }}
+            >
+            Upload Icon
+            <input
+              type="file"
+              hidden
+              accept="image/png, image/jpeg"
+              onChange={handleFileChange}
+            />
+          </Button>
+          {/* Mostrar el nombre del archivo seleccionado */}
+          {formData.icon && (
+            <Typography
+              variant="body2"
+              sx={{
+                marginTop: "5px",
+                color: "#444444",
+                fontStyle: "italic",
+              }}
+            >
+              {formData.icon instanceof File ? `Selected: ${formData.icon.name}` : "No file selected"}
+            </Typography>
+          )}
         </Box>
       </Paper>
 

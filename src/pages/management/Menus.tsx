@@ -136,7 +136,7 @@ const Menus: React.FC = () => {
   };
 
   const handleSubmit = () => {
-
+    console.log('handleSubmit...')
     const data = {
       label: formData.label,
       parentId: formData.parentId,
@@ -162,6 +162,7 @@ const Menus: React.FC = () => {
         setSelectedPermissions([]);
       });
     } else {
+      console.log('createMenu...')
       dispatch(createMenu(data)).then(() => {
         dispatch(fetchMenus());
         setFormData({     
@@ -297,7 +298,7 @@ const Menus: React.FC = () => {
   const rows = menus.filter((act) => act._id && act.label ) // Filtra registros válidos
   .map((act) => ({
     id: act._id, // Usa `_id` como identificador único
-    name: act.label
+    label: act.label
   }));
 
   return (

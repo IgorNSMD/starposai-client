@@ -119,7 +119,23 @@ export const createMenu = createAsyncThunk<
   { rejectValue: string }
 >("menus/createMenu", async (data, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/menus", data);
+
+    console.log('inicio..createMenu')
+    const formData = new FormData();
+    formData.append("label", data.label);
+    formData.append("parentId", data.parentId);
+    formData.append("order", data.order.toString());
+    formData.append("path", data.path);
+    formData.append("divider", JSON.stringify(data.divider));
+    formData.append("icon", data.icon); // Archivo
+    data.permissions.forEach((perm, index) => formData.append(`permissions[${index}]`, perm));
+
+    const response = await axiosInstance.post("/menus", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log('response.data ', response.data)
+    
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

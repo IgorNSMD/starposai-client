@@ -52,6 +52,7 @@ interface FormData {
   order: number;
   path: string;
   icon: string | File; // Ahora acepta una string o un archivo File
+  divider: boolean;
 }
 
 
@@ -69,7 +70,8 @@ const Menus: React.FC = () => {
     parentId: "",
     order: 0, // Valor inicial como string
     path: "", // Valor inicial como string
-    icon: ""
+    icon: "",
+    divider: false, // Por defecto en falso
   });
 
   // Cargar permisos al montar el componente
@@ -81,7 +83,7 @@ const Menus: React.FC = () => {
   }, [dispatch]);
 
   // Manejo de mensajes
-  console.log('successMessage, errorMessage', successMessage, errorMessage)
+  //console.log('successMessage, errorMessage', successMessage, errorMessage)
   useToastMessages(successMessage, errorMessage);
 
   const handlePermissionToggle = (id: string) => {
@@ -107,6 +109,12 @@ const Menus: React.FC = () => {
       setFormData((prevForm) => ({ ...prevForm, icon: file }));
     }
   };
+
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = event.target;
+    setFormData((prevForm) => ({ ...prevForm, [name]: checked }));
+  };
+
       // Diálogo para eliminar
   const handleDeleteDialogOpen = (id: string) => {
         setSelectedId(id);
@@ -202,6 +210,7 @@ const Menus: React.FC = () => {
       order: formData.order,
       path: formData.path,
       icon: formData.icon,
+      divider: formData.divider,
       permissions: selectedPermissions, // Enviar permisos seleccionados
     };
   
@@ -214,7 +223,9 @@ const Menus: React.FC = () => {
           parentId: "",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
-          icon: "" });
+          icon: "",
+          divider: false,
+         });
         setSelectedPermissions([]);
       });
     } 
@@ -357,6 +368,21 @@ const Menus: React.FC = () => {
               ))}
             </Select>
           </FormControl>
+          {/* Checkbox para Divider */}
+          <Box display="flex" alignItems="center">
+            <Checkbox
+              name="divider"
+              checked={formData.divider}
+              onChange={handleCheckboxChange}
+              sx={{
+                color: "#444444",
+                "&.Mui-checked": {
+                  color: "#47b2e4",
+                },
+              }}
+            />
+            <Typography sx={{ color: "#444444" }}>Divider</Typography>
+          </Box>
         </Box>
       </Paper>
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>

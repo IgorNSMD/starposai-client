@@ -143,6 +143,7 @@ const Menus: React.FC = () => {
       order: formData.order,
       path: formData.path,
       icon: formData.icon,
+      divider: formData.divider,
       permissions: selectedPermissions, // Enviar permisos seleccionados
     };
   
@@ -155,7 +156,9 @@ const Menus: React.FC = () => {
           parentId: "",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
-          icon: "" });
+          icon: "",
+          divider: false,
+         });
         setSelectedPermissions([]);
       });
     } else {
@@ -166,7 +169,9 @@ const Menus: React.FC = () => {
           parentId: "",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
-          icon: "" });
+          icon: "",
+          divider: false
+         });
         setSelectedPermissions([]);
       });
     }
@@ -180,7 +185,8 @@ const Menus: React.FC = () => {
         parentId: menu.parentId,
         order: menu.order,
         path: menu.path, 
-        icon: menu.icon
+        icon: menu.icon,
+        divider: menu.divider
       });
       setSelectedPermissions(menu.permissions.map((perm) => perm._id)); // Seleccionar permisos de la acción
       setEditingId(id);
@@ -358,9 +364,9 @@ const Menus: React.FC = () => {
               value={formData.parentId}
               onChange={handleInputChange}
             >
-              <MenuItem value="-1">
+              {/* <MenuItem value="-1">
                 <em>None</em>
-              </MenuItem>
+              </MenuItem> */}
               {menusRoot.map((menu) => (
                 <MenuItem key={menu._id} value={menu._id}>
                   {menu.label}

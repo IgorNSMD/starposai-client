@@ -115,7 +115,7 @@ export const fetchMenus = createAsyncThunk<
 
 export const createMenu = createAsyncThunk<
   Menu,
-  { label: string; parentId: string, order: number, path: string, icon: string, divider:boolean, permissions: string[] },
+  { label: string; parentId: string, order: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
   { rejectValue: string }
 >("menus/createMenu", async (data, { rejectWithValue }) => {
   try {

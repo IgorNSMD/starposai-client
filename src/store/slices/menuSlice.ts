@@ -147,11 +147,36 @@ export const createMenu = createAsyncThunk<
 
 export const updateMenu = createAsyncThunk<
   Menu,
-  { id: string; label: string; parentId: string; order: number; path: string; icon: string | File; divider:boolean; permissions: string[] },
+  { id: string; label: string; parentId: string; order: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
   { rejectValue: string }
->("menus/updateAction", async ({ id, label, parentId, order, path, icon, permissions }, { rejectWithValue }) => {
+>("menus/updateMenu", async ({ id, label, parentId, order, path, icon, divider, permissions }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(`/actions/${id}`, { label, parentId, order, path, icon, permissions });
+    console.log('Inicio actualización menu...');
+
+    // Crear el FormData
+    const formData = new FormData();
+    formData.append("label", label);
+    formData.append("parentId", parentId);
+    formData.append("order", order.toString());
+    formData.append("path", path);
+    formData.append("divider", JSON.stringify(divider));
+
+    // Añadir el archivo si es un File
+    if (icon instanceof File) {
+      formData.append("icon", icon);
+    } else {
+      formData.append("icon", icon); // Ruta existente si no se actualiza
+    }
+
+    // Añadir permisos
+    permissions.forEach((perm, index) => formData.append(`permissions[${index}]`, perm));
+
+    // Enviar los datos como multipart/form-data
+    const response = await axiosInstance.put(`/menus/${id}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    console.log('Respuesta del servidor: ', response.data);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -160,6 +185,7 @@ export const updateMenu = createAsyncThunk<
     return rejectWithValue("Unknown error occurred");
   }
 });
+
 
 export const deleteMenu = createAsyncThunk<
   string,

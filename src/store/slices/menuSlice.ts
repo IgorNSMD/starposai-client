@@ -79,7 +79,7 @@ export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: 
         id: menu._id, // Cambia `_id` a `id`
         label: menu.label, // Conserva el campo `label`
       }));
-
+      //console.log('data::', data)  
       return data; // Devuelve solo `id` y `label`
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
@@ -135,7 +135,7 @@ export const createMenu = createAsyncThunk<
     });
 
     console.log('response.data ', response.data)
-    
+
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

@@ -45,6 +45,7 @@ import {
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 import { useToastMessages } from '../../hooks/useToastMessage';
+import { baseURL_MENUICONS } from '../../utils/Parameters'; // Importa tu baseURL exportable
 
 interface FormData {
   label: string;
@@ -200,7 +201,9 @@ const Menus: React.FC = () => {
       parentId: "",
       order: 0, // Valor inicial como string
       path: "", // Valor inicial como string
-      icon: "" });
+      icon: "",
+      divider: false,
+     });
     setEditingId(null);
     setSelectedPermissions([]);
   };
@@ -300,7 +303,13 @@ const Menus: React.FC = () => {
     id: act._id, // Usa `_id` como identificador único
     label: act.label
   }));
+  //console.log('menusRoot->',menusRoot)
 
+  const getIconUrl = (iconPath: string) => {
+    const baseUrl = baseURL_MENUICONS; // La URL base de tu servidor backend
+    console.log('baseURL, iconPath', baseUrl, iconPath)
+    return iconPath ? `${baseUrl}/${iconPath}` : ""; // Combina la URL base con la ruta relativa
+  };
   return (
     <Box sx={formContainer}>
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
@@ -365,14 +374,17 @@ const Menus: React.FC = () => {
               value={formData.parentId}
               onChange={handleInputChange}
             >
-              {/* <MenuItem value="-1">
+              {/* <MenuItem key="-1" value="-1">
                 <em>None</em>
               </MenuItem> */}
-              {menusRoot.map((menu) => (
-                <MenuItem key={menu._id} value={menu._id}>
-                  {menu.label}
-                </MenuItem>
-              ))}
+              {menusRoot.map((menu, index) => {
+                const uniqueKey = menu._id || `fallback-key-${index}`;
+                return (
+                  <MenuItem key={uniqueKey} value={menu._id}>
+                    {menu.label}
+                  </MenuItem>
+                );
+              })}
             </Select>
           </FormControl>
           {/* Checkbox para Divider */}
@@ -393,7 +405,7 @@ const Menus: React.FC = () => {
         </Box>
       </Paper>
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
-      <Box sx={inputContainer}>
+        <Box sx={inputContainer}>
           <Button
             variant="contained"
             component="label"
@@ -413,16 +425,20 @@ const Menus: React.FC = () => {
           </Button>
           {/* Mostrar el nombre del archivo seleccionado */}
           {formData.icon && (
-            <Typography
-              variant="body2"
-              sx={{
-                marginTop: "5px",
-                color: "#444444",
-                fontStyle: "italic",
-              }}
-            >
-              {formData.icon instanceof File ? `Selected: ${formData.icon.name}` : "No file selected"}
-            </Typography>
+            <Box sx={{ marginTop: "10px" }}>
+              <Typography variant="body2" sx={{ color: "#444444" }}>
+                Current Icon:
+              </Typography>
+              <img
+                src={
+                  formData.icon instanceof File
+                    ? URL.createObjectURL(formData.icon) // Icono temporal si es un archivo subido
+                    : getIconUrl(formData.icon) // Icono desde el servidor
+                }
+                alt="Menu Icon"
+                style={{ width: "50px", height: "50px", objectFit: "contain", marginTop: "5px" }}
+              />
+            </Box>
           )}
         </Box>
       </Paper>

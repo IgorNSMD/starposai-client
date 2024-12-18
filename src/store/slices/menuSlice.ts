@@ -9,7 +9,7 @@ interface Permission {
 }
 
 interface MenuRoot {
-  _id: string; // ID en la base de datos
+  id: string; // ID en la base de datos
   label: string; // Nombre del menú
 }
 

@@ -101,6 +101,7 @@ const Menus: React.FC = () => {
     // Manejador para Select
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
+    console.log('name, value',name, value)
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
@@ -154,7 +155,7 @@ const Menus: React.FC = () => {
         setEditingId(null);
         setFormData({     
           label: "",
-          parentId: "",
+          parentId: "-1",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
           icon: "",
@@ -181,14 +182,17 @@ const Menus: React.FC = () => {
 
   const handleEdit = (id: string) => {
     const menu = menus.find((act) => act._id === id);
+    //console.log("id:", id);
+    //console.log("menu?.parentId:", menu?.parentId);
+
     if (menu) {
       setFormData({ 
-        label: menu.label,
-        parentId: menu.parentId,
-        order: menu.order,
-        path: menu.path, 
-        icon: menu.icon,
-        divider: menu.divider
+        label: menu.label ?? "",
+        parentId: menu.parentId ?? "", // Fallback a string vacío
+        order: menu.order ?? 0,
+        path: menu.path ?? "",
+        icon: menu.icon ?? "", // Fallback a string vacío
+        divider: menu.divider ?? false,
       });
       setSelectedPermissions(menu.permissions.map((perm) => perm._id)); // Seleccionar permisos de la acción
       setEditingId(id);
@@ -303,11 +307,12 @@ const Menus: React.FC = () => {
     id: act._id, // Usa `_id` como identificador único
     label: act.label
   }));
+
   //console.log('menusRoot->',menusRoot)
 
   const getIconUrl = (iconPath: string) => {
     const baseUrl = baseURL_MENUICONS; // La URL base de tu servidor backend
-    console.log('baseURL, iconPath', baseUrl, iconPath)
+    //console.log('baseURL, iconPath', baseUrl, iconPath)
     return iconPath ? `${baseUrl}/${iconPath}` : ""; // Combina la URL base con la ruta relativa
   };
   return (
@@ -338,7 +343,7 @@ const Menus: React.FC = () => {
           <TextField
             label="Path"
             name="path"
-            value={formData.path}
+            value={formData.path || ""} // Asegura que nunca sea null o undefined
             onChange={handleChange}
             sx={inputField}
             slotProps={{
@@ -371,17 +376,19 @@ const Menus: React.FC = () => {
             <Select
               labelId="parent-select-label"
               name="parentId"
-              value={formData.parentId}
+              value={formData.parentId} // Garantiza un valor seguro
               onChange={handleInputChange}
             >
               {/* <MenuItem key="-1" value="-1">
                 <em>None</em>
               </MenuItem> */}
-              {menusRoot.map((menu, index) => {
-                const uniqueKey = menu._id || `fallback-key-${index}`;
+              {menusRoot.map((menuroot) => {
+                //const uniqueKey = menuroot.id || `fallback-key-${index}`;
+                const uniqueKey = menuroot.id;
+                //console.log('uniqueKey->', uniqueKey)
                 return (
-                  <MenuItem key={uniqueKey} value={menu._id}>
-                    {menu.label}
+                  <MenuItem key={uniqueKey} value={uniqueKey}>
+                    {menuroot.label}
                   </MenuItem>
                 );
               })}

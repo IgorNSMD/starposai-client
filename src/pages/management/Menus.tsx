@@ -101,7 +101,7 @@ const Menus: React.FC = () => {
     // Manejador para Select
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
-    console.log('name, value',name, value)
+    //console.log('name, value',name, value)
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
@@ -132,7 +132,7 @@ const Menus: React.FC = () => {
     if (selectedId) {
       dispatch(deleteMenu(selectedId))
         .then(() => dispatch(fetchMenus())); // Actualiza la lista después de eliminar
-      setSelectedId(null);
+      handleCancel();
     }
     handleDeleteDialogClose();
   };

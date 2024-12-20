@@ -9,9 +9,6 @@ import store, { persistor } from './store/store'; // Usamos `store` como default
 
 import App from './App';
 import homeTheme from './styles/HomeTheme';
-import adminTheme from './styles/AdminTheme';
-
-const isAuthenticated = false; // Cambia según tu lógica de autenticación
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 

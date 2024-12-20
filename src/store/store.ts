@@ -23,7 +23,7 @@ const persistedAuthReducer = persistReducer(persistConfig, authReducer);
 const store = configureStore({
   reducer: {
     auth: persistedAuthReducer, // Usamos el reducer persistido
-    user: userReducer, // Reducer normal
+    users: userReducer, // Reducer normal
     permissions: permissionReducer, // Reducer para permisos
     roles: roleReducer, // Reducer para roles
     menus: menuReducer, // Reducer para menus

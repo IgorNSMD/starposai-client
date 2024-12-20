@@ -1,68 +1,149 @@
-import { createSlice, createAsyncThunk, SerializedError } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import axiosInstance from "../../api/axiosInstance";
+
+interface Role {
+  _id: string;
+  name: string;
+}
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string
+}
 
 interface UserState {
-  user: string | null;
-  token: string | null;
-  loading: boolean;
-  error: string | SerializedError | null; // Ajuste en el tipo de error
-  isAuthenticated: boolean; // Asegúrate de que esta propiedad esté aquí
+  isLoaded: boolean;
+  users: User[];
+  userInfo: Role | null;
+  roles: Role[]; // Agregamos los permisos aquí
+  errorMessage: string | null;
+  successMessage: string | null;
 }
 
 const initialState: UserState = {
-  user: null,
-  token: null,
-  loading: false,
-  error: null,
-  isAuthenticated: false, // Valor inicial
+  isLoaded: false,
+  users: [],
+  userInfo: null,
+  roles: [],
+  errorMessage: null,
+  successMessage: null,
 };
 
-export const loginUser = createAsyncThunk<
-  { user: string; token: string },
-  { email: string; password: string },
+// Thunks
+export const fetchRoles = createAsyncThunk<
+  Role[],
+  void,
   { rejectValue: string }
->(
-  'user/login',
-  async (userData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post('/api/login', userData);
-      return response.data;
-    } catch {
-      return rejectWithValue('Error al iniciar sesión');
+>("users/fetchRoles", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get("/roles");
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || " Error fetching roles");
     }
+    return rejectWithValue("Unknown error occurred");
   }
-);
+});
+
+// Thunks
+export const fetchUsers = createAsyncThunk<
+  User[],
+  void,
+  { rejectValue: string }
+>("users/fetchUsers", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get("/users");
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || " Error fetching users");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
+export const updateUser = createAsyncThunk<
+  User,
+  { id: string; name: string; email: string; role: string },
+  { rejectValue: string }
+>("users/updateUser", async ({ id, name, email, role }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.put(`/users/${id}`, { name, email, role });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error updating user");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
+export const deleteUser = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("users/deleteUser", async (id, { rejectWithValue }) => {
+  try {
+    await axiosInstance.delete(`/users/${id}`);
+    return id;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error deleting user");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
 const userSlice = createSlice({
-  name: 'user',
+  name: 'users',
   initialState,
   reducers: {
-    logout: (state) => {
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false; 
+    clearMessages(state) {
+      state.errorMessage = null;
+      state.successMessage = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.isAuthenticated = false; 
+      .addCase(fetchRoles.fulfilled, (state, action: PayloadAction<Role[]>) => {
+        state.isLoaded = true;
+        state.roles = action.payload;
+        state.errorMessage = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true; 
+      .addCase(fetchRoles.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading roles";
       })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Error desconocido';
-        state.isAuthenticated = false; 
-      });
+      .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
+        state.isLoaded = true;
+        state.users = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchUsers.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading users";
+      })
+      .addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
+        state.users = state.users.map((user) =>
+          user._id === action.payload._id ? action.payload : user
+        );
+        state.successMessage = "Role updated successfully";
+        state.errorMessage = null;
+      })
+      .addCase(updateUser.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error updating role";
+      })
+      .addCase(deleteUser.fulfilled, (state, action: PayloadAction<string>) => {
+        state.users = state.users.filter((user) => user._id !== action.payload);
+        state.successMessage = "User deleted successfully";
+        state.errorMessage = null;
+      })
+      .addCase(deleteUser.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error deleting user";
+      })
   },
 });
 
-export const { logout } = userSlice.actions;
+export const { clearMessages } = userSlice.actions;
 export default userSlice.reducer;

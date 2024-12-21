@@ -194,13 +194,17 @@ const Users: React.FC = () => {
   ];
   
 
-  const rows = users.filter((user) => user._id && user.name ) // Filtra registros válidos
-  .map((user) => ({
-    id: user._id, // Usa `_id` como identificador único
-    name: user.name, 
-    email: user.email, 
-    role: user.role
-  }));
+  const rows = users
+  .filter((user) => user._id && user.name) // Filtra registros válidos
+  .map((user) => {
+    const roleName = roles.find((role) => role._id === user.role)?.name || "Unknown Role";
+    return {
+      id: user._id, // Usa `_id` como identificador único
+      name: user.name,
+      email: user.email,
+      role: roleName, // Mapea el nombre del rol
+    };
+  });
 
   return (
     <Box sx={formContainer}>

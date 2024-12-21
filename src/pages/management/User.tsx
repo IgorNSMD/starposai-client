@@ -112,7 +112,7 @@ const Users: React.FC = () => {
   
     if (editingId) {
       dispatch(updateUser({ id: editingId, ...data })).then(() => {
-        dispatch(fetchRoles());
+        dispatch(fetchUsers());
         setEditingId(null);
         setFormData({     
           name: "",
@@ -210,7 +210,7 @@ const Users: React.FC = () => {
     <Box sx={formContainer}>
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
         <Typography sx={formTitle}>
-          {editingId ? 'Edit User' : 'Add New User'}
+          {editingId ? 'Edit User' : ''}
         </Typography>
         <Box sx={inputContainer}>
           <TextField
@@ -287,14 +287,16 @@ const Users: React.FC = () => {
           </FormControl>
         </Box>
         <Box display="flex" gap={2} margin ="16px" >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-            sx={submitButton}
-          >
-            {editingId ? 'Update' : 'Save'}
-          </Button>
+          {editingId && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              sx={submitButton}
+            >
+            Update
+            </Button>
+          )}
           {editingId && (
             <Button
               variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"

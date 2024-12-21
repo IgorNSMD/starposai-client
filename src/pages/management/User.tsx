@@ -6,6 +6,11 @@ import {
   Paper,
   IconButton,
   Button,
+  Select,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
+  MenuItem,
 } from '@mui/material';
 
 import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
@@ -45,7 +50,7 @@ interface FormData {
 
 const Users: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { users, errorMessage, successMessage } = useAppSelector((state) => state.users);
+  const { users, roles, errorMessage, successMessage } = useAppSelector((state) => state.users);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Para eliminar
@@ -69,6 +74,13 @@ const Users: React.FC = () => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+      // Manejador para Select
+  const handleInputChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    //console.log('name, value',name, value)
+    setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
       // Diálogo para eliminar
@@ -234,7 +246,42 @@ const Users: React.FC = () => {
             }}
           />
         </Box>
-
+        <Box sx={inputContainer}>
+          <FormControl sx={{ minWidth: 350 }}>
+            <InputLabel
+              id="parent-select-label"
+              shrink={true} // Esto fuerza que el label permanezca visible
+              sx={{
+                color: "#444444",
+                "&.Mui-focused": {
+                  color: "#47b2e4",
+                },
+              }}
+            >
+              Role
+            </InputLabel>
+            <Select
+              labelId="parent-select-label"
+              name="role"
+              value={formData.role} // Garantiza un valor seguro
+              onChange={handleInputChange}
+            >
+              {/* <MenuItem key="-1" value="-1">
+                <em>None</em>
+              </MenuItem> */}
+              {roles.map((r) => {
+                //const uniqueKey = menuroot.id || `fallback-key-${index}`;
+                const uniqueKey = r._id;
+                //console.log('uniqueKey->', uniqueKey)
+                return (
+                  <MenuItem key={uniqueKey} value={uniqueKey}>
+                    {r.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+        </Box>
         <Box display="flex" gap={2} margin ="16px" >
           <Button
             variant="contained"

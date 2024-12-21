@@ -39,7 +39,14 @@ export const fetchRoles = createAsyncThunk<
 >("users/fetchRoles", async (_, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.get("/roles");
-    return response.data;
+    // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
+    const data = response.data.map((role: Role) => ({
+      _id: role._id, // Cambia `_id` a `id`
+      name: role.name, // Conserva el campo `label`
+    }));
+    //console.log('data::', data)  
+    return data; // Devuelve solo `id` y `label`
+
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
       return rejectWithValue(error.response?.data?.message || " Error fetching roles");

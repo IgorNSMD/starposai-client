@@ -94,7 +94,9 @@ export const deleteUser = createAsyncThunk<
   { rejectValue: string }
 >("users/deleteUser", async (id, { rejectWithValue }) => {
   try {
+    console.log('users/deleteUser->',id)
     await axiosInstance.delete(`/users/${id}`);
+    console.log('registro eliminado ->',id)
     return id;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

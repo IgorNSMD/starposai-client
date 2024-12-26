@@ -8,6 +8,13 @@ interface Permission {
   description: string;
 }
 
+interface MenuRoute {
+  id: string; // ID en la base de datos
+  path: string; // Ruta del menú (e.g., '/productos')
+  label: string; // Nombre del menú
+  parentId: string;
+}
+
 interface MenuRoot {
   id: string; // ID en la base de datos
   label: string; // Nombre del menú
@@ -30,6 +37,7 @@ interface MenuState {
     menuInfo: Menu | null;
     permissions: Permission[]; // Agregamos los permisos aquí
     menusRoot: MenuRoot[];
+    menusRoute: MenuRoute[];
     errorMessage: string | null;
     successMessage: string | null;
 }
@@ -46,6 +54,7 @@ const initialState: MenuState = {
   menuInfo: null,
   permissions: [],
   menusRoot: [],
+  menusRoute: [],
   errorMessage: null,
   successMessage: null,
 };
@@ -90,6 +99,22 @@ export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: 
   }
 );
 
+export const fetchMenuRoutes = createAsyncThunk<MenuRoute[], void, { rejectValue: string }>(
+  "menus/fetchMenuRoutes",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/menus/routes");
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        console.log('error en axiosInstance -> ', error.response?.data?.message)
+        return rejectWithValue(error.response?.data?.message || " Error fetching menus routes");
+      }
+      console.log('error..axios')
+      return rejectWithValue("Unknown error occurred");
+    }
+  }
+);
 
 // Thunks
 export const fetchMenus = createAsyncThunk<
@@ -221,7 +246,7 @@ const actionSlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(fetchMenus.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error loading roles";
+        state.errorMessage = action.payload || "Error loading menus";
       })
       .addCase(createMenu.fulfilled, (state, action: PayloadAction<Menu>) => {
         state.menus.push(action.payload);
@@ -257,6 +282,18 @@ const actionSlice = createSlice({
         state.menusRoot = action.payload;
         state.errorMessage = null;
       })
+      .addCase(fetchMenusRoot.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading menus..";
+      })
+
+      .addCase(fetchMenuRoutes.fulfilled, (state, action: PayloadAction<MenuRoute[]>) => {
+        state.menusRoute = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchMenuRoutes.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading menus..";
+      })
+
   },
 });
 

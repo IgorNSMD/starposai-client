@@ -49,6 +49,7 @@ import { baseURL_MENUICONS } from '../../utils/Parameters'; // Importa tu baseUR
 
 interface FormData {
   label: string;
+  component: string;
   parentId: string;
   order: number;
   path: string;
@@ -68,6 +69,7 @@ const Menus: React.FC = () => {
 
   const [formData, setFormData] = useState<FormData>({
     label: "",
+    component: "",
     parentId: "",
     order: 0, // Valor inicial como string
     path: "", // Valor inicial como string
@@ -141,6 +143,7 @@ const Menus: React.FC = () => {
     console.log('handleSubmit...')
     const data = {
       label: formData.label,
+      component: formData.component,
       parentId: formData.parentId,
       order: formData.order,
       path: formData.path,
@@ -155,6 +158,7 @@ const Menus: React.FC = () => {
         setEditingId(null);
         setFormData({     
           label: "",
+          component: "",
           parentId: "-1",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
@@ -169,6 +173,7 @@ const Menus: React.FC = () => {
         dispatch(fetchMenus());
         setFormData({     
           label: "",
+          component: "",
           parentId: "",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
@@ -188,6 +193,7 @@ const Menus: React.FC = () => {
     if (menu) {
       setFormData({ 
         label: menu.label ?? "",
+        component: menu.component ?? "",
         parentId: menu.parentId ?? "", // Fallback a string vacío
         order: menu.order ?? 0,
         path: menu.path ?? "",
@@ -202,6 +208,7 @@ const Menus: React.FC = () => {
   const handleCancel = () => {
     setFormData({     
       label: "",
+      component: "",
       parentId: "",
       order: 0, // Valor inicial como string
       path: "", // Valor inicial como string
@@ -220,6 +227,7 @@ const Menus: React.FC = () => {
   const handleConfirmUpdate  = () => {
     const data = {
       label: formData.label,
+      component: formData.component,
       parentId: formData.parentId,
       order: formData.order,
       path: formData.path,
@@ -234,6 +242,7 @@ const Menus: React.FC = () => {
         setEditingId(null);
         setFormData({     
           label: "",
+          component: "",
           parentId: "",
           order: 0, // Valor inicial como string
           path: "", // Valor inicial como string
@@ -340,6 +349,26 @@ const Menus: React.FC = () => {
               },
             }}
           />
+          <TextField
+            label="Component"
+            name="component"
+            value={formData.component || ""} // Asegura que nunca sea null o undefined
+            onChange={handleChange}
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
+          />
+        </Box>
+        <Box sx={inputContainer}>
           <TextField
             label="Path"
             name="path"

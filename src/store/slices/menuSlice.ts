@@ -23,6 +23,7 @@ interface MenuRoot {
 interface Menu {
   _id: string;
   label: string;
+  component: string;
   parentId: string;
   order: number;  
   path: string; // Ruta del menú (e.g., '/productos')
@@ -100,7 +101,7 @@ export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: 
 );
 
 export const fetchMenuRoutes = createAsyncThunk<MenuRoute[], void, { rejectValue: string }>(
-  "menus/fetchMenuRoutes",
+  "menu/fetchMenuRoutes",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/menus/routes");
@@ -140,7 +141,7 @@ export const fetchMenus = createAsyncThunk<
 
 export const createMenu = createAsyncThunk<
   Menu,
-  { label: string; parentId: string, order: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
+  { label: string; component: string; parentId: string, order: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
   { rejectValue: string }
 >("menus/createMenu", async (data, { rejectWithValue }) => {
   try {
@@ -148,6 +149,7 @@ export const createMenu = createAsyncThunk<
     console.log('inicio..createMenu')
     const formData = new FormData();
     formData.append("label", data.label);
+    formData.append("component", data.component);
     formData.append("parentId", data.parentId);
     formData.append("order", data.order.toString());
     formData.append("path", data.path);
@@ -172,15 +174,16 @@ export const createMenu = createAsyncThunk<
 
 export const updateMenu = createAsyncThunk<
   Menu,
-  { id: string; label: string; parentId: string; order: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
+  { id: string; label: string; component: string; parentId: string; order: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
   { rejectValue: string }
->("menus/updateMenu", async ({ id, label, parentId, order, path, icon, divider, permissions }, { rejectWithValue }) => {
+>("menus/updateMenu", async ({ id, label, component, parentId, order, path, icon, divider, permissions }, { rejectWithValue }) => {
   try {
     console.log('Inicio actualización menu...');
 
     // Crear el FormData
     const formData = new FormData();
     formData.append("label", label);
+    formData.append("component", component);
     formData.append("parentId", parentId);
     formData.append("order", order.toString());
     formData.append("path", path);

@@ -12,6 +12,7 @@ interface MenuRoute {
   id: string; // ID en la base de datos
   path: string; // Ruta del menú (e.g., '/productos')
   label: string; // Nombre del menú
+  component: string; // Nombre del componente menu
   parentId: string;
 }
 

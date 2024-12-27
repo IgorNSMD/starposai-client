@@ -118,6 +118,22 @@ export const fetchMenuRoutes = createAsyncThunk<MenuRoute[], void, { rejectValue
   }
 );
 
+export const fetchMenuByRole = createAsyncThunk<Menu[], void, { rejectValue: string }>(
+  "menu/fetchMenuByRole",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/menus/role"); // Endpoint para obtener menús por rol
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error fetching menus by role");
+      }
+      return rejectWithValue("Unknown error occurred");
+    }
+  }
+);
+
+
 // Thunks
 export const fetchMenus = createAsyncThunk<
   Menu[],
@@ -297,6 +313,14 @@ const actionSlice = createSlice({
       .addCase(fetchMenuRoutes.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || "Error loading menus..";
       })
+      .addCase(fetchMenuByRole.fulfilled, (state, action: PayloadAction<Menu[]>) => {
+        state.menus = action.payload;
+        state.isLoaded = true;
+        state.errorMessage = null;
+      })
+      .addCase(fetchMenuByRole.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading menus";
+      });
 
   },
 });

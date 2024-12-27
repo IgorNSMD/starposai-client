@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -13,6 +13,8 @@ import BoltIcon from '@mui/icons-material/Bolt';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
+import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
+import { fetchMenuByRole } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
 
 // JSON de menú dinámico
 const menuItems = [
@@ -76,14 +78,28 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
-  const [openMenus, setOpenMenus] = React.useState<{ [key: string]: boolean }>({});
+  const dispatch = useAppDispatch();
+  const { menus, isLoaded } = useAppSelector((state) => state.menus);
+  const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
   const location = useLocation();
+
+  const [openMenus, setOpenMenus] = React.useState<{ [key: string]: boolean }>({});
+  
+
+  // Cargar los menús al montar el componente
+  useEffect(() => {
+    if (!isLoaded && role) {
+      dispatch(fetchMenuByRole(role)); // Pasa el rol al thunk
+    }
+  }, [dispatch, isLoaded, role]);
 
   const toggleSubMenu = (name: string) => {
     setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  console.log('menus->', menus)
 
   return (
     <Box

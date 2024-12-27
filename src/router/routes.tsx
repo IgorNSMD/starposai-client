@@ -1,9 +1,7 @@
-import { lazy, useEffect  } from "react"; 
+import { lazy  } from "react"; 
 import { useRoutes } from 'react-router-dom';
 
 import PrivateRoute from "./PrivateRoute";
-import { fetchMenuRoutes } from "../store/slices/menuSlice";
-import { useAppSelector, useAppDispatch } from '../store/redux/hooks';
 
 const HomeLayout = lazy(() => import('../layout/HomeLayout'));
 const AdminLayout = lazy(() => import('../layout/AdminLayout'));
@@ -40,20 +38,5 @@ const routes = [
 ];
 
 export default function AppRoutes() {
-    const dispatch = useAppDispatch();
-    const { menusRoute } = useAppSelector((state) => state.menus);
-
-    useEffect(() => {
-      dispatch(fetchMenuRoutes());
-    }, [dispatch]);
-
-    const dynamicRoutes = menusRoute.map((route) => {
-      const Component = lazy(() => import(`../pages/${route.component}`));
-      return {
-        path: route.path,
-        element: <Component />,
-      };
-    });
-
     return useRoutes(routes);
 }

@@ -118,12 +118,13 @@ export const fetchMenuRoutes = createAsyncThunk<MenuRoute[], void, { rejectValue
   }
 );
 
-export const fetchMenuByRole = createAsyncThunk<Menu[], void, { rejectValue: string }>(
+export const fetchMenuByRole = createAsyncThunk<Menu[], string, { rejectValue: string }>(
   "menu/fetchMenuByRole",
-  async (_, { rejectWithValue }) => {
+  async (role, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/menus/role"); // Endpoint para obtener menús por rol
-      return response.data;
+      console.log('(fetchMenuByRole)role->',role)
+      const response = await axiosInstance.get(`/menus/role/${role}`);
+      return response.data; // Devuelve los menús asociados al rol
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
         return rejectWithValue(error.response?.data?.message || "Error fetching menus by role");

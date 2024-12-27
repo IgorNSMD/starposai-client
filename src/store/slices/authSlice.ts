@@ -59,7 +59,10 @@ export const loginUser = createAsyncThunk<
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post('/users/login', credentials);
-    return response.data; // Supongamos que la API devuelve `{ token, id, email, role }`
+    return {
+      ...response.data,
+      role: response.data.role, // Incluye el rol del usuario
+    };
   } catch (error) {
     if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
       return rejectWithValue(error.response?.data?.message || 'Error al iniciar sesión');

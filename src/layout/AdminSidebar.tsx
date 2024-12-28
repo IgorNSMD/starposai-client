@@ -1,81 +1,57 @@
 import React, { useEffect } from 'react';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import SecurityIcon from '@mui/icons-material/Security';
-import GroupIcon from '@mui/icons-material/Group';
-import MenuIcon from '@mui/icons-material/Menu';
-import PersonIcon from '@mui/icons-material/Person';
-import BoltIcon from '@mui/icons-material/Bolt';
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
 import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
 import { fetchMenuByRole } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
+import { menuAdmin } from './AdminMenu';
 
 // JSON de menú dinámico
-const menuItems = [
-  {
-    name: "Dashboard",
-    icon: DashboardIcon, // Componente React
-    route: "/dashboard",
-    divider: false
-  },
-  {
-    name: "Management",
-    icon: SecurityIcon,
-    divider: false,
-    subMenu: [
-      {
-        name: "Permissions",
-        icon: SecurityIcon,
-        route: "/admin/permissions"
-      },
-      {
-        name: "Actions",
-        icon: BoltIcon,
-        route: "/admin/actions"
-      },
-      {
-        name: "Roles",
-        icon: GroupIcon,
-        route: "/admin/roles"
-      },
-      {
-        name: "Menus",
-        icon: MenuIcon,
-        route: "/admin/menus"
-      },
-      {
-        name: "Users",
-        icon: PersonIcon,
-        route: "/admin/users"
-      }
-    ]
-  },
-  {
-    divider: true
-  },
-  {
-    name: "Settings",
-    icon: SettingsIcon,
-    route: "/settings",
-    divider: false
-  },
-  {
-    name: "Logout",
-    icon: ExitToAppIcon,
-    route: "/logout",
-    divider: false
-  }
-];
+const menuItems = menuAdmin
 
 interface AdminSidebarProps {
   isOpen: boolean;
 }
+
+interface MenuItem {
+  _id?: string; // ID único del menú
+  name?: string; // Etiqueta del menú
+  route?: string; // Ruta asociada al menú
+  icon?: string; // URL o nombre del ícono
+  divider?: boolean; // Indica si es un divisor
+  subMenu?: MenuItem[]; // Submenús anidados
+}
+
+
+const filterMenuItems = (menuItems: MenuItem[], filter: { name: string; route: string }[]): MenuItem[] => {
+  return menuItems.filter((item) => {
+    if (item.divider) return true; // Incluye siempre los divisores
+    
+    // Verifica coincidencias ignorando mayúsculas/minúsculas
+    const match = filter.some((f) => {
+      console.log('filterMenuItems..', f.name)
+      const filterName = f.name?.toLowerCase() || '';
+      const filterRoute = f.route?.toLowerCase() || '';
+      const itemName = item.name?.toLowerCase() || '';
+      const itemPath = item.route?.toLowerCase() || '';
+
+      return filterName === itemName && filterRoute === itemPath;
+    });
+
+    if (item.subMenu) {
+      // Filtra recursivamente los submenús
+      item.subMenu = filterMenuItems(item.subMenu, filter);
+    }
+
+
+    return match
+  });
+};
+
+
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const dispatch = useAppDispatch();
@@ -84,7 +60,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const location = useLocation();
 
   const [openMenus, setOpenMenus] = React.useState<{ [key: string]: boolean }>({});
-  
+
 
   // Cargar los menús al montar el componente
   useEffect(() => {
@@ -99,7 +75,61 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  // Ejemplo de uso:
+  const menuPrincipal: MenuItem[] = [
+    { name: "Inicio", route: "/inicio" },
+    { name: "Productos", route: "/productos" },
+    { name: "Servicios", route: "/servicios" },
+    { name: "Contacto", route: "/contacto" },
+    { divider: true },
+    { name: "Ayuda", route: "/ayuda" },
+    {
+      name: "Management",
+      divider: false,
+      subMenu: [
+        {
+          name: "Permissions",
+          route: "/admin/permissions"
+        },
+        {
+          name: "Actions",
+          route: "/admin/actions"
+        },
+        {
+          name: "Roles",
+          route: "/admin/roles"
+        },
+        {
+          name: "Menus",
+          route: "/admin/menus"
+        },
+        {
+          name: "Users",
+          route: "/admin/users"
+        }
+      ]
+    },
+  ];
+
+  const menuFiltro = [
+    { label: "inicio", path: "/inicio" }, // Coincidencia completa
+    { label: "servicios", path: "/otroPath" }, // No coincide la ruta
+    { label: "otraCosa", path: "/servicios" }, // No coincide el nombre
+    { label: "ayuda", path: "/ayuda" } // Coincidencia completa
+  ];
+
+  // console.log('menuPrincipal->', menuPrincipal)
+  // console.log('menuFiltro->', menuFiltro)
+
+  console.log('menuItems->', menuItems)
   console.log('menus->', menus)
+
+  // Obtén los menús filtrados basados en los datos cargados desde Redux y el filtro estático
+  const filteredMenus = filterMenuItems(menuPrincipal, menuFiltro.map((menu) => ({
+    name: menu.label, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
+    route: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
+  })));
+  console.log('filteredMenus->', filteredMenus)
 
   return (
     <Box

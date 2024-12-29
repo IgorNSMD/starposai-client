@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, } from '@mui/material';
+import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, SvgIconTypeMap, } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import { OverridableComponent } from '@mui/material/OverridableComponent';
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
@@ -20,29 +21,33 @@ interface MenuItem {
   _id?: string; // ID único del menú
   name?: string; // Etiqueta del menú
   route?: string; // Ruta asociada al menú
-  icon?: string; // URL o nombre del ícono
+  icon?: OverridableComponent<SvgIconTypeMap<Record<string, unknown>, "svg">> & { muiName: string }; // Ícono de Material UI
   divider?: boolean; // Indica si es un divisor
   subMenu?: MenuItem[]; // Submenús anidados
 }
 
 
-const filterMenuItems = (menuItems: MenuItem[], filter: { name: string; route: string }[]): MenuItem[] => {
-  return menuItems.filter((item) => {
+const filterMenuItems = (menuAllItem: MenuItem[], filter: { name: string; route: string }[]): MenuItem[] => {
+  //console.log('menuItems->',menuItems)
+  //console.log('filter->',filter)
+  return menuAllItem.filter((item) => {
     if (item.divider) return true; // Incluye siempre los divisores
     
     // Verifica coincidencias ignorando mayúsculas/minúsculas
     const match = filter.some((f) => {
-      console.log('filterMenuItems..', f.name)
+
       const filterName = f.name?.toLowerCase() || '';
       const filterRoute = f.route?.toLowerCase() || '';
       const itemName = item.name?.toLowerCase() || '';
       const itemPath = item.route?.toLowerCase() || '';
-
       return filterName === itemName && filterRoute === itemPath;
     });
 
+    //console.log('match->', match)
+
     if (item.subMenu) {
       // Filtra recursivamente los submenús
+      console.log('Filtro Recursivo->', item.subMenu)
       item.subMenu = filterMenuItems(item.subMenu, filter);
     }
 
@@ -118,14 +123,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
     { label: "ayuda", path: "/ayuda" } // Coincidencia completa
   ];
 
-  // console.log('menuPrincipal->', menuPrincipal)
-  // console.log('menuFiltro->', menuFiltro)
+  console.log('menuPrincipal->', menuPrincipal)
+  console.log('menuFiltro->', menuFiltro)
 
   console.log('menuItems->', menuItems)
   console.log('menus->', menus)
 
   // Obtén los menús filtrados basados en los datos cargados desde Redux y el filtro estático
-  const filteredMenus = filterMenuItems(menuPrincipal, menuFiltro.map((menu) => ({
+  const deepCopyMenuItems = JSON.parse(JSON.stringify(menuItems));
+  const filteredMenus = filterMenuItems(deepCopyMenuItems, menus.map((menu) => ({
     name: menu.label, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
     route: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
   })));

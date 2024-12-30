@@ -18,7 +18,7 @@ export const menuAdmin = [
     {
       name: "Management",
       icon: SecurityIcon,
-      route: "/Management",
+      route: "/Admin",
       divider: false,
       subMenu: [
         {

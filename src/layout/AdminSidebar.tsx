@@ -165,6 +165,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
     name: menu.label, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
     route: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
   })));
+  console.log('menuItems->', menuItems)
   console.log('filteredMenus->', filteredMenus)
 
   return (

@@ -43,13 +43,17 @@ const filterMenuItems = (menuAllItem: MenuItem[], filter: { name: string; route:
       return filterName === itemName && filterRoute === itemPath;
     });
 
-    //console.log('match->', match)
+    // Si hay submenús, aplica el filtrado recursivo
+    const filteredSubMenu = item.subMenu ? filterMenuItems(item.subMenu, filter) : [];
 
-    if (item.subMenu) {
-      // Filtra recursivamente los submenús
-      console.log('Filtro Recursivo->', item.subMenu)
-      item.subMenu = filterMenuItems(item.subMenu, filter);
+    // Retorna un nuevo objeto con los submenús filtrados
+    if (match || filteredSubMenu.length > 0) {
+      return {
+        ...item,
+        subMenu: filteredSubMenu,
+      };
     }
+
 
 
     return match
@@ -81,53 +85,79 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const isActive = (path: string) => location.pathname === path;
 
   // Ejemplo de uso:
-  const menuPrincipal: MenuItem[] = [
-    { name: "Inicio", route: "/inicio" },
-    { name: "Productos", route: "/productos" },
-    { name: "Servicios", route: "/servicios" },
-    { name: "Contacto", route: "/contacto" },
-    { divider: true },
-    { name: "Ayuda", route: "/ayuda" },
-    {
-      name: "Management",
-      divider: false,
-      subMenu: [
-        {
-          name: "Permissions",
-          route: "/admin/permissions"
-        },
-        {
-          name: "Actions",
-          route: "/admin/actions"
-        },
-        {
-          name: "Roles",
-          route: "/admin/roles"
-        },
-        {
-          name: "Menus",
-          route: "/admin/menus"
-        },
-        {
-          name: "Users",
-          route: "/admin/users"
-        }
-      ]
-    },
-  ];
+  // const menuPrincipal: MenuItem[] = [
+  //   { name: "Inicio", route: "/inicio" },
+  //   { name: "Productos", route: "/productos" },
+  //   { name: "Servicios", route: "/servicios" },
+  //   { name: "Contacto", route: "/contacto" },
+  //   { divider: true },
+  //   { name: "Ayuda", route: "/ayuda" },
+  //   {
+  //     name: "Management",
+  //     route: "/Management",
+  //     subMenu: [
+  //       {
+  //         name: "Permissions",
+  //         route: "/admin/permissions"
+  //       },
+  //       {
+  //         name: "Actions",
+  //         route: "/admin/actions"
+  //       },
+  //       {
+  //         name: "Roles",
+  //         route: "/admin/roles"
+  //       },
+  //       {
+  //         name: "Menus",
+  //         route: "/admin/menus"
+  //       },
+  //       {
+  //         name: "Users",
+  //         route: "/admin/users"
+  //       }
+  //     ]
+  //   },
+  // ];
 
-  const menuFiltro = [
-    { label: "inicio", path: "/inicio" }, // Coincidencia completa
-    { label: "servicios", path: "/otroPath" }, // No coincide la ruta
-    { label: "otraCosa", path: "/servicios" }, // No coincide el nombre
-    { label: "ayuda", path: "/ayuda" } // Coincidencia completa
-  ];
+  // const menuFiltro = [
+  //   { label: "inicio", path: "/inicio" }, // Coincidencia completa
+  //   { label: "servicios", path: "/otroPath" }, // No coincide la ruta
+  //   { label: "otraCosa", path: "/servicios" }, // No coincide el nombre
+  //   { label: "ayuda", path: "/ayuda" }, // Coincidencia completa
+  //   {
+  //     label: "Management", path: "/Management",
+  //     subMenu: [
+  //       {
+  //         label: "Permissions",
+  //         path: "/admin/permissions"
+  //       },
+  //       {
+  //         label: "Actions",
+  //         path: "/admin/actions"
+  //       },
+  //       {
+  //         label: "Roles",
+  //         path: "/admin/roles"
+  //       },
+  //       {
+  //         label: "Menus",
+  //         path: "/admin/menus"
+  //       },
+  //       {
+  //         label: "Users",
+  //         path: "/admin/users"
+  //       }
+  //     ]
 
-  console.log('menuPrincipal->', menuPrincipal)
-  console.log('menuFiltro->', menuFiltro)
+  //   },    
+  // ];
 
-  console.log('menuItems->', menuItems)
-  console.log('menus->', menus)
+  // console.log('menuPrincipal->', menuPrincipal)
+  // console.log('menuFiltro->', menuFiltro)
+
+  // console.log('menuItems->', menuItems)
+  // console.log('menus->', menus)
 
   // Obtén los menús filtrados basados en los datos cargados desde Redux y el filtro estático
   const deepCopyMenuItems = JSON.parse(JSON.stringify(menuItems));

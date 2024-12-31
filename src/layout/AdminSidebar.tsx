@@ -7,7 +7,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
 import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
-import { fetchMenuByRole } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
+import { fetchMenus, fetchMenuByRole } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
 import { menuAdmin } from './AdminMenu';
 
 // JSON de menú dinámico
@@ -26,45 +26,54 @@ interface MenuItem {
   subMenu?: MenuItem[]; // Submenús anidados
 }
 
+const filterMenuItems = (
+  menuItems: MenuItem[],
+  filter: { name: string; route: string }[]
+): MenuItem[] => {
+  return menuItems
+    .map((item) => {
+      if (item.divider) return item; // Incluye siempre los divisores
 
-const filterMenuItems = (menuAllItem: MenuItem[], filter: { name: string; route: string }[]): MenuItem[] => {
-  //console.log('menuItems->',menuItems)
-  //console.log('filter->',filter)
-  return menuAllItem.filter((item) => {
-    if (item.divider) return true; // Incluye siempre los divisores
-    
-    // Verifica coincidencias ignorando mayúsculas/minúsculas
-    const match = filter.some((f) => {
+      // Verifica coincidencias ignorando mayúsculas/minúsculas
+      const match = filter.some((f) => {
+        const filterName = f.name?.toLowerCase() || '';
+        const filterRoute = f.route?.toLowerCase() || '';
+        const itemName = item.name?.toLowerCase() || '';
+        const itemPath = item.route?.toLowerCase() || '';
+        return filterName === itemName && filterRoute === itemPath;
+      });
 
-      const filterName = f.name?.toLowerCase() || '';
-      const filterRoute = f.route?.toLowerCase() || '';
-      const itemName = item.name?.toLowerCase() || '';
-      const itemPath = item.route?.toLowerCase() || '';
-      return filterName === itemName && filterRoute === itemPath;
-    });
+      // Si hay submenús, aplica el filtrado recursivo
+      const filteredSubMenu = item.subMenu
+        ? filterMenuItems(item.subMenu, filter)
+        : [];
 
-    // Si hay submenús, aplica el filtrado recursivo
-    const filteredSubMenu = item.subMenu ? filterMenuItems(item.subMenu, filter) : [];
+      // Retorna un nuevo objeto con los submenús filtrados
+      if (match || filteredSubMenu.length > 0) {
+        console.log("Item procesado:", {
+          ...item,
+          subMenu: filteredSubMenu,
+          icon: item.icon,
+        });
+        return {
+          ...item,
+          subMenu: filteredSubMenu,
+          icon: item.icon, // Copia explícitamente el icono
+        };
+      }
 
-    // Retorna un nuevo objeto con los submenús filtrados
-    if (match || filteredSubMenu.length > 0) {
-      return {
-        ...item,
-        subMenu: filteredSubMenu,
-      };
-    }
-
-
-
-    return match
-  });
+      // Excluir elementos que no coincidan
+      return null; // Se mantiene como null para ser eliminado
+    })
+    .filter((item): item is MenuItem => item !== null); // TypeScript narrowing
 };
+
 
 
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const dispatch = useAppDispatch();
-  const { menus, isLoaded } = useAppSelector((state) => state.menus);
+  const { menus, menusRoles, isLoaded } = useAppSelector((state) => state.menus);
   const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
   const location = useLocation();
 
@@ -74,6 +83,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   // Cargar los menús al montar el componente
   useEffect(() => {
     if (!isLoaded && role) {
+      dispatch(fetchMenus()); // Pasa el rol al thunk
       dispatch(fetchMenuByRole(role)); // Pasa el rol al thunk
     }
   }, [dispatch, isLoaded, role]);
@@ -160,12 +170,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   // console.log('menus->', menus)
 
   // Obtén los menús filtrados basados en los datos cargados desde Redux y el filtro estático
-  const deepCopyMenuItems = JSON.parse(JSON.stringify(menuItems));
-  const filteredMenus = filterMenuItems(deepCopyMenuItems, menus.map((menu) => ({
+  const deepCopyMenuItems = JSON.parse(JSON.stringify(menus));
+  const filteredMenus = filterMenuItems(deepCopyMenuItems, menusRoles.map((menu) => ({
     name: menu.label, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
     route: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
   })));
   console.log('menuItems->', menuItems)
+  console.log('menus->', menus)
+  console.log('menusRoles->', menusRoles)
   console.log('filteredMenus->', filteredMenus)
 
   return (

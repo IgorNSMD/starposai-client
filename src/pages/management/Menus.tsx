@@ -51,7 +51,7 @@ interface FormData {
   label: string;
   component: string;
   parentId: string;
-  order: number;
+  sequence: number;
   path: string;
   icon: string | File; // Ahora acepta una string o un archivo File
   divider: boolean;
@@ -71,7 +71,7 @@ const Menus: React.FC = () => {
     label: "",
     component: "",
     parentId: "",
-    order: 0, // Valor inicial como string
+    sequence: 0, // Valor inicial como string
     path: "", // Valor inicial como string
     icon: "",
     divider: false, // Por defecto en falso
@@ -145,7 +145,7 @@ const Menus: React.FC = () => {
       label: formData.label,
       component: formData.component,
       parentId: formData.parentId,
-      order: formData.order,
+      sequence: formData.sequence,
       path: formData.path,
       icon: formData.icon,
       divider: formData.divider,
@@ -160,7 +160,7 @@ const Menus: React.FC = () => {
           label: "",
           component: "",
           parentId: "-1",
-          order: 0, // Valor inicial como string
+          sequence: 0, // Valor inicial como string
           path: "", // Valor inicial como string
           icon: "",
           divider: false,
@@ -175,7 +175,7 @@ const Menus: React.FC = () => {
           label: "",
           component: "",
           parentId: "",
-          order: 0, // Valor inicial como string
+          sequence: 0, // Valor inicial como string
           path: "", // Valor inicial como string
           icon: "",
           divider: false
@@ -195,7 +195,7 @@ const Menus: React.FC = () => {
         label: menu.label ?? "",
         component: menu.component ?? "",
         parentId: menu.parentId ?? "", // Fallback a string vacío
-        order: menu.order ?? 0,
+        sequence: menu.sequence ?? 0,
         path: menu.path ?? "",
         icon: menu.icon ?? "", // Fallback a string vacío
         divider: menu.divider ?? false,
@@ -210,7 +210,7 @@ const Menus: React.FC = () => {
       label: "",
       component: "",
       parentId: "",
-      order: 0, // Valor inicial como string
+      sequence: 0, // Valor inicial como string
       path: "", // Valor inicial como string
       icon: "",
       divider: false,
@@ -229,7 +229,7 @@ const Menus: React.FC = () => {
       label: formData.label,
       component: formData.component,
       parentId: formData.parentId,
-      order: formData.order,
+      sequence: formData.sequence,
       path: formData.path,
       icon: formData.icon,
       divider: formData.divider,
@@ -244,7 +244,7 @@ const Menus: React.FC = () => {
           label: "",
           component: "",
           parentId: "",
-          order: 0, // Valor inicial como string
+          sequence: 0, // Valor inicial como string
           path: "", // Valor inicial como string
           icon: "",
           divider: false,
@@ -373,6 +373,24 @@ const Menus: React.FC = () => {
             label="Path"
             name="path"
             value={formData.path || ""} // Asegura que nunca sea null o undefined
+            onChange={handleChange}
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
+          />
+          <TextField
+            label="Sequence"
+            name="sequence"
+            value={formData.sequence || ""} // Asegura que nunca sea null o undefined
             onChange={handleChange}
             sx={inputField}
             slotProps={{

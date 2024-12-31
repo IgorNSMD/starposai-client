@@ -26,7 +26,7 @@ interface Menu {
   label: string;
   component: string;
   parentId: string;
-  order: number;  
+  sequence: number;  
   path: string; // Ruta del menú (e.g., '/productos')
   icon: string;
   divider: boolean;
@@ -159,7 +159,7 @@ export const fetchMenus = createAsyncThunk<
 
 export const createMenu = createAsyncThunk<
   Menu,
-  { label: string; component: string; parentId: string, order: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
+  { label: string; component: string; parentId: string, sequence: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
   { rejectValue: string }
 >("menus/createMenu", async (data, { rejectWithValue }) => {
   try {
@@ -169,7 +169,7 @@ export const createMenu = createAsyncThunk<
     formData.append("label", data.label);
     formData.append("component", data.component);
     formData.append("parentId", data.parentId);
-    formData.append("order", data.order.toString());
+    formData.append("sequence", data.sequence.toString());
     formData.append("path", data.path);
     formData.append("divider", JSON.stringify(data.divider));
     formData.append("icon", data.icon); // Archivo
@@ -192,9 +192,9 @@ export const createMenu = createAsyncThunk<
 
 export const updateMenu = createAsyncThunk<
   Menu,
-  { id: string; label: string; component: string; parentId: string; order: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
+  { id: string; label: string; component: string; parentId: string; sequence: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
   { rejectValue: string }
->("menus/updateMenu", async ({ id, label, component, parentId, order, path, icon, divider, permissions }, { rejectWithValue }) => {
+>("menus/updateMenu", async ({ id, label, component, parentId, sequence, path, icon, divider, permissions }, { rejectWithValue }) => {
   try {
     console.log('Inicio actualización menu...');
 
@@ -203,7 +203,7 @@ export const updateMenu = createAsyncThunk<
     formData.append("label", label);
     formData.append("component", component);
     formData.append("parentId", parentId);
-    formData.append("order", order.toString());
+    formData.append("sequence", sequence.toString());
     formData.append("path", path);
     formData.append("divider", JSON.stringify(divider));
 

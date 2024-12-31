@@ -33,6 +33,20 @@ interface Menu {
   permissions: Permission[];
 }
 
+interface MenuRole {
+  _id: string;
+  label: string;
+  component: string;
+  parentId: string;
+  order: number;  
+  path: string; // Ruta del menú (e.g., '/productos')
+  icon: string;
+  divider: boolean;
+  permissions: Permission[];
+  subMenu?: MenuRole[];
+}
+
+
 interface MenuState {
     isLoaded: boolean;
     menus: Menu[];
@@ -40,6 +54,7 @@ interface MenuState {
     permissions: Permission[]; // Agregamos los permisos aquí
     menusRoot: MenuRoot[];
     menusRoute: MenuRoute[];
+    menusRoles: MenuRole[];
     errorMessage: string | null;
     successMessage: string | null;
 }
@@ -57,6 +72,7 @@ const initialState: MenuState = {
   permissions: [],
   menusRoot: [],
   menusRoute: [],
+  menusRoles: [],
   errorMessage: null,
   successMessage: null,
 };
@@ -118,7 +134,7 @@ export const fetchMenuRoutes = createAsyncThunk<MenuRoute[], void, { rejectValue
   }
 );
 
-export const fetchMenuByRole = createAsyncThunk<Menu[], string, { rejectValue: string }>(
+export const fetchMenuByRole = createAsyncThunk<MenuRole[], string, { rejectValue: string }>(
   "menu/fetchMenuByRole",
   async (role, { rejectWithValue }) => {
     try {
@@ -314,8 +330,8 @@ const actionSlice = createSlice({
       .addCase(fetchMenuRoutes.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || "Error loading menus..";
       })
-      .addCase(fetchMenuByRole.fulfilled, (state, action: PayloadAction<Menu[]>) => {
-        state.menus = action.payload;
+      .addCase(fetchMenuByRole.fulfilled, (state, action: PayloadAction<MenuRole[]>) => {
+        state.menusRoles = action.payload;
         state.isLoaded = true;
         state.errorMessage = null;
       })

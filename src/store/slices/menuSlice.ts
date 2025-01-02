@@ -46,6 +46,19 @@ interface MenuRole {
   subMenu?: MenuRole[];
 }
 
+interface MenuTree {
+  _id: string;
+  label: string;
+  component: string;
+  parentId: string;
+  order: number;  
+  path: string; // Ruta del menú (e.g., '/productos')
+  icon: string;
+  divider: boolean;
+  permissions: Permission[];
+  subMenu?: MenuTree[];
+}
+
 
 interface MenuState {
     isLoaded: boolean;
@@ -55,6 +68,7 @@ interface MenuState {
     menusRoot: MenuRoot[];
     menusRoute: MenuRoute[];
     menusRoles: MenuRole[];
+    menusTrees: MenuTree[];
     errorMessage: string | null;
     successMessage: string | null;
 }
@@ -73,6 +87,7 @@ const initialState: MenuState = {
   menusRoot: [],
   menusRoute: [],
   menusRoles: [],
+  menusTrees: [],
   errorMessage: null,
   successMessage: null,
 };
@@ -150,6 +165,23 @@ export const fetchMenuByRole = createAsyncThunk<MenuRole[], string, { rejectValu
   }
 );
 
+export const fetchMenuTree = createAsyncThunk<
+MenuTree[],
+void,
+{ rejectValue: string }
+>("actions/fetchMenuTree", async (_, { rejectWithValue }) => {
+    try {
+      console.log('fetchMenuTree')
+      const response = await axiosInstance.get(`/menus/tree`);
+      return response.data; // Devuelve los menús asociados al rol
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error fetching menus tree");
+      }
+      return rejectWithValue("Unknown error occurred");
+    }
+  }
+);
 
 // Thunks
 export const fetchMenus = createAsyncThunk<
@@ -336,6 +368,14 @@ const actionSlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(fetchMenuByRole.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading menus";
+      })
+      .addCase(fetchMenuTree.fulfilled, (state, action: PayloadAction<MenuTree[]>) => {
+        state.menusTrees = action.payload;
+        state.isLoaded = true;
+        state.errorMessage = null;
+      })
+      .addCase(fetchMenuTree.rejected, (state, action: PayloadAction<string | undefined>) => {
         state.errorMessage = action.payload || "Error loading menus";
       });
 

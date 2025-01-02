@@ -7,7 +7,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
 import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
-import { fetchMenus, fetchMenuByRole } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
+import { fetchMenus, fetchMenuByRole, fetchMenuTree } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
 import { menuAdmin } from './AdminMenu';
 
 // JSON de menú dinámico
@@ -19,8 +19,8 @@ interface AdminSidebarProps {
 
 interface MenuItem {
   _id?: string; // ID único del menú
-  name?: string; // Etiqueta del menú
-  route?: string; // Ruta asociada al menú
+  component?: string; // Etiqueta del menú
+  path?: string; // Ruta asociada al menú
   icon?: OverridableComponent<SvgIconTypeMap<Record<string, unknown>, "svg">> & { muiName: string }; // Ícono de Material UI
   divider?: boolean; // Indica si es un divisor
   subMenu?: MenuItem[]; // Submenús anidados
@@ -28,7 +28,7 @@ interface MenuItem {
 
 const filterMenuItems = (
   menuItems: MenuItem[],
-  filter: { name: string; route: string }[]
+  filter: { component: string; path: string }[]
 ): MenuItem[] => {
   return menuItems
     .map((item) => {
@@ -36,10 +36,10 @@ const filterMenuItems = (
 
       // Verifica coincidencias ignorando mayúsculas/minúsculas
       const match = filter.some((f) => {
-        const filterName = f.name?.toLowerCase() || '';
-        const filterRoute = f.route?.toLowerCase() || '';
-        const itemName = item.name?.toLowerCase() || '';
-        const itemPath = item.route?.toLowerCase() || '';
+        const filterName = f.component?.toLowerCase() || '';
+        const filterRoute = f.path?.toLowerCase() || '';
+        const itemName = item.component?.toLowerCase() || '';
+        const itemPath = item.path?.toLowerCase() || '';
         return filterName === itemName && filterRoute === itemPath;
       });
 
@@ -73,7 +73,7 @@ const filterMenuItems = (
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const dispatch = useAppDispatch();
-  const { menus, menusRoles, isLoaded } = useAppSelector((state) => state.menus);
+  const { menus, menusRoles, menusTrees, isLoaded } = useAppSelector((state) => state.menus);
   const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
   const location = useLocation();
 
@@ -85,6 +85,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
     if (!isLoaded && role) {
       dispatch(fetchMenus()); // Pasa el rol al thunk
       dispatch(fetchMenuByRole(role)); // Pasa el rol al thunk
+      dispatch(fetchMenuTree()); // Pasa el rol al thunk
     }
   }, [dispatch, isLoaded, role]);
 
@@ -170,14 +171,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   // console.log('menus->', menus)
 
   // Obtén los menús filtrados basados en los datos cargados desde Redux y el filtro estático
-  const deepCopyMenuItems = JSON.parse(JSON.stringify(menus));
+  const deepCopyMenuItems = JSON.parse(JSON.stringify(menusTrees));
   const filteredMenus = filterMenuItems(deepCopyMenuItems, menusRoles.map((menu) => ({
-    name: menu.label, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
-    route: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
+    component: menu.component, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
+    path: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
   })));
   console.log('menuItems->', menuItems)
   console.log('menus->', menus)
   console.log('menusRoles->', menusRoles)
+  console.log('menusTrees->', menusTrees)
   console.log('filteredMenus->', filteredMenus)
 
   return (

@@ -23,7 +23,7 @@ interface MenuItem {
   path?: string; // Ruta asociada al menú
   icon?: OverridableComponent<SvgIconTypeMap<Record<string, unknown>, "svg">> & { muiName: string }; // Ícono de Material UI
   divider?: boolean; // Indica si es un divisor
-  subMenu?: MenuItem[]; // Submenús anidados
+  subMenus?: MenuItem[]; // Submenús anidados
 }
 
 const filterMenuItems = (
@@ -44,20 +44,20 @@ const filterMenuItems = (
       });
 
       // Si hay submenús, aplica el filtrado recursivo
-      const filteredSubMenu = item.subMenu
-        ? filterMenuItems(item.subMenu, filter)
+      const filteredSubMenu = item.subMenus
+        ? filterMenuItems(item.subMenus, filter)
         : [];
 
       // Retorna un nuevo objeto con los submenús filtrados
       if (match || filteredSubMenu.length > 0) {
-        console.log("Item procesado:", {
-          ...item,
-          subMenu: filteredSubMenu,
-          icon: item.icon,
-        });
+        // console.log("Item procesado:", {
+        //   ...item,
+        //   subMenu: filteredSubMenu,
+        //   icon: item.icon,
+        // });
         return {
           ...item,
-          subMenu: filteredSubMenu,
+          //subMenus: filteredSubMenu,
           icon: item.icon, // Copia explícitamente el icono
         };
       }
@@ -200,49 +200,55 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                 <ListItem disableGutters>
                   <Button
                     component={RouterLink}
-                    to={item.route || '#'}
-                    onClick={item.subMenu ? () => toggleSubMenu(item.name) : undefined}
+                    to={item.path || '#'}
+                    onClick={item.subMenus ? () => toggleSubMenu(item.component) : undefined}
                     sx={{
                       textDecoration: 'none',
                       width: '100%',
                       justifyContent: 'flex-start',
                       padding: 0,
-                      backgroundColor: item.route && isActive(item.route) ? '#1e3a8a' : 'transparent',
+                      backgroundColor: item.path && isActive(item.path) ? '#1e3a8a' : 'transparent',
                       '&:hover': { backgroundColor: '#314e8a' },
                     }}
                   >
-                    <ListItemIcon sx={{ marginLeft: 2 }}>
+                    
+                    {/* <ListItemIcon sx={{ marginLeft: 2 }}>
                       {item.icon && (
                         <item.icon sx={{ color: isActive(item.route || '') ? '#ffffff' : '#b3c3df' }} />
                       )}
+                    </ListItemIcon> */}
+
+                    <ListItemIcon sx={{ marginLeft: 2 }}>
+                      {item.icon && React.createElement(item.icon, { sx: { color: '#b3c3df' } })}
                     </ListItemIcon>
-                    {isOpen && <ListItemText primary={item.name} sx={{ color: '#ffffff' }} />}
-                    {isOpen && item.subMenu && (
-                      openMenus[item.name] ? <ExpandLess sx={{ color: '#ffffff' }} /> : <ExpandMore sx={{ color: '#ffffff' }} />
+                    
+                    {isOpen && <ListItemText primary={item.component} sx={{ color: '#ffffff' }} />}
+                    {isOpen && item.subMenus && (
+                      openMenus[item.component] ? <ExpandLess sx={{ color: '#ffffff' }} /> : <ExpandMore sx={{ color: '#ffffff' }} />
                     )}
                   </Button>
                 </ListItem>
-                {item.subMenu && (
-                  <Collapse in={openMenus[item.name]} timeout="auto" unmountOnExit>
+                {item.subMenus && (
+                  <Collapse in={openMenus[item.component]} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
-                      {item.subMenu.map((subItem, subIndex) => (
+                      {item.subMenus.map((subItem, subIndex) => (
                         <ListItem key={subIndex} disableGutters>
                           <Button
                             component={RouterLink}
-                            to={subItem.route}
+                            to={subItem.path}
                             sx={{
                               textDecoration: 'none',
                               width: '100%',
                               justifyContent: 'flex-start',
                               padding: 0,
-                              backgroundColor: isActive(subItem.route) ? '#1e3a8a' : 'transparent',
+                              backgroundColor: isActive(subItem.path) ? '#1e3a8a' : 'transparent',
                               '&:hover': { backgroundColor: '#314e8a' },
                             }}
                           >
                             <ListItemIcon sx={{ marginLeft: 4 }}>
-                              <subItem.icon sx={{ color: isActive(subItem.route) ? '#ffffff' : '#b3c3df' }} />
+                              <subItem.icon sx={{ color: isActive(subItem.path) ? '#ffffff' : '#b3c3df' }} />
                             </ListItemIcon>
-                            {isOpen && <ListItemText primary={subItem.name} sx={{ color: '#ffffff' }} />}
+                            {isOpen && <ListItemText primary={subItem.component} sx={{ color: '#ffffff' }} />}
                           </Button>
                         </ListItem>
                       ))}

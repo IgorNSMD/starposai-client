@@ -10,41 +10,41 @@ import BoltIcon from '@mui/icons-material/Bolt';
 // JSON de menú dinámico
 export const menuAdmin = [
     {
-      name: "Dashboard",
+      component: "Dashboard",
       icon: DashboardIcon, // Componente React
-      route: "/dashboard",
+      path: "/dashboard",
       divider: false
     },
     {
-      name: "Management",
+      component: "Management",
       icon: SecurityIcon,
-      route: "/Admin",
+      path: "/Admin",
       divider: false,
-      subMenu: [
+      subMenus: [
         {
-          name: "Permissions",
+          component: "Permissions",
           icon: SecurityIcon,
-          route: "/admin/permissions"
+          path: "/admin/permissions"
         },
         {
-          name: "Actions",
+          component: "Actions",
           icon: BoltIcon,
-          route: "/admin/actions"
+          path: "/admin/actions"
         },
         {
-          name: "Roles",
+          component: "Roles",
           icon: GroupIcon,
-          route: "/admin/roles"
+          path: "/admin/roles"
         },
         {
-          name: "Menus",
+          component: "Menus",
           icon: MenuIcon,
-          route: "/admin/menus"
+          path: "/admin/menus"
         },
         {
-          name: "Users",
+          component: "Users",
           icon: PersonIcon,
-          route: "/admin/users"
+          path: "/admin/users"
         }
       ]
     },
@@ -52,15 +52,15 @@ export const menuAdmin = [
       divider: true
     },
     {
-      name: "Settings",
+      component: "Settings",
       icon: SettingsIcon,
-      route: "/settings",
+      path: "/settings",
       divider: false
     },
     {
-      name: "Logout",
+      component: "Logout",
       icon: ExitToAppIcon,
-      route: "/logout",
+      path: "/logout",
       divider: false
     }
   ];

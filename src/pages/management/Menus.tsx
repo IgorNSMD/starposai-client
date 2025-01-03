@@ -14,7 +14,7 @@ import {
   MenuItem,
 } from '@mui/material';
 
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 //import SaveIcon from '@mui/icons-material/Save';
@@ -57,6 +57,11 @@ interface FormData {
   divider: boolean;
 }
 
+interface Row { // Define la interfaz Row (o usa la que ya tengas)
+  id: string;
+  parentId?: string; // parentId también puede ser undefined
+  // ... otras propiedades
+}
 
 const Menus: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -283,19 +288,47 @@ const Menus: React.FC = () => {
     description: permission.description,
   }));
 
-  const columns = [
-    { field: 'label', headerName: 'label', flex: 1 },
+  const calculateIndentation = (rowId: string | undefined): number => {
+    let level = 0;
+    let current: Row | undefined = rows.find((row) => row.id === rowId); // Tipa 'current' también
+    let nextParent: string | undefined; // Tipa 'nextParent' explícitamente
+
+    while (current) {
+        nextParent = current.parentId;
+        if (nextParent) {
+            level += 1;
+            current = rows.find((row) => row.id === nextParent);
+        } else {
+            break;
+        }
+    }
+
+    return level;
+  };
+
+  
+
+  const columns: GridColDef[] = [
+    {
+      field: 'label',
+      headerName: 'Label',
+      flex: 1,
+      renderCell: (params) => {
+        const indentation = calculateIndentation(params.row.id);
+        return (
+          <Box sx={{ paddingLeft: `${indentation * 16}px` }}> {/* Sangría visual */}
+            {params.value}
+          </Box>
+        );
+      },
+    },
     {
       field: 'actions',
       headerName: 'Actions',
       flex: 0.5,
-      sortable: false,
-      renderCell: (params: GridRenderCellParams) => (
+      renderCell: (params) => (
         <>
-          <IconButton
-            color="primary"
-            onClick={() => handleEdit(params.row.id)}
-          >
+          <IconButton color="primary" onClick={() => handleEdit(params.row.id)}>
             <EditIcon />
           </IconButton>
           <IconButton
@@ -311,11 +344,11 @@ const Menus: React.FC = () => {
   
   //console.log('actions -> ', actions)
 
-  const rows = menus.filter((act) => act._id && act.label ) // Filtra registros válidos
-  .map((act) => ({
-    id: act._id, // Usa `_id` como identificador único
-    label: act.label
-  }));
+  const rows = menus.map((menu) => ({
+    id: menu._id,
+    label: menu.label,
+    parentId: menu.parentId,
+  }))
 
   //console.log('menusRoot->',menusRoot)
 

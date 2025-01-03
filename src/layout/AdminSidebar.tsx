@@ -204,7 +204,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
     <Box
       sx={{
         ...sidebarStyle,
-        width: isOpen ? '250px' : '70px',
+        width: isOpen ? '250px' : '0px',
         transition: 'width 0.3s',
       }}
     >

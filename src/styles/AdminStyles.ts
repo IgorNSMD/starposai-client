@@ -19,14 +19,12 @@ export const sidebarStyle: SxProps<Theme> = {
   position: 'fixed',
   top: '64px',
   height: 'calc(100vh - 64px)',
-  overflowY: 'auto',
+  overflow: 'hidden', // Oculta el contenido al contraerse
+  zIndex: 1200,
+  transition: 'width 0.3s ease-in-out', // Animación suave
+  width: '250px', // Ancho cuando está abierto
   '@media (max-width: 960px)': {
-    position: 'relative', // Cambia a diseño no fijo
-    height: 'auto',
-    top: '0',
-    flexDirection: 'row', // Opcional: Cambiar a diseño horizontal
-    justifyContent: 'space-around',
-    padding: '10px',
+    width: '0', // Sidebar completamente contraído
   },
 };
 

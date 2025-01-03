@@ -71,7 +71,12 @@ const filterMenuItems = (
     .filter((item): item is MenuItem => item !== null); // TypeScript narrowing
 };
 
-
+const logoutItem: MenuItem = {
+  component: "Logout",
+  icon: "uploads\\menuicons\\logout.png", 
+  path: "/logout",
+  divider: false,
+};
 
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
@@ -177,10 +182,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
 
   // Obtén los menús filtrados basados en los datos cargados desde Redux y el filtro estático
   const deepCopyMenuItems = JSON.parse(JSON.stringify(menusTrees));
-  const filteredMenus = filterMenuItems(deepCopyMenuItems, menusRoles.map((menu) => ({
+  let filteredMenus = filterMenuItems(deepCopyMenuItems, menusRoles.map((menu) => ({
     component: menu.component, // Asegúrate de que `label` está presente y corresponde a `name` en el filtro
     path: menu.path, // Asegúrate de que `path` está presente y corresponde a `route` en el filtro
   })));
+
+  filteredMenus = [...filteredMenus, logoutItem];
   console.log('menuItems->', menuItems)
   console.log('menus->', menus)
   console.log('menusRoles->', menusRoles)

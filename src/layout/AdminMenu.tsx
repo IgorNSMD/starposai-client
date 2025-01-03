@@ -1,4 +1,4 @@
-import DashboardIcon from '@mui/icons-material/Dashboard';
+//import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import SecurityIcon from '@mui/icons-material/Security';
@@ -11,7 +11,7 @@ import BoltIcon from '@mui/icons-material/Bolt';
 export const menuAdmin = [
     {
       component: "Dashboard",
-      icon: DashboardIcon, // Componente React
+      icon: "uploads\\menuicons\\1735866017467-dashboard.svg", //DashboardIcon, // Componente React
       path: "/dashboard",
       divider: false
     },

@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, SvgIconTypeMap, } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { OverridableComponent } from '@mui/material/OverridableComponent';
+//import { OverridableComponent } from '@mui/material/OverridableComponent';
 
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { sidebarStyle } from '../styles/AdminStyles';
 import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
 import { fetchMenus, fetchMenuByRole, fetchMenuTree } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
+import { baseURL_MENUICONS } from '../utils/Parameters'; // Importa tu baseURL exportable
+
 import { menuAdmin } from './AdminMenu';
 
 // JSON de menú dinámico
@@ -21,7 +23,8 @@ interface MenuItem {
   _id?: string; // ID único del menú
   component?: string; // Etiqueta del menú
   path?: string; // Ruta asociada al menú
-  icon?: OverridableComponent<SvgIconTypeMap<Record<string, unknown>, "svg">> & { muiName: string }; // Ícono de Material UI
+  //icon?: OverridableComponent<SvgIconTypeMap<Record<string, unknown>, "svg">> & { muiName: string }; // Ícono de Material UI
+  icon: string | File; // Ahora acepta una string o un archivo File
   divider?: boolean; // Indica si es un divisor
   subMenus?: MenuItem[]; // Submenús anidados
 }
@@ -89,8 +92,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
     }
   }, [dispatch, isLoaded, role]);
 
-  const toggleSubMenu = (name: string) => {
-    setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
+  const toggleSubMenu = (name: string | undefined) => {
+    if (name) {
+      setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
+    }
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -182,6 +187,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   console.log('menusTrees->', menusTrees)
   console.log('filteredMenus->', filteredMenus)
 
+  const getIconUrl = (iconPath: string) => {
+    const baseUrl = baseURL_MENUICONS; // La URL base de tu servidor backend
+    //console.log('baseURL, iconPath', baseUrl, iconPath)
+    return iconPath ? `${baseUrl}/${iconPath}` : ""; // Combina la URL base con la ruta relativa
+  };
+
   return (
     <Box
       sx={{
@@ -191,7 +202,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
       }}
     >
       <List>
-        {menuItems.map((item, index) => (
+        {filteredMenus.map((item, index) => (
           <React.Fragment key={index}>
             {item.divider ? (
               <Divider sx={{ backgroundColor: '#ffffff' }} />
@@ -219,36 +230,82 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                     </ListItemIcon> */}
 
                     <ListItemIcon sx={{ marginLeft: 2 }}>
-                      {item.icon && React.createElement(item.icon, { sx: { color: '#b3c3df' } })}
+                      {typeof item.icon === "string" ? (
+                        <img
+                          src={getIconUrl(item.icon)} // Usa la URL relativa o absoluta
+                          alt={`${item.component}-icon`}
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            objectFit: "contain",
+                            marginTop: "5px",
+                            filter: isActive(item.path ?? "")
+                              ? "brightness(2) contrast(1.2)" // Mayor brillo y contraste para íconos activos
+                              : "brightness(2) contrast(1.2)",
+                            transition: "filter 0.3s ease", // Suave transición al cambiar estado
+                          }}
+                        />
+                      ) : (
+                        <div> {/* Manejo de fallback en caso de error */} </div>
+                      )}
                     </ListItemIcon>
+
                     
                     {isOpen && <ListItemText primary={item.component} sx={{ color: '#ffffff' }} />}
                     {isOpen && item.subMenus && (
-                      openMenus[item.component] ? <ExpandLess sx={{ color: '#ffffff' }} /> : <ExpandMore sx={{ color: '#ffffff' }} />
+                      openMenus[item.component ?? ''] ? (
+                        <ExpandLess sx={{ color: '#ffffff' }} />
+                      ) : (
+                        <ExpandMore sx={{ color: '#ffffff' }} />
+                      )
                     )}
                   </Button>
                 </ListItem>
                 {item.subMenus && (
-                  <Collapse in={openMenus[item.component]} timeout="auto" unmountOnExit>
+                  <Collapse in={openMenus[item.component ?? '']} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
                       {item.subMenus.map((subItem, subIndex) => (
                         <ListItem key={subIndex} disableGutters>
                           <Button
                             component={RouterLink}
-                            to={subItem.path}
+                            to={subItem.path || '#'}
                             sx={{
                               textDecoration: 'none',
                               width: '100%',
                               justifyContent: 'flex-start',
                               padding: 0,
-                              backgroundColor: isActive(subItem.path) ? '#1e3a8a' : 'transparent',
+                              backgroundColor: isActive(subItem.path ?? '') ? '#1e3a8a' : 'transparent',
                               '&:hover': { backgroundColor: '#314e8a' },
                             }}
                           >
+
                             <ListItemIcon sx={{ marginLeft: 4 }}>
-                              <subItem.icon sx={{ color: isActive(subItem.path) ? '#ffffff' : '#b3c3df' }} />
+                              {typeof subItem.icon === "string" ? (
+                                <img
+                                  src={getIconUrl(subItem.icon)} // Usa la URL relativa o absoluta
+                                  alt={`${subItem.component}-icon`}
+                                  style={{
+                                    width: "24px",
+                                    height: "24px",
+                                    objectFit: "contain",
+                                    marginTop: "5px",
+                                    filter: isActive(subItem.path ?? "")
+                                      ? "brightness(2) contrast(1.2)" // Mayor brillo y contraste para íconos activos
+                                      : "brightness(2) contrast(1.2)",
+                                    transition: "filter 0.3s ease", // Suave transición al cambiar estado
+                                  }}
+                                />
+                              ) : (
+                                <div> {/* Manejo de fallback en caso de error */} </div>
+                              )}
                             </ListItemIcon>
-                            {isOpen && <ListItemText primary={subItem.component} sx={{ color: '#ffffff' }} />}
+
+                            {isOpen && (
+                              <ListItemText
+                                primary={subItem.component}
+                                sx={{ color: '#ffffff' }}
+                              />
+                            )}
                           </Button>
                         </ListItem>
                       ))}

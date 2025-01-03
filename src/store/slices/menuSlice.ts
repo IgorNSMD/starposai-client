@@ -28,7 +28,7 @@ interface Menu {
   parentId: string;
   sequence: number;  
   path: string; // Ruta del menú (e.g., '/productos')
-  icon: string;
+  icon: string | File; // Ahora acepta una string o un archivo File
   divider: boolean;
   permissions: Permission[];
 }
@@ -40,7 +40,7 @@ interface MenuRole {
   parentId: string;
   order: number;  
   path: string; // Ruta del menú (e.g., '/productos')
-  icon: string;
+  icon: string | File; // Ahora acepta una string o un archivo File
   divider: boolean;
   permissions: Permission[];
   subMenu?: MenuRole[];
@@ -53,7 +53,7 @@ interface MenuTree {
   parentId: string;
   order: number;  
   path: string; // Ruta del menú (e.g., '/productos')
-  icon: string;
+  icon: string | File; // Ahora acepta una string o un archivo File
   divider: boolean;
   permissions: Permission[];
   subMenu?: MenuTree[];

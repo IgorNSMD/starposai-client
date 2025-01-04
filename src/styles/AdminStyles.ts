@@ -48,6 +48,7 @@ export const mainContentStyle: SxProps<Theme> = {
   flexGrow: 1,
   padding: '20px',
   overflow: 'auto',
+  transition: 'margin-left 0.3s ease-in-out',
   marginLeft: '250px',
   '@media (max-width: 960px)': {
     marginLeft: '0',

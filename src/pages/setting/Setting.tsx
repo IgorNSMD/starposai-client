@@ -30,7 +30,7 @@ const SettingsPage: React.FC = () => {
 
   return (
     <Container sx={mainContentStyle}>
-      <Typography variant="h4" sx={{ marginBottom: '20px', color: '#37517e', fontWeight: 'bold' }}>
+      <Typography variant="h4" sx={{ marginTop: '20px', marginBottom: '10px', color: '#37517e', fontWeight: 'bold' }}>
         Settings
       </Typography>
       <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 2 }}>

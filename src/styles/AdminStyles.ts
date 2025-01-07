@@ -296,3 +296,21 @@ export const menusTable: SxProps<Theme> = {
     overflowX: 'auto',
   },
 };
+
+
+export const formContainerTab: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'left',
+  justifyContent: 'center',
+  padding: '20px',
+  backgroundColor: '#f9f9f9',
+  borderRadius: '8px',
+  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+  maxWidth: '800px',
+  //margin: '20px auto',
+  width: '100%',
+  '@media (max-width: 600px)': {
+    padding: '10px',
+  },
+};

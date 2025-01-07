@@ -74,6 +74,24 @@ export const formContainer: SxProps<Theme> = {
   },
 };
 
+// Estilo para el contenedor general del formulario
+export const formContainer_v2: SxProps<Theme> = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '20px',
+  backgroundColor: '#f9f9f9',
+  borderRadius: '8px',
+  boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+  maxWidth: '1000px',
+  margin: '20px auto',
+  width: '100%',
+  '@media (max-width: 600px)': {
+    padding: '10px',
+  },
+};
+
 // Estilo para los campos de texto (inputs y textarea)
 export const inputField: SxProps<Theme> = {
   width: '100%',

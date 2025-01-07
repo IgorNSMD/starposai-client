@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Tabs, Tab, Typography, Container } from '@mui/material';
-import { mainContentStyle } from '../../styles/AdminStyles';
+import { Box, Tabs, Tab, Typography, Container, Paper } from '@mui/material';
+import { formContainer_v2, formTitle, inputContainer, mainContentStyle } from '../../styles/AdminStyles';
 import GeneralSettings from './GeneralSettings'; // Componente para General Settings
 
 const TabPanel: React.FC<{
@@ -29,42 +29,45 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <Container sx={mainContentStyle}>
-      <Typography variant="h4" sx={{ marginTop: '20px', marginBottom: '10px', color: '#37517e', fontWeight: 'bold' }}>
-        Settings
-      </Typography>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 2 }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          textColor="primary"
-          indicatorColor="primary"
-          variant="scrollable"
-          scrollButtons="auto"
-        >
-          <Tab label="General Settings" />
-          <Tab label="Sales Settings" />
-          <Tab label="Product Settings" />
-          <Tab label="Notification Settings" />
-          <Tab label="Fiscal Settings" />
-        </Tabs>
-      </Box>
-      <TabPanel value={activeTab} index={0}>
-        <GeneralSettings />
-      </TabPanel>
-      <TabPanel value={activeTab} index={1}>
-        <Typography>Sales Settings Content</Typography>
-      </TabPanel>
-      <TabPanel value={activeTab} index={2}>
-        <Typography>Product Settings Content</Typography>
-      </TabPanel>
-      <TabPanel value={activeTab} index={3}>
-        <Typography>Notification Settings Content</Typography>
-      </TabPanel>
-      <TabPanel value={activeTab} index={4}>
-        <Typography>Fiscal Settings Content</Typography>
-      </TabPanel>
-    </Container>
+    <Box sx={formContainer_v2}>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
+        <Typography sx={formTitle}>
+          Settings
+        </Typography>
+        <Box sx={inputContainer}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            textColor="primary"
+            indicatorColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            <Tab label="General Settings" />
+            <Tab label="Sales Settings" />
+            <Tab label="Product Settings" />
+            <Tab label="Notification Settings" />
+            <Tab label="Fiscal Settings" />
+          </Tabs>
+        </Box>
+        <TabPanel value={activeTab} index={0}>
+          <GeneralSettings />
+        </TabPanel>
+        <TabPanel value={activeTab} index={1}>
+          <Typography>Sales Settings Content</Typography>
+        </TabPanel>
+        <TabPanel value={activeTab} index={2}>
+          <Typography>Product Settings Content</Typography>
+        </TabPanel>
+        <TabPanel value={activeTab} index={3}>
+          <Typography>Notification Settings Content</Typography>
+        </TabPanel>
+        <TabPanel value={activeTab} index={4}>
+          <Typography>Fiscal Settings Content</Typography>
+        </TabPanel>        
+
+      </Paper>
+    </Box>
   );
 };
 

@@ -161,6 +161,7 @@ export const inputContainer: SxProps<Theme> = {
   display: 'flex',
   flexDirection: 'row',
   gap: '20px',
+  padding: '10px',
   width: '100%',
   '@media (max-width: 960px)': { // md breakpoint
     flexDirection: 'column',
@@ -330,5 +331,23 @@ export const formContainerTab: SxProps<Theme> = {
   width: '100%',
   '@media (max-width: 600px)': {
     padding: '10px',
+  },
+};
+
+// Estilo para el botón guardar
+export const saveButton: SxProps<Theme> = {
+  backgroundColor: '#47b2e4',
+  color: '#ffffff',
+  borderRadius: '20px',
+  padding: '10px 20px',
+  textTransform: 'none',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  '&:hover': {
+      backgroundColor: '#3699c9',
+  },
+  '@media (max-width: 600px)': {
+      fontSize: '14px',
+      padding: '8px 16px',
   },
 };

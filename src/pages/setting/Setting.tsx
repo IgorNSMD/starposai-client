@@ -42,12 +42,36 @@ const SettingsPage: React.FC = () => {
             indicatorColor="primary"
             variant="scrollable"
             scrollButtons="auto"
+            sx={{
+              '& .MuiTab-root': {
+                color: '#37517e', // Azul suave para texto de pestañas inactivas
+                fontWeight: '500',
+                padding: '10px 20px',
+                transition: 'background-color 0.3s ease, color 0.3s ease',
+                borderBottom: '1px solid #ddd', // Línea sutil para separar
+                borderRadius: '4px 4px 0 0',
+                '&:hover': {
+                  backgroundColor: '#f0f7ff', // Fondo claro al pasar el mouse
+                  color: '#1e3a8a', // Azul más fuerte al pasar el mouse
+                },
+              },
+              '& .MuiTab-root.Mui-selected': {
+                color: '#ffffff', // Texto blanco para la pestaña activa
+                backgroundColor: '#37517e', // Fondo azul para la pestaña activa
+                fontWeight: 'bold', // Más peso para la pestaña activa
+                borderBottom: 'none', // Quitar línea inferior
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#37517e', // Indicador azul oscuro para la pestaña activa
+                height: '3px',
+              },
+            }}
           >
-            <Tab label="General Settings" />
-            <Tab label="Sales Settings" />
-            <Tab label="Product Settings" />
-            <Tab label="Notification Settings" />
-            <Tab label="Fiscal Settings" />
+            <Tab label="General" />
+            <Tab label="Sales" />
+            <Tab label="Product" />
+            <Tab label="Notification" />
+            <Tab label="Fiscal" />
           </Tabs>
         </Box>
         <TabPanel value={activeTab} index={0}>

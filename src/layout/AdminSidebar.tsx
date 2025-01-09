@@ -81,7 +81,7 @@ const logoutItem: MenuItem = {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const dispatch = useAppDispatch();
-  const { menus, menusRoles, menusTrees, isLoaded } = useAppSelector((state) => state.menus);
+  const { menus, menusRoles, menusTrees, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
   const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
   const location = useLocation();
 
@@ -90,12 +90,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
 
   // Cargar los menús al montar el componente
   useEffect(() => {
-    if (!isLoaded && role) {
-      dispatch(fetchMenus()); // Pasa el rol al thunk
-      dispatch(fetchMenuByRole(role)); // Pasa el rol al thunk
-      dispatch(fetchMenuTree()); // Pasa el rol al thunk
+    console.log("Executing useEffect: isLoaded =", isLoaded, ", role =", role);
+    if (!isMenuLoaded) {
+      dispatch(fetchMenus());
     }
-  }, [dispatch, isLoaded, role]);
+    if (!isMenuByRoleLoaded && role) {
+      dispatch(fetchMenuByRole(role));
+    }
+    if (!isMenuTreeLoaded) {
+      dispatch(fetchMenuTree());
+    }
+  }, [dispatch, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded, role]);
 
   const toggleSubMenu = (name: string | undefined) => {
     if (name) {

@@ -62,6 +62,9 @@ interface MenuTree {
 
 interface MenuState {
     isLoaded: boolean;
+    isMenuLoaded: boolean,
+    isMenuByRoleLoaded: boolean,
+    isMenuTreeLoaded: boolean    
     menus: Menu[];
     menuInfo: Menu | null;
     permissions: Permission[]; // Agregamos los permisos aquí
@@ -81,6 +84,9 @@ interface MenuRoot {
 
 const initialState: MenuState = {
   isLoaded: false,
+  isMenuLoaded: false,
+  isMenuByRoleLoaded: false,
+  isMenuTreeLoaded: false,  
   menus: [],
   menuInfo: null,
   permissions: [],
@@ -297,6 +303,10 @@ export const deleteMenu = createAsyncThunk<
   }
 });
 
+const areAllMenusLoaded = (state: MenuState) => {
+  return state.isMenuLoaded && state.isMenuByRoleLoaded && state.isMenuTreeLoaded;
+};
+
 // Slice
 const actionSlice = createSlice({
   name: "menus",
@@ -310,8 +320,9 @@ const actionSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchMenus.fulfilled, (state, action: PayloadAction<Menu[]>) => {
-        state.isLoaded = true;
         state.menus = action.payload;
+        state.isMenuLoaded = true; // Marca como cargado solo este dato
+        state.isLoaded = areAllMenusLoaded(state); // Actualiza isLoaded solo si todos están listos
         state.errorMessage = null;
       })
       .addCase(fetchMenus.rejected, (state, action: PayloadAction<string | undefined>) => {
@@ -365,6 +376,8 @@ const actionSlice = createSlice({
       .addCase(fetchMenuByRole.fulfilled, (state, action: PayloadAction<MenuRole[]>) => {
         state.menusRoles = action.payload;
         state.isLoaded = true;
+        state.isMenuByRoleLoaded = true; // Marca como cargado solo este dato
+        state.isLoaded = areAllMenusLoaded(state); // Actualiza isLoaded solo si todos están listos        
         state.errorMessage = null;
       })
       .addCase(fetchMenuByRole.rejected, (state, action: PayloadAction<string | undefined>) => {
@@ -372,7 +385,8 @@ const actionSlice = createSlice({
       })
       .addCase(fetchMenuTree.fulfilled, (state, action: PayloadAction<MenuTree[]>) => {
         state.menusTrees = action.payload;
-        state.isLoaded = true;
+        state.isLoaded = areAllMenusLoaded(state); // Actualiza isLoaded solo si todos están listos
+        state.isMenuTreeLoaded = true;
         state.errorMessage = null;
       })
       .addCase(fetchMenuTree.rejected, (state, action: PayloadAction<string | undefined>) => {

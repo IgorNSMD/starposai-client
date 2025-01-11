@@ -4,6 +4,7 @@ import axiosInstance from "../../api/axiosInstance";
 // Define la interfaz para un parámetro
 export interface Parameter {
   _id: string;
+  category: string;
   key: string;
   value: string;
   description?: string;
@@ -38,10 +39,26 @@ export const fetchParameters = createAsyncThunk<Parameter[]>(
   }
 );
 
+export const fetchParametersByCategory = createAsyncThunk<Parameter[], string, { rejectValue: string }>(
+  "parameters/fetchParametersByCategory",
+  async (category, { rejectWithValue }) => {
+    try {
+      console.log('(fetchParametersByCategory)category->',category)
+      const response = await axiosInstance.get(`/parameters/category/${category}`);
+      return response.data; // Devuelve los menús asociados al rol
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error fetching menus by role");
+      }
+      return rejectWithValue("Unknown error occurred");
+    }
+  }
+);
+
 // Async thunk para agregar un nuevo parámetro
 export const addParameter = createAsyncThunk<
   Parameter,
-  { key: string; value: string; description?: string }
+  { category: string; key: string; value: string; description?: string }
 >(
   'parameters/addParameter',
   async (newParameter, { rejectWithValue }) => {
@@ -59,7 +76,7 @@ export const addParameter = createAsyncThunk<
 // Async thunk para actualizar un parámetro
 export const updateParameter = createAsyncThunk<
   Parameter,
-  { id: string; key: string; value: string; description?: string }
+  { id: string; category: string; key: string; value: string; description?: string }
 >(
   'parameters/updateParameter',
   async (updatedParameter, { rejectWithValue }) => {

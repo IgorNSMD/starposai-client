@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, SvgIconTypeMap, } from '@mui/material';
+import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 //import { OverridableComponent } from '@mui/material/OverridableComponent';
 
@@ -10,10 +10,10 @@ import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
 import { fetchMenus, fetchMenuByRole, fetchMenuTree } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
 import { baseURL_MENUICONS } from '../utils/Parameters'; // Importa tu baseURL exportable
 
-import { menuAdmin } from './AdminMenu';
+//import { menuAdmin } from './AdminMenu';
 
 // JSON de menú dinámico
-const menuItems = menuAdmin
+//const menuItems = menuAdmin
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -81,7 +81,8 @@ const logoutItem: MenuItem = {
 
 const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   const dispatch = useAppDispatch();
-  const { menus, menusRoles, menusTrees, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
+  //const { menus, menusRoles, menusTrees, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
+  const {menusRoles, menusTrees, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
   const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
   const location = useLocation();
 
@@ -193,11 +194,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
   })));
 
   filteredMenus = [...filteredMenus, logoutItem];
-  console.log('menuItems->', menuItems)
-  console.log('menus->', menus)
-  console.log('menusRoles->', menusRoles)
-  console.log('menusTrees->', menusTrees)
-  console.log('filteredMenus->', filteredMenus)
+  // console.log('menuItems->', menuItems)
+  // console.log('menus->', menus)
+  // console.log('menusRoles->', menusRoles)
+  // console.log('menusTrees->', menusTrees)
+  // console.log('filteredMenus->', filteredMenus)
 
   const getIconUrl = (iconPath: string) => {
     const baseUrl = baseURL_MENUICONS; // La URL base de tu servidor backend

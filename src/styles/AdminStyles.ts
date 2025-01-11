@@ -84,13 +84,18 @@ export const formContainer_v2: SxProps<Theme> = {
   backgroundColor: '#f9f9f9',
   borderRadius: '8px',
   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  maxWidth: '1000px',
+  maxWidth: '850px',
   margin: '20px auto',
   width: '100%',
+  '@media (max-width: 960px)': {
+    padding: '15px',
+  },
   '@media (max-width: 600px)': {
     padding: '10px',
+    maxWidth: '100%',
   },
 };
+
 
 // Estilo para los campos de texto (inputs y textarea)
 export const inputField: SxProps<Theme> = {
@@ -163,8 +168,8 @@ export const inputContainer: SxProps<Theme> = {
   gap: '20px',
   padding: '10px',
   width: '100%',
-  '@media (max-width: 960px)': { // md breakpoint
-    flexDirection: 'column',
+  '@media (max-width: 960px)': {
+    flexDirection: 'column', // Cambia a diseño vertical
     gap: '10px',
   },
 };
@@ -343,11 +348,13 @@ export const saveButton: SxProps<Theme> = {
   textTransform: 'none',
   fontSize: '16px',
   fontWeight: 'bold',
+  alignSelf: 'center',
   '&:hover': {
-      backgroundColor: '#3699c9',
+    backgroundColor: '#3699c9',
   },
   '@media (max-width: 600px)': {
-      fontSize: '14px',
-      padding: '8px 16px',
+    fontSize: '14px',
+    padding: '8px 16px',
+    alignSelf: 'flex-end',
   },
 };

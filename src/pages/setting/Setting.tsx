@@ -34,7 +34,13 @@ const SettingsPage: React.FC = () => {
         <Typography sx={formTitle}>
           Settings
         </Typography>
-        <Box sx={inputContainer}>
+        <Box sx={{
+                  ...inputContainer,
+                  flexDirection: 'column', // Forzar vertical en pantallas pequeñas
+                  '@media (max-width: 600px)': {
+                    padding: '10px',
+                  },
+                }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}

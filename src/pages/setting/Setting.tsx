@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Tabs, Tab, Typography, Container, Paper } from '@mui/material';
+import { Box, Tabs, Tab, Typography, Paper } from '@mui/material';
 import { formContainer_v2, formTitle, inputContainer, mainContentStyle } from '../../styles/AdminStyles';
 import GeneralSettings from './GeneralSettings'; // Componente para General Settings
 
@@ -74,10 +74,13 @@ const SettingsPage: React.FC = () => {
             }}
           >
             <Tab label="General" />
+            {/* 
             <Tab label="Sales" />
             <Tab label="Product" />
             <Tab label="Notification" />
-            <Tab label="Fiscal" />
+            <Tab label="Fiscal" /> 
+            */}
+            
           </Tabs>
         </Box>
         <TabPanel value={activeTab} index={0}>
@@ -94,7 +97,8 @@ const SettingsPage: React.FC = () => {
         </TabPanel>
         <TabPanel value={activeTab} index={4}>
           <Typography>Fiscal Settings Content</Typography>
-        </TabPanel>        
+        </TabPanel>         
+       
 
       </Paper>
     </Box>

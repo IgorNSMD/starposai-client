@@ -45,7 +45,7 @@ export const updateGeneralSettings = createAsyncThunk<
   { rejectValue: string }
 >("generalSettings/updateGeneralSettings", async (data, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put("/generalSettings", data);
+    const response = await axiosInstance.put("/settings/general", data);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -61,7 +61,7 @@ export const createGeneralSettings = createAsyncThunk<
   { rejectValue: string }
 >("generalSettings/createGeneralSettings", async (data, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/generalSettings", data);
+    const response = await axiosInstance.post("/settings/general", data);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

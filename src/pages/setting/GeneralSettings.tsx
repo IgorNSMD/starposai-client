@@ -5,6 +5,8 @@ import { inputContainer, inputField, saveButton } from '../../styles/AdminStyles
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import { fetchParameters } from '../../store/slices/parameterSlice';
 import { fetchGeneralSettings, updateGeneralSettings } from '../../store/slices/generalSettingSlice'
+import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
+import { useToastMessages } from '../../hooks/useToastMessage';
 
 interface FormData {
   companyName: string;
@@ -15,9 +17,8 @@ interface FormData {
 const GeneralSettings: React.FC = () => {
   const dispatch = useAppDispatch();
   const { parameters } = useAppSelector((state) => state.parameters);
-  const { settings, isLoaded } = useAppSelector(
-    (state) => state.generalSettings
-  );
+  const { settings, successMessage, errorMessage, isLoaded } = useAppSelector((state) => state.generalSettings);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
 
   const [formData, setFormData] = useState<FormData>({
     companyName: '',
@@ -40,6 +41,9 @@ const GeneralSettings: React.FC = () => {
     }
   }, [isLoaded, settings]);
 
+  // Manejo de mensajes
+  useToastMessages(successMessage, errorMessage);
+
   // Filtrar parámetros por categoría
   const currencyParameters = parameters.filter((param) => param.category === 'Currency');
   const languageParameters = parameters.filter((param) => param.category === 'Language');
@@ -56,9 +60,27 @@ const GeneralSettings: React.FC = () => {
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
-  const handleSave = () => {
-    dispatch(updateGeneralSettings(formData));
+  // Función para mostrar el cuadro de diálogo
+  const handleDialogOpen = () => {
+    setIsDialogOpen(true);
   };
+  
+  // Función para cerrar el cuadro de diálogo
+  const handleDialogClose = () => {
+      setIsDialogOpen(false);
+  };
+
+  const handleConfirmUpdate  = () => {
+    console.log('handleConfirmUpdate... ')
+    dispatch(updateGeneralSettings(formData))
+        .then(() => dispatch(fetchGeneralSettings())); // Actualiza la lista después de editar
+    //setConfirmDialogOpen(false); // Cierra el diálogo    
+    handleDialogClose();
+  };
+
+  // const handleSave = () => {
+  //   dispatch(updateGeneralSettings(formData));
+  // };
 
   return (
     <>
@@ -146,10 +168,23 @@ const GeneralSettings: React.FC = () => {
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '5px' }}> {/* Contenedor flex */}
-      <Button variant="contained" sx={saveButton} onClick={handleSave}>
+        <Button 
+          variant="contained" 
+          sx={saveButton} 
+          onClick={handleDialogOpen}
+          >
             Save
         </Button>      
       </Box>
+
+      {/* Cuadro de diálogo de confirmación */}
+      <Dialog
+        isOpen={isDialogOpen}
+        title="Confirm Update"
+        message="Are you sure you want to update this setting?"
+        onClose={handleDialogClose}
+        onConfirm={handleConfirmUpdate}
+      />      
 
     </>
 

@@ -50,7 +50,7 @@ const Permissions: React.FC = () => {
   }, [dispatch]);
 
   // Manejo de mensajes
-  useToastMessages(successMessage, errorMessage);;
+  useToastMessages(successMessage, errorMessage);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;

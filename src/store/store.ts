@@ -11,6 +11,7 @@ import menuReducer from './slices/menuSlice'; // Importa el nuevo reducer de men
 import actionReducer from './slices/actionSlice'; // Importa el nuevo reducer de actions
 import parameterReducer  from './slices/parameterSlice'; // Ajusta la ruta según tu estructura
 import generalSettingReducer  from './slices/generalSettingSlice'; // Ajusta la ruta según tu estructura
+import productReducer  from './slices/productSlice'; // Ajusta la ruta según tu estructura
 
 // Configuración de persistencia
 const persistConfig = {
@@ -32,6 +33,7 @@ const store = configureStore({
     actions: actionReducer, // Reducer para actions
     parameters: parameterReducer, // Reducer para actions
     generalSettings: generalSettingReducer, // Reducer para actions
+    products: productReducer, // Reducer para actions
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

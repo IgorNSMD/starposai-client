@@ -4,6 +4,7 @@ import { Box, TextField, Button, FormControl, InputLabel, Select, SelectChangeEv
 import { inputContainer, inputField, saveButton } from '../../styles/AdminStyles';
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import { fetchParameters } from '../../store/slices/parameterSlice';
+import { fetchGeneralSettings, updateGeneralSettings } from '../../store/slices/generalSettingSlice'
 
 interface FormData {
   companyName: string;
@@ -14,6 +15,9 @@ interface FormData {
 const GeneralSettings: React.FC = () => {
   const dispatch = useAppDispatch();
   const { parameters } = useAppSelector((state) => state.parameters);
+  const { settings, isLoaded } = useAppSelector(
+    (state) => state.generalSettings
+  );
 
   const [formData, setFormData] = useState<FormData>({
     companyName: '',
@@ -21,25 +25,39 @@ const GeneralSettings: React.FC = () => {
     language: '',
   });
 
+  useEffect(() => {
+    dispatch(fetchParameters());
+    dispatch(fetchGeneralSettings());    
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isLoaded && settings) {
+      setFormData({
+        companyName: settings.companyName || '',
+        currency: settings.currency || '',
+        language: settings.language || '',
+      });
+    }
+  }, [isLoaded, settings]);
+
   // Filtrar parámetros por categoría
   const currencyParameters = parameters.filter((param) => param.category === 'Currency');
   const languageParameters = parameters.filter((param) => param.category === 'Language');
 
-  useEffect(() => {
-    dispatch(fetchParameters());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchParameters());
-  }, [dispatch]);
-
-  console.log('parameters ->', parameters)
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
         // Manejador para Select
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
     //console.log('name, value',name, value)
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
+  };
+
+  const handleSave = () => {
+    dispatch(updateGeneralSettings(formData));
   };
 
   return (
@@ -49,7 +67,7 @@ const GeneralSettings: React.FC = () => {
             label="Company Name"
             name="companyName"
             value={formData.companyName}
-            onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+            onChange={handleChange}
             variant="outlined" 
             sx={inputField} 
             slotProps={{
@@ -89,7 +107,7 @@ const GeneralSettings: React.FC = () => {
                 const uniqueKey = r._id;
                 console.log('uniqueKey->', uniqueKey)
                 return (
-                  <MenuItem key={uniqueKey} value={r.value}>
+                  <MenuItem key={uniqueKey} value={r.key}>
                     {r.key}
                   </MenuItem>
                 );
@@ -118,7 +136,7 @@ const GeneralSettings: React.FC = () => {
               {languageParameters.map((r) => {
                 const uniqueKey = r._id;
                 return (
-                  <MenuItem key={uniqueKey} value={r.value}>
+                  <MenuItem key={uniqueKey} value={r.key}>
                     {r.key}
                   </MenuItem>
                 );
@@ -128,7 +146,7 @@ const GeneralSettings: React.FC = () => {
       </Box>
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '5px' }}> {/* Contenedor flex */}
-        <Button variant="contained" sx={saveButton}>
+      <Button variant="contained" sx={saveButton} onClick={handleSave}>
             Save
         </Button>      
       </Box>

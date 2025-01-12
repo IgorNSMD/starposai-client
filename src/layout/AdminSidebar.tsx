@@ -91,17 +91,22 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
 
   // Cargar los menús al montar el componente
   useEffect(() => {
-    console.log("Executing useEffect: isLoaded =", isLoaded, ", role =", role);
     if (!isMenuLoaded) {
       dispatch(fetchMenus());
     }
+  }, [dispatch, isMenuLoaded]);
+  
+  useEffect(() => {
     if (!isMenuByRoleLoaded && role) {
       dispatch(fetchMenuByRole(role));
     }
+  }, [dispatch, isMenuByRoleLoaded, role]);
+  
+  useEffect(() => {
     if (!isMenuTreeLoaded) {
       dispatch(fetchMenuTree());
     }
-  }, [dispatch, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded, role]);
+  }, [dispatch, isMenuTreeLoaded]);
 
   const toggleSubMenu = (name: string | undefined) => {
     if (name) {

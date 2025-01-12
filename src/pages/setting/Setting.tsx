@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Tabs, Tab, Typography, Paper } from '@mui/material';
-import { formContainer_v2, formTitle, inputContainer, mainContentStyle } from '../../styles/AdminStyles';
+import { formContainer_v2, formTitle, inputContainer, } from '../../styles/AdminStyles';
 import GeneralSettings from './GeneralSettings'; // Componente para General Settings
 
 const TabPanel: React.FC<{

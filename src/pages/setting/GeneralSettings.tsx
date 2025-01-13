@@ -71,7 +71,7 @@ const GeneralSettings: React.FC = () => {
   };
 
   const handleConfirmUpdate  = () => {
-    console.log('handleConfirmUpdate... ')
+    //console.log('handleConfirmUpdate... ')
     dispatch(updateGeneralSettings(formData))
         .then(() => dispatch(fetchGeneralSettings())); // Actualiza la lista después de editar
     //setConfirmDialogOpen(false); // Cierra el diálogo    
@@ -127,7 +127,7 @@ const GeneralSettings: React.FC = () => {
             >
               {currencyParameters.map((r) => {
                 const uniqueKey = r._id;
-                console.log('uniqueKey->', uniqueKey)
+                //console.log('uniqueKey->', uniqueKey)
                 return (
                   <MenuItem key={uniqueKey} value={r.key}>
                     {r.key}

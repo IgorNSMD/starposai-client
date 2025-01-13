@@ -14,6 +14,7 @@ const Menus = lazy(() => import('../pages/management/Menus'));
 const Actions = lazy(() => import('../pages/management/Actions'));
 const Users = lazy(() => import('../pages/management/User'));
 const Setting = lazy(() => import('../pages/setting/Setting'));
+const Product = lazy(() => import('../pages/masterdata/Product'));
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -34,6 +35,7 @@ const routes = [
       { path: 'menus', element: <Menus /> },
       { path: 'users', element: <Users /> },
       { path: 'setting', element: <Setting /> },
+      { path: 'product', element: <Product /> },
     ],
   },
 ];

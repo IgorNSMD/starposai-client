@@ -145,7 +145,7 @@ const Menus: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    console.log('handleSubmit...')
+    //console.log('handleSubmit...')
     const data = {
       label: formData.label,
       component: formData.component,
@@ -158,6 +158,7 @@ const Menus: React.FC = () => {
     };
   
     if (editingId) {
+      //console.log('createMenu...')
       dispatch(updateMenu({ id: editingId, ...data})).then(() => {
         dispatch(fetchMenus());
         setEditingId(null);
@@ -173,7 +174,7 @@ const Menus: React.FC = () => {
         setSelectedPermissions([]);
       });
     } else {
-      console.log('createMenu...')
+      console.log('createMenu...2')
       dispatch(createMenu(data)).then(() => {
         dispatch(fetchMenus());
         setFormData({     
@@ -344,13 +345,14 @@ const Menus: React.FC = () => {
   
   //console.log('actions -> ', actions)
 
-  const rows = menus.map((menu) => ({
+  const rows = menus.filter((menu) => menu._id && menu.label)
+  .map((menu) => ({
     id: menu._id,
     label: menu.label,
     parentId: menu.parentId,
   }))
 
-  //console.log('menusRoot->',menusRoot)
+  //console.log('rows->',rows)
 
   const getIconUrl = (iconPath: string) => {
     const baseUrl = baseURL_MENUICONS; // La URL base de tu servidor backend

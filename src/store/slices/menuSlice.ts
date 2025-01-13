@@ -196,10 +196,10 @@ export const fetchMenus = createAsyncThunk<
   { rejectValue: string }
 >("actions/fetchMenus", async (_, { rejectWithValue }) => {
   try {
-    //console.log('inicio..fetchActions')
+    //console.log('inicio..fetchMenus')
     //console.log('Base URL:', axiosInstance.defaults.baseURL);
     const response = await axiosInstance.get("/menus");
-    //console.log('response.data -> ',response.data)
+    //console.log('response.data (fetchMenus) -> ',response.data)
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -218,7 +218,7 @@ export const createMenu = createAsyncThunk<
 >("menus/createMenu", async (data, { rejectWithValue }) => {
   try {
 
-    console.log('inicio..createMenu')
+    //console.log('inicio..createMenu')
     const formData = new FormData();
     formData.append("label", data.label);
     formData.append("component", data.component);
@@ -233,9 +233,11 @@ export const createMenu = createAsyncThunk<
       headers: { "Content-Type": "multipart/form-data" },
     });
 
-    console.log('response.data ', response.data)
+
+    //console.log('response.data (createMenu) 3 ',  response.data)
 
     return response.data;
+
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
       return rejectWithValue(error.response?.data?.message || " Error creating menu");

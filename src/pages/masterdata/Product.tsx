@@ -1,113 +1,226 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
   Button,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
-  Modal,
   TextField,
+  IconButton,
+  Modal,
 } from '@mui/material';
-//import { fetchProducts, createProduct  } from '../../store/slices/productSlice';
-import { RootState } from '../../store/store';
+import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+
+import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
+import {
+  fetchProducts,
+  createProduct,
+  updateProduct,
+  changeProductStatus,
+} from '../../store/slices/productSlice';
+import {
+  formContainer,
+  submitButton,
+  permissionsTable,
+  datagridStyle,
+} from '../../styles/AdminStyles';
+
+interface DialogProps {
+  isOpen: boolean;
+  title: string;
+  onClose: () => void;
+  onConfirm: () => void;
+  children?: React.ReactNode; // Agrega esta línea
+}
+
+const Dialog: React.FC<DialogProps> = ({ isOpen, title, onClose, onConfirm, children }) => {
+  return (
+    <Modal open={isOpen} onClose={onClose}>
+      <Box>
+        <Typography>{title}</Typography>
+        {children}
+        <Button onClick={onConfirm}>Confirmar</Button>
+        <Button onClick={onClose}>Cancelar</Button>
+      </Box>
+    </Modal>
+  );
+};
 
 const Product: React.FC = () => {
-  const dispatch = useDispatch();
-  const { products, isLoading, error } = useSelector((state: RootState) => state.products);
-  const [open, setOpen] = useState(false);
+  const dispatch = useAppDispatch();
+  const { products } = useAppSelector((state) => state.products);
+
   const [formData, setFormData] = useState({
     sku: '',
     name: '',
-    description: '',
     category: '',
     price: 0,
-    cost: 0,
     stock: 0,
-    unit: '',
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    //dispatch(fetchProducts());
+    dispatch(fetchProducts());
   }, [dispatch]);
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setFormData({ sku: '', name: '', category: '', price: 0, stock: 0 });
+    setEditingId(null);
   };
 
   const handleSubmit = () => {
-    if (formData.sku && formData.name) {
-      //dispatch(createProduct(formData));
-      handleClose();
+    if (editingId) {
+      dispatch(updateProduct({ id: editingId, data: { ...formData } }));
+    } else {
+      dispatch(createProduct(formData));
+    }
+    handleCloseModal();
+  };
+
+  const handleEdit = (id: string) => {
+    const product = products.find((prod) => prod._id === id);
+    if (product) {
+      setFormData(product);
+      setEditingId(id);
+      setIsModalOpen(true);
     }
   };
 
+  const handleChangeStatus = (id: string, newStatus: 'active' | 'inactive') => {
+    dispatch(changeProductStatus({ id, status: newStatus }))
+      .unwrap()
+      .then(() => {
+        console.log('Estado cambiado con éxito');
+      })
+      .catch((error) => {
+        console.error('Error al cambiar estado:', error);
+      });
+  };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const rows = products.map((product) => ({
+    id: product._id,
+    sku: product.sku,
+    name: product.name,
+    category: product.category,
+    price: product.price,
+    stock: product.stock,
+  }));
+
+  const columns = [
+    { field: 'sku', headerName: 'SKU', flex: 1 },
+    { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'category', headerName: 'Category', flex: 1 },
+    { field: 'price', headerName: 'Price', flex: 0.5 },
+    { field: 'stock', headerName: 'Stock', flex: 0.5 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      flex: 0.5,
+      renderCell: (params: GridRenderCellParams) => (
+        <>
+          <IconButton
+            color="primary"
+            onClick={() => handleEdit(params.row.id)}
+          >
+            <EditIcon />
+          </IconButton>
+          <IconButton
+            color="error"
+            onClick={() => handleChangeStatus(params.row.id, 'inactive')} // Cambiar estado a 'inactive'
+          >
+            <DeleteIcon />
+          </IconButton>
+        </>
+      ),
+    },
+  ];
+
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Gestión de Productos
-      </Typography>
-      <Button variant="contained" color="primary" onClick={handleOpen}>
-        Nuevo Producto
-      </Button>
-      <TableContainer component={Paper} sx={{ marginTop: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>SKU</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Categoría</TableCell>
-              <TableCell>Precio</TableCell>
-              <TableCell>Stock</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5}>Cargando...</TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={5}>{error}</TableCell>
-              </TableRow>
-            ) : (
-              products.map((product) => (
-                <TableRow key={product._id}>
-                  <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.stock}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Modal open={open} onClose={handleClose}>
-        <Box sx={{ padding: 3, backgroundColor: 'white', margin: 'auto', marginTop: '10%', borderRadius: 1 }}>
-          <Typography variant="h6" gutterBottom>
-            Nuevo Producto
-          </Typography>
-          <TextField label="SKU" name="sku" fullWidth margin="normal" onChange={handleInputChange} />
-          <TextField label="Nombre" name="name" fullWidth margin="normal" onChange={handleInputChange} />
-          <TextField label="Categoría" name="category" fullWidth margin="normal" onChange={handleInputChange} />
-          <TextField label="Precio" name="price" type="number" fullWidth margin="normal" onChange={handleInputChange} />
-          <TextField label="Stock" name="stock" type="number" fullWidth margin="normal" onChange={handleInputChange} />
-          <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ marginTop: 2 }}>
-            Guardar
-          </Button>
-        </Box>
-      </Modal>
+    <Box sx={formContainer}>
+      {/* Barra superior */}
+      <Box display="flex" justifyContent="space-between" marginBottom="16px">
+        <Typography variant="h5">Gestión de Productos</Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={handleOpenModal}
+          sx={submitButton}
+        >
+          Nuevo Producto
+        </Button>
+      </Box>
+
+      {/* Tabla */}
+      <Paper sx={permissionsTable}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 5 },
+            },
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          disableRowSelectionOnClick
+          sx={datagridStyle}
+        />
+      </Paper>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <Dialog
+          isOpen={isModalOpen}
+          title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
+          onClose={handleCloseModal}
+          onConfirm={handleSubmit}
+        >
+          <Box display="flex" flexDirection="column" gap={2}>
+            <TextField
+              label="SKU"
+              name="sku"
+              value={formData.sku}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Nombre"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Categoría"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Precio"
+              name="price"
+              type="number"
+              value={formData.price}
+              onChange={handleChange}
+            />
+            <TextField
+              label="Stock"
+              name="stock"
+              type="number"
+              value={formData.stock}
+              onChange={handleChange}
+            />
+          </Box>
+        </Dialog>
+      )}
     </Box>
   );
 };

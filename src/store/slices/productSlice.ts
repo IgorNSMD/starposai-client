@@ -67,6 +67,20 @@ export const updateProduct = createAsyncThunk<Product, { id: string; data: Parti
   }
 );
 
+export const changeProductStatus = createAsyncThunk<
+  Product,
+  { id: string; status: 'active' | 'inactive' }
+>('products/changeStatus', async ({ id, status }, thunkAPI) => {
+  try {
+    const response = await axiosInstance.patch(`/products/${id}/status`, { status });
+    return response.data.product;
+  } catch (error) {
+    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al cambiar el estado del producto');
+    }
+  }
+});
+
 const productSlice = createSlice({
   name: 'products',
   initialState,
@@ -93,6 +107,21 @@ const productSlice = createSlice({
         if (index !== -1) {
           state.products[index] = action.payload;
         }
+      })
+      .addCase(changeProductStatus.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(changeProductStatus.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const index = state.products.findIndex((p) => p._id === action.payload._id);
+        if (index !== -1) {
+          state.products[index].status = action.payload.status;
+        }
+      })
+      .addCase(changeProductStatus.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });

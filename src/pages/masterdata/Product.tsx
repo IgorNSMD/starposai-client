@@ -1,17 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
 import {
   Box,
   Button,
   Typography,
   Paper,
+  PaperProps,
   TextField,
   IconButton,
-  Modal,
 } from '@mui/material';
 import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import {
@@ -25,28 +28,25 @@ import {
   submitButton,
   permissionsTable,
   datagridStyle,
+  inputContainer,
+  formTitle,
+  inputField,
+  searchButton,
+  cancelButton,
+  modalTitleStyle,
 } from '../../styles/AdminStyles';
 
-interface DialogProps {
-  isOpen: boolean;
-  title: string;
-  onClose: () => void;
-  onConfirm: () => void;
-  children?: React.ReactNode; // Agrega esta línea
-}
-
-const Dialog: React.FC<DialogProps> = ({ isOpen, title, onClose, onConfirm, children }) => {
+const DraggablePaper = (props: PaperProps) => {
+  const nodeRef = useRef(null); // Soluciona el problema de `ref` incompatible
   return (
-    <Modal open={isOpen} onClose={onClose}>
-      <Box>
-        <Typography>{title}</Typography>
-        {children}
-        <Button onClick={onConfirm}>Confirmar</Button>
-        <Button onClick={onClose}>Cancelar</Button>
-      </Box>
-    </Modal>
+    <Draggable handle="#draggable-dialog-title" nodeRef={nodeRef}>
+      <div ref={nodeRef}>
+        <Paper {...props} />
+      </div>
+    </Draggable>
   );
 };
+
 
 const Product: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -147,19 +147,65 @@ const Product: React.FC = () => {
 
   return (
     <Box sx={formContainer}>
-      {/* Barra superior */}
-      <Box display="flex" justifyContent="space-between" marginBottom="16px">
-        <Typography variant="h5">Gestión de Productos</Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleOpenModal}
-          sx={submitButton}
-        >
-          Nuevo Producto
-        </Button>
-      </Box>
+      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
+        <Typography sx={formTitle}>Product Management</Typography>
+        <Box sx={inputContainer}>
+          <TextField
+            label="SKU"
+            name="sku"
+            onChange={handleChange}
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
+          />
+          <TextField
+            label="Name"
+            name="name"
+            onChange={handleChange}
+            sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
+          />
+        </Box>        
+        <Box sx={inputContainer}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={handleOpenModal}
+            sx={submitButton}
+          >
+            New Product
+          </Button>
+          <Button
+            variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
+            color="secondary" // O el color que prefieras
+            startIcon={<SearchIcon  />}
+            sx={searchButton}
+          >
+            Search
+          </Button>
+        </Box>        
+      </Paper>        
+
 
       {/* Tabla */}
       <Paper sx={permissionsTable}>
@@ -180,47 +226,57 @@ const Product: React.FC = () => {
       {/* Modal */}
       {isModalOpen && (
         <Dialog
-          isOpen={isModalOpen}
-          title={editingId ? 'Editar Producto' : 'Nuevo Producto'}
+          open={isModalOpen}
           onClose={handleCloseModal}
-          onConfirm={handleSubmit}
+          PaperComponent={DraggablePaper} // Usa el componente ajustado
         >
-          <Box display="flex" flexDirection="column" gap={2}>
-            <TextField
-              label="SKU"
-              name="sku"
-              value={formData.sku}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Nombre"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Categoría"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Precio"
-              name="price"
-              type="number"
-              value={formData.price}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Stock"
-              name="stock"
-              type="number"
-              value={formData.stock}
-              onChange={handleChange}
-            />
-          </Box>
+          <DialogTitle
+            id="draggable-dialog-title"
+            sx={modalTitleStyle}
+          >
+            {editingId ? 'Editar Producto' : 'Nuevo Producto'}
+          </DialogTitle>
+          <DialogContent>
+            <Box display="flex" flexDirection="column" gap={2}>
+              {/* Campos del formulario */}
+              <TextField
+                label="SKU"
+                name="sku"
+                value={formData.sku}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+              />
+              <TextField
+                label="Nombre"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                InputLabelProps={{ shrink: true }}
+              />
+              {/* Otros campos */}
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSubmit}
+              sx={submitButton}
+            >
+              {editingId ? 'Actualizar' : 'Guardar'}
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleCloseModal}
+              sx={cancelButton}
+            >
+              Cancelar
+            </Button>
+          </DialogActions>
         </Dialog>
       )}
+
     </Box>
   );
 };

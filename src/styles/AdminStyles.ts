@@ -243,6 +243,24 @@ export const cancelButton: SxProps<Theme> = {
   },
 };
 
+export const searchButton: SxProps<Theme> = {
+  backgroundColor: '#4caf50', // Color verde para indicar acción de búsqueda
+  color: '#ffffff', // Texto blanco
+  borderRadius: '20px',
+  padding: '10px 20px',
+  textTransform: 'none',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  alignSelf: 'flex-start', // Ajuste para alineación en contenedores
+  '&:hover': {
+    backgroundColor: '#388e3c', // Verde más oscuro al pasar el cursor
+  },
+  '@media (max-width: 600px)': {
+    fontSize: '14px',
+    padding: '8px 16px',
+  },
+};
+
 // Estilo para la tablas Roles
 export const rolesTable: SxProps<Theme> = {
   width: '100%',
@@ -357,4 +375,41 @@ export const saveButton: SxProps<Theme> = {
     padding: '8px 16px',
     alignSelf: 'flex-end',
   },
+};
+
+export const modalStyle: SxProps<Theme> = {
+  position: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: '#ffffff',
+  borderRadius: '10px',
+  boxShadow: '0px 8px 20px rgba(0, 0, 0, 0.2)',
+  padding: '20px',
+  width: '80%',
+  maxWidth: '500px',
+  zIndex: 1300,
+  '@media (max-width: 600px)': {
+    width: '90%',
+    padding: '15px',
+  },
+};
+
+
+export const modalBackdropStyle: SxProps<Theme> = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  zIndex: 1200,
+};
+
+export const modalTitleStyle: SxProps<Theme> = {
+  fontSize: '20px',
+  fontWeight: 'bold',
+  color: '#37517e', // Mismo color del tema principal
+  marginBottom: '16px',
+  textAlign: 'center',
 };

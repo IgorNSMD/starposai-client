@@ -55,9 +55,12 @@ const Product: React.FC = () => {
   const [formData, setFormData] = useState({
     sku: '',
     name: '',
-    category: '',
+    description: '',
     price: 0,
+    category: '',
+    cost: 0,
     stock: 0,
+    unit: '',
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,7 +72,16 @@ const Product: React.FC = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setFormData({ sku: '', name: '', category: '', price: 0, stock: 0 });
+    setFormData({ 
+      sku: '',
+      name: '',
+      description: '',
+      price: 0,
+      category: '',
+      cost: 0,
+      stock: 0,
+      unit: '',
+     });
     setEditingId(null);
   };
 
@@ -111,9 +123,12 @@ const Product: React.FC = () => {
     id: product._id,
     sku: product.sku,
     name: product.name,
+    description: product.description,
+    price: product.price,    
     category: product.category,
-    price: product.price,
+    cost: product.cost,
     stock: product.stock,
+    unit: product.unit,
   }));
 
   const columns = [
@@ -237,23 +252,163 @@ const Product: React.FC = () => {
             {editingId ? 'Editar Producto' : 'Nuevo Producto'}
           </DialogTitle>
           <DialogContent>
-            <Box display="flex" flexDirection="column" gap={2}>
-              {/* Campos del formulario */}
+            <Box sx={inputContainer}>
               <TextField
                 label="SKU"
                 name="sku"
                 value={formData.sku}
                 onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
+            </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 2,
+                padding: 2,
+              }}
+            >
+              {/* Campos del formulario */}
               <TextField
-                label="Nombre"
+                label="Name"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                InputLabelProps={{ shrink: true }}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
-              {/* Otros campos */}
+              <TextField
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
+              />
+              <TextField
+                label="Unit"
+                name="unit"
+                value={formData.unit}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
+              />
+
+              <TextField
+                label="Category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
+              />
+              <TextField
+                label="Price"
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
+              />
+              <TextField
+                label="Cost"
+                name="cost"
+                value={formData.cost}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
+              />
+              <TextField
+                label="Stock"
+                name="stock"
+                value={formData.stock}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
+              />
+
             </Box>
           </DialogContent>
           <DialogActions>

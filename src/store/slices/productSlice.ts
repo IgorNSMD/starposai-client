@@ -1,6 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
 
+interface Category {
+  _id: string;
+  name: string;
+}
+
 export interface Product {
   _id: string;
   sku: string;
@@ -16,15 +21,38 @@ export interface Product {
 
 interface ProductState {
   products: Product[];
+  categories: Category[]; // Agregamos las categorias
   isLoading: boolean;
-  error: string | null;
+  errorMessage: string | null;
+  successMessage: string | null;
 }
 
 const initialState: ProductState = {
   products: [],
+  categories: [], // Agregamos los categorias aquí
   isLoading: false,
-  error: null,
+  errorMessage: null,
+  successMessage: null,
 };
+
+export const fetchCategories = createAsyncThunk<
+  Category[],
+  void,
+  { rejectValue: string }
+>("product/fetchCategories", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.get("/categories");
+    // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
+    return response.data;
+    //console.log('data::', data)  
+
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || " Error fetching roles");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
 
 // Async Thunks
 export const fetchProducts = createAsyncThunk<Product[]>('products/fetchAll', async (_, thunkAPI) => {
@@ -84,12 +112,17 @@ export const changeProductStatus = createAsyncThunk<
 const productSlice = createSlice({
   name: 'products',
   initialState,
-  reducers: {},
+  reducers: {
+    clearMessages(state) {
+      state.errorMessage = null;
+      state.successMessage = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
         state.isLoading = true;
-        state.error = null;
+        state.errorMessage = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -97,20 +130,24 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.errorMessage = action.payload as string;
       })
       .addCase(createProduct.fulfilled, (state, action) => {
         state.products.push(action.payload);
+        state.successMessage = "Product created successfully";
+        state.errorMessage = null;        
       })
       .addCase(updateProduct.fulfilled, (state, action) => {
         const index = state.products.findIndex((p) => p._id === action.payload._id);
         if (index !== -1) {
           state.products[index] = action.payload;
         }
+        state.successMessage = "Product updated successfully";
+        state.errorMessage = null;
       })
       .addCase(changeProductStatus.pending, (state) => {
         state.isLoading = true;
-        state.error = null;
+        state.errorMessage = null;
       })
       .addCase(changeProductStatus.fulfilled, (state, action) => {
         state.isLoading = false;
@@ -121,8 +158,17 @@ const productSlice = createSlice({
       })
       .addCase(changeProductStatus.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.errorMessage = action.payload as string;
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.isLoading = true;
+        state.categories = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchCategories.rejected, (state, action) => {
+        state.errorMessage = action.payload || "Error loading roles";
       });
+
   },
 });
 

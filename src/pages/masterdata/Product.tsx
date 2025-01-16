@@ -8,6 +8,11 @@ import {
   PaperProps,
   TextField,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
+  MenuItem,
 } from '@mui/material';
 import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -22,6 +27,7 @@ import {
   createProduct,
   updateProduct,
   changeProductStatus,
+  fetchCategories,
 } from '../../store/slices/productSlice';
 import {
   formContainer,
@@ -50,7 +56,7 @@ const DraggablePaper = (props: PaperProps) => {
 
 const Product: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { products } = useAppSelector((state) => state.products);
+  const { products, categories } = useAppSelector((state) => state.products);
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -67,6 +73,7 @@ const Product: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchProducts());
+    dispatch(fetchCategories());
   }, [dispatch]);
 
   const handleOpenModal = () => setIsModalOpen(true);
@@ -97,7 +104,16 @@ const Product: React.FC = () => {
   const handleEdit = (id: string) => {
     const product = products.find((prod) => prod._id === id);
     if (product) {
-      setFormData(product);
+      setFormData({
+        sku: product.sku || '',
+        name: product.name || '',
+        description: product.description || '',
+        price: product.price || 0,
+        category: product.category || '',
+        cost: product.cost || 0,
+        stock: product.stock || 0,
+        unit: product.unit || '',
+      });
       setEditingId(id);
       setIsModalOpen(true);
     }
@@ -112,6 +128,13 @@ const Product: React.FC = () => {
       .catch((error) => {
         console.error('Error al cambiar estado:', error);
       });
+  };
+
+        // Manejador para Select
+  const handleInputChange = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    //console.log('name, value',name, value)
+    setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,24 +359,40 @@ const Product: React.FC = () => {
                 }}
               />
 
-              <TextField
-                label="Category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                sx={inputField}
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                    sx: {
-                      color: '#444444',
-                      '&.Mui-focused': {
-                        color: '#47b2e4',
-                      },
+              <FormControl sx={{ minWidth: 350 }}>
+                <InputLabel
+                  id="parent-select-label"
+                  shrink={true} // Esto fuerza que el label permanezca visible
+                  sx={{
+                    color: "#444444",
+                    "&.Mui-focused": {
+                      color: "#47b2e4",
                     },
-                  },
-                }}
-              />
+                  }}
+                >
+                  Category
+                </InputLabel>
+                <Select
+                  labelId="parent-select-label"
+                  name="role"
+                  value={formData.category} // Garantiza un valor seguro
+                  onChange={handleInputChange}
+                >
+                  {/* <MenuItem key="-1" value="-1">
+                    <em>None</em>
+                  </MenuItem> */}
+                  {categories.map((r) => {
+                    //const uniqueKey = menuroot.id || `fallback-key-${index}`;
+                    const uniqueKey = r._id;
+                    //console.log('uniqueKey->', uniqueKey)
+                    return (
+                      <MenuItem key={uniqueKey} value={uniqueKey}>
+                        {r.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
               <TextField
                 label="Price"
                 name="price"

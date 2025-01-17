@@ -1,5 +1,14 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
+
+// Define la interfaz para un parámetro
+export interface Parameter {
+  _id: string;
+  category: string;
+  key: string;
+  value: string;
+  description?: string;
+}
 
 interface Category {
   _id: string;
@@ -22,6 +31,7 @@ export interface Product {
 interface ProductState {
   products: Product[];
   categories: Category[]; // Agregamos las categorias
+  parameters: Parameter[]; // Agregamos los parametros
   isLoading: boolean;
   errorMessage: string | null;
   successMessage: string | null;
@@ -30,10 +40,25 @@ interface ProductState {
 const initialState: ProductState = {
   products: [],
   categories: [], // Agregamos los categorias aquí
+  parameters: [],
   isLoading: false,
   errorMessage: null,
   successMessage: null,
 };
+
+export const fetchParameters = createAsyncThunk<Parameter[]>(
+  'product/fetchParameters',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/parameters");
+      return response.data;
+    } catch (error) {
+        if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
+            return rejectWithValue(error.response?.data?.message || ' (parameters/fetchParameters)');
+        }
+    }
+  }
+);
 
 export const fetchCategories = createAsyncThunk<
   Category[],
@@ -167,7 +192,15 @@ const productSlice = createSlice({
       })
       .addCase(fetchCategories.rejected, (state, action) => {
         state.errorMessage = action.payload || "Error loading roles";
-      });
+      })
+      .addCase(fetchParameters.fulfilled, (state, action: PayloadAction<Parameter[]>) => {
+        state.isLoading = false;
+        state.parameters = action.payload;
+      })
+      .addCase(fetchParameters.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
+      })
 
   },
 });

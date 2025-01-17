@@ -28,6 +28,7 @@ import {
   updateProduct,
   changeProductStatus,
   fetchCategories,
+  fetchParameters,
 } from '../../store/slices/productSlice';
 import {
   formContainer,
@@ -56,7 +57,7 @@ const DraggablePaper = (props: PaperProps) => {
 
 const Product: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { products, categories } = useAppSelector((state) => state.products);
+  const { products, categories, parameters } = useAppSelector((state) => state.products);
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -74,7 +75,11 @@ const Product: React.FC = () => {
   useEffect(() => {
     dispatch(fetchProducts());
     dispatch(fetchCategories());
+    dispatch(fetchParameters());
   }, [dispatch]);
+
+  // Filtrar parámetros por unit
+  const unitParameters = parameters.filter((param) => param.category === 'Unit');
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
@@ -340,26 +345,43 @@ const Product: React.FC = () => {
                   },
                 }}
               />
-              <TextField
-                label="Unit"
-                name="unit"
-                value={formData.unit}
-                onChange={handleChange}
-                sx={inputField}
-                slotProps={{
-                  inputLabel: {
-                    shrink: true,
-                    sx: {
-                      color: '#444444',
-                      '&.Mui-focused': {
-                        color: '#47b2e4',
-                      },
-                    },
-                  },
-                }}
-              />
 
-              <FormControl sx={{ minWidth: 350 }}>
+              <FormControl>
+                <InputLabel
+                  id="parent-select-label"
+                  shrink={true} // Esto fuerza que el label permanezca visible
+                  sx={{
+                    color: "#444444",
+                    "&.Mui-focused": {
+                      color: "#47b2e4",
+                    },
+                  }}
+                >
+                  Unit
+                </InputLabel>
+                <Select
+                  labelId="parent-select-label"
+                  name="unit"
+                  value={formData.unit} // Garantiza un valor seguro
+                  onChange={handleInputChange}
+                >
+                  {/* <MenuItem key="-1" value="-1">
+                    <em>None</em>
+                  </MenuItem> */}
+                  {unitParameters.map((r) => {
+                    //const uniqueKey = menuroot.id || `fallback-key-${index}`;
+                    const uniqueKey = r._id;
+                    //console.log('uniqueKey->', uniqueKey)
+                    return (
+                      <MenuItem key={uniqueKey} value={uniqueKey}>
+                        {r.value}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+
+              <FormControl>
                 <InputLabel
                   id="parent-select-label"
                   shrink={true} // Esto fuerza que el label permanezca visible
@@ -374,7 +396,7 @@ const Product: React.FC = () => {
                 </InputLabel>
                 <Select
                   labelId="parent-select-label"
-                  name="role"
+                  name="category"
                   value={formData.category} // Garantiza un valor seguro
                   onChange={handleInputChange}
                 >

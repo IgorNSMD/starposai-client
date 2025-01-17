@@ -1,7 +1,9 @@
-import { lazy  } from "react"; 
+import { lazy, Suspense  } from "react"; 
 import { useRoutes } from 'react-router-dom';
+import { CircularProgress } from "@mui/material";
 
 import PrivateRoute from "./PrivateRoute";
+
 
 
 const HomeLayout = lazy(() => import('../layout/HomeLayout'));
@@ -24,7 +26,9 @@ const routes = [
     path: '/admin',
     element: (
       <PrivateRoute isAuthenticated={true}>
-        <AdminLayout />
+        <Suspense fallback={<CircularProgress />}>
+            <AdminLayout />
+        </Suspense>
       </PrivateRoute>
     ),
     children: [

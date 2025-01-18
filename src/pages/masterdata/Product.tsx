@@ -147,43 +147,60 @@ const Product: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const rows = products.map((product) => ({
-    id: product._id,
-    sku: product.sku,
-    name: product.name,
-    description: product.description,
-    price: product.price,    
-    category: product.category,
-    cost: product.cost,
-    stock: product.stock,
-    unit: product.unit,
-  }));
+  const rows = products.map((product) => {
+    const categoryName = categories.find((cat) => cat._id === product.category)?.name || "N/A";
+    return {
+      id: product._id,
+      sku: product.sku,
+      name: product.name,
+      description: product.description,
+      price: product.price,    
+      category: categoryName, // Aquí asignas el nombre de la categoría
+      cost: product.cost,
+      stock: product.stock,
+      unit: product.unit,
+    };
+  });
 
   const columns = [
     { field: 'sku', headerName: 'SKU', flex: 1 },
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'category', headerName: 'Category', flex: 1 },
-    { field: 'price', headerName: 'Price', flex: 0.5 },
-    { field: 'stock', headerName: 'Stock', flex: 0.5 },
+    { 
+      field: 'price', 
+      headerName: 'Price', 
+      flex: 0.5, 
+      align: 'right', // Alinea el contenido a la derecha
+      headerAlign: 'right', // Alinea el encabezado a la derecha
+    },
+    { 
+      field: 'stock', 
+      headerName: 'Stock', 
+      flex: 0.5, 
+      align: 'right', // Alinea el contenido a la derecha
+      headerAlign: 'right', // Alinea el encabezado a la derecha
+    },
     {
       field: 'actions',
       headerName: 'Actions',
-      flex: 0.5,
+      width: 150, // Ancho fijo para garantizar que los íconos se muestren correctamente
       renderCell: (params: GridRenderCellParams) => (
-        <>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
           <IconButton
             color="primary"
+            size="small"
             onClick={() => handleEdit(params.row.id)}
           >
             <EditIcon />
           </IconButton>
           <IconButton
             color="error"
-            onClick={() => handleChangeStatus(params.row.id, 'inactive')} // Cambiar estado a 'inactive'
+            size="small"
+            onClick={() => handleChangeStatus(params.row.id, 'inactive')}
           >
             <DeleteIcon />
           </IconButton>
-        </>
+        </Box>
       ),
     },
   ];
@@ -286,7 +303,11 @@ const Product: React.FC = () => {
                 name="sku"
                 value={formData.sku}
                 onChange={handleChange}
-                sx={inputField}
+                sx={{
+                  ...inputField,
+                  backgroundColor: '#f5f5f5', // Fondo gris claro para indicar que está deshabilitado
+                  pointerEvents: 'none', // No permite interacción
+                }}
                 slotProps={{
                   inputLabel: {
                     shrink: true,

@@ -14,7 +14,7 @@ import {
   SelectChangeEvent,
   MenuItem,
 } from '@mui/material';
-import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
+import { DataGrid, GridColDef  } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -162,29 +162,29 @@ const Product: React.FC = () => {
     };
   });
 
-  const columns = [
+  const columns: GridColDef[] = [
     { field: 'sku', headerName: 'SKU', flex: 1 },
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'category', headerName: 'Category', flex: 1 },
-    { 
-      field: 'price', 
-      headerName: 'Price', 
-      flex: 0.5, 
-      align: 'right', // Alinea el contenido a la derecha
-      headerAlign: 'right', // Alinea el encabezado a la derecha
+    {
+      field: 'price',
+      headerName: 'Price',
+      flex: 0.5,
+      align: 'right', // Correctamente tipado
+      headerAlign: 'right', // Correctamente tipado
     },
-    { 
-      field: 'stock', 
-      headerName: 'Stock', 
-      flex: 0.5, 
-      align: 'right', // Alinea el contenido a la derecha
-      headerAlign: 'right', // Alinea el encabezado a la derecha
+    {
+      field: 'stock',
+      headerName: 'Stock',
+      flex: 0.5,
+      align: 'right', // Correctamente tipado
+      headerAlign: 'right', // Correctamente tipado
     },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150, // Ancho fijo para garantizar que los íconos se muestren correctamente
-      renderCell: (params: GridRenderCellParams) => (
+      width: 150,
+      renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
           <IconButton
             color="primary"
@@ -204,6 +204,7 @@ const Product: React.FC = () => {
       ),
     },
   ];
+  
 
   return (
     <Box sx={formContainer}>

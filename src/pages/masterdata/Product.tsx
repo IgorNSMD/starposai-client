@@ -73,6 +73,13 @@ const Product: React.FC = () => {
     stock: 0,
     unit: '',
   });
+
+  const [formfilterData, setFormFilterData] = useState({
+    sku: '',
+    name: '',
+    category: '',
+  });
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -171,6 +178,18 @@ const Product: React.FC = () => {
     setFormData((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
+  // Manejador para Select
+  const handleInputChangeFilter = (event: SelectChangeEvent<string>) => {
+    const { name, value } = event.target;
+    //console.log('name, value',name, value)
+    setFormFilterData((prevForm) => ({ ...prevForm, [name]: value }));
+  };
+
+  const handleChangeFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormFilterData({ ...formData, [name]: value });
+  };
+
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
@@ -246,7 +265,7 @@ const Product: React.FC = () => {
           <TextField
             label="SKU"
             name="sku"
-            onChange={handleChange}
+            onChange={handleChangeFilter}
             sx={inputField}
             slotProps={{
               inputLabel: {
@@ -263,7 +282,7 @@ const Product: React.FC = () => {
           <TextField
             label="Name"
             name="name"
-            onChange={handleChange}
+            onChange={handleChangeFilter}
             sx={inputField}
             slotProps={{
               inputLabel: {
@@ -277,6 +296,37 @@ const Product: React.FC = () => {
               },
             }}
           />
+          <FormControl sx={{ width: '100%' }}>
+            <InputLabel
+              id="parent-select-label"
+              shrink={true} // Esto fuerza que el label permanezca visible
+              sx={{
+                color: "#444444",
+                "&.Mui-focused": {
+                  color: "#47b2e4",
+                },
+              }}
+            >
+              Category
+            </InputLabel>
+            <Select
+              labelId="parent-select-label"
+              name="category"
+              value={formfilterData.category} // Garantiza un valor seguro
+              onChange={handleInputChangeFilter}
+            >
+              {categories.map((r) => {
+                //const uniqueKey = menuroot.id || `fallback-key-${index}`;
+                const uniqueKey = r._id;
+                //console.log('uniqueKey->', uniqueKey)
+                return (
+                  <MenuItem key={uniqueKey} value={uniqueKey}>
+                    {r.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>          
         </Box>        
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '16px' }}>
           <Button

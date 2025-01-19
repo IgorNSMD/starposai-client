@@ -101,6 +101,7 @@ const Product: React.FC = () => {
         .unwrap()
         .then(() => {
           console.log('Estado cambiado a inactive con éxito');
+          dispatch(fetchProducts({ status: 'active' }));
         })
         .catch((error) => {
           console.error('Error al cambiar el estado del producto:', error);

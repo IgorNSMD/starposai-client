@@ -34,13 +34,13 @@ import {
   formContainer,
   submitButton,
   permissionsTable,
-  datagridStyle,
   inputContainer,
   formTitle,
   inputField,
   searchButton,
   cancelButton,
   modalTitleStyle,
+  datagridStyle_v2,
 } from '../../styles/AdminStyles';
 
 import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
@@ -191,22 +191,24 @@ const Product: React.FC = () => {
   });
 
   const columns: GridColDef[] = [
-    { field: 'sku', headerName: 'SKU', flex: 1 },
-    { field: 'name', headerName: 'Name', flex: 1 },
-    { field: 'category', headerName: 'Category', flex: 1 },
+    { field: 'sku', headerName: 'SKU', flex: 1, minWidth: 100 },
+    { field: 'name', headerName: 'Name', flex: 1, minWidth: 150 },
+    { field: 'category', headerName: 'Category', flex: 1, minWidth: 120 },
     {
       field: 'price',
       headerName: 'Price',
       flex: 0.5,
-      align: 'right', // Correctamente tipado
-      headerAlign: 'right', // Correctamente tipado
+      minWidth: 100,
+      align: 'right',
+      headerAlign: 'right',
     },
     {
       field: 'stock',
       headerName: 'Stock',
       flex: 0.5,
-      align: 'right', // Correctamente tipado
-      headerAlign: 'right', // Correctamente tipado
+      minWidth: 100,
+      align: 'right',
+      headerAlign: 'right',
     },
     {
       field: 'actions',
@@ -224,7 +226,7 @@ const Product: React.FC = () => {
           <IconButton
             color="error"
             size="small"
-            onClick={() => handleDeleteDialogOpen(params.row.id)} // Abre el diálogo
+            onClick={() => handleDeleteDialogOpen(params.row.id)}
           >
             <DeleteIcon />
           </IconButton>
@@ -232,6 +234,7 @@ const Product: React.FC = () => {
       ),
     },
   ];
+  
   
 
   return (
@@ -274,7 +277,7 @@ const Product: React.FC = () => {
             }}
           />
         </Box>        
-        <Box sx={inputContainer}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '16px' }}>
           <Button
             variant="contained"
             color="primary"
@@ -308,7 +311,7 @@ const Product: React.FC = () => {
           }}
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
-          sx={datagridStyle}
+          sx={datagridStyle_v2}
         />
       </Paper>
 

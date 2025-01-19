@@ -225,6 +225,22 @@ export const datagridStyle: SxProps<Theme> = {
   },
 };
 
+export const datagridStyle_v2: SxProps<Theme> = {
+  height: 'auto',
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: '#37517e',
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: '14px',
+  },
+  '& .MuiDataGrid-cell': {
+    fontSize: '12px',
+  },
+  '& .MuiDataGrid-footerContainer': {
+    backgroundColor: '#f4f4f4',
+  },
+};
+
 export const cancelButton: SxProps<Theme> = {
   backgroundColor: '#e57373',
   color: '#ffffff',

@@ -43,6 +43,8 @@ import {
   modalTitleStyle,
 } from '../../styles/AdminStyles';
 
+import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
+
 const DraggablePaper = (props: PaperProps) => {
   const nodeRef = useRef(null); // Soluciona el problema de `ref` incompatible
   return (
@@ -58,6 +60,8 @@ const DraggablePaper = (props: PaperProps) => {
 const Product: React.FC = () => {
   const dispatch = useAppDispatch();
   const { products, categories, parameters } = useAppSelector((state) => state.products);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Estado para el diálogo de confirmación
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null); // Producto seleccionado
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -73,13 +77,37 @@ const Product: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchProducts());
+    dispatch(fetchProducts({ status: 'active' }));
     dispatch(fetchCategories());
     dispatch(fetchParameters());
   }, [dispatch]);
 
   // Filtrar parámetros por unit
   const unitParameters = parameters.filter((param) => param.category === 'Unit');
+
+  const handleDeleteDialogOpen = (id: string) => {
+    setSelectedProductId(id);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const handleDeleteDialogClose = () => {
+    setSelectedProductId(null);
+    setIsDeleteDialogOpen(false);
+  };
+  
+  const handleConfirmDelete = () => {
+    if (selectedProductId) {
+      dispatch(changeProductStatus({ id: selectedProductId, status: 'inactive' }))
+        .unwrap()
+        .then(() => {
+          console.log('Estado cambiado a inactive con éxito');
+        })
+        .catch((error) => {
+          console.error('Error al cambiar el estado del producto:', error);
+        });
+    }
+    handleDeleteDialogClose();
+  };
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
@@ -124,16 +152,16 @@ const Product: React.FC = () => {
     }
   };
 
-  const handleChangeStatus = (id: string, newStatus: 'active' | 'inactive') => {
-    dispatch(changeProductStatus({ id, status: newStatus }))
-      .unwrap()
-      .then(() => {
-        console.log('Estado cambiado con éxito');
-      })
-      .catch((error) => {
-        console.error('Error al cambiar estado:', error);
-      });
-  };
+  // const handleChangeStatus = (id: string, newStatus: 'active' | 'inactive') => {
+  //   dispatch(changeProductStatus({ id, status: newStatus }))
+  //     .unwrap()
+  //     .then(() => {
+  //       console.log('Estado cambiado con éxito');
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error al cambiar estado:', error);
+  //     });
+  // };
 
         // Manejador para Select
   const handleInputChange = (event: SelectChangeEvent<string>) => {
@@ -196,7 +224,7 @@ const Product: React.FC = () => {
           <IconButton
             color="error"
             size="small"
-            onClick={() => handleChangeStatus(params.row.id, 'inactive')}
+            onClick={() => handleDeleteDialogOpen(params.row.id)} // Abre el diálogo
           >
             <DeleteIcon />
           </IconButton>
@@ -514,6 +542,14 @@ const Product: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
+
+      <CustomDialog
+        isOpen={isDeleteDialogOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this product? This action will set the product to inactive."
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
+      />
 
     </Box>
   );

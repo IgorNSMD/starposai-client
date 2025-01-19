@@ -79,25 +79,31 @@ export const fetchCategories = createAsyncThunk<
   }
 });
 
-// Async Thunks
-export const fetchProducts = createAsyncThunk<Product[]>('products/fetchAll', async (_, thunkAPI) => {
-  try {
-    const response = await axiosInstance.get('/products');
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
+export const fetchProducts = createAsyncThunk<Product[], { status?: string }>(
+  'products/fetchAll',
+  async ({ status } = {}, thunkAPI) => {
+    try {
+      const response = await axiosInstance.get('/products', {
+        params: { status }, // Pasar los parámetros de consulta
+      });
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
         return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al obtener productos');
+      }
     }
-    
   }
-});
+);
 
 export const createProduct = createAsyncThunk<Product, Partial<Product>>(
   'products/create',
   async (productData, thunkAPI) => {
     try {
+      console.log('(createProduct)create ->', productData)
       const response = await axiosInstance.post('/products', productData);
+      console.log('(createProduct)response.data ->', response.data)
       return response.data;
+      
     } catch (error ) {
         if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
             return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al crear productos');
@@ -125,6 +131,7 @@ export const changeProductStatus = createAsyncThunk<
   { id: string; status: 'active' | 'inactive' }
 >('products/changeStatus', async ({ id, status }, thunkAPI) => {
   try {
+    console.log('(changeProductStatus)productId ->', id)
     const response = await axiosInstance.patch(`/products/${id}/status`, { status });
     return response.data.product;
   } catch (error) {

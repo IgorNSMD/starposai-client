@@ -79,6 +79,27 @@ export const fetchCategories = createAsyncThunk<
   }
 });
 
+export const searchProducts = createAsyncThunk<
+  Product[],
+  { sku?: string; name?: string; category?: string },
+  { rejectValue: string }
+>('products/search', async (filters, thunkAPI) => {
+  try {
+    //console.log('(searchProducts) ->', filters)
+    const response = await axiosInstance.get('/products/search', {
+      params: filters, // Pasa los parámetros como query
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Error al buscar productos'
+      );
+    }
+  }
+});
+
+
 export const fetchProducts = createAsyncThunk<Product[], { status?: string }>(
   'products/fetchAll',
   async ({ status } = {}, thunkAPI) => {
@@ -208,6 +229,18 @@ const productSlice = createSlice({
         state.isLoading = false;
         state.errorMessage = action.payload as string;
       })
+      .addCase(searchProducts.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null;
+      })
+      .addCase(searchProducts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.products = action.payload; // Actualiza los productos con el resultado de la búsqueda
+      })
+      .addCase(searchProducts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
+      });
 
   },
 });

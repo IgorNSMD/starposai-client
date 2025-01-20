@@ -29,6 +29,7 @@ import {
   changeProductStatus,
   fetchCategories,
   fetchParameters,
+  searchProducts
 } from '../../store/slices/productSlice';
 import {
   formContainer,
@@ -74,10 +75,10 @@ const Product: React.FC = () => {
     unit: '',
   });
 
-  const [formfilterData, setFormFilterData] = useState({
+  const [filters, setFilters] = useState({
     sku: '',
     name: '',
-    category: '',
+    category: ''
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -170,7 +171,9 @@ const Product: React.FC = () => {
   //       console.error('Error al cambiar estado:', error);
   //     });
   // };
-
+  const handleSearch = () => {
+    dispatch(searchProducts(filters));
+  };
         // Manejador para Select
   const handleInputChange = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
@@ -182,12 +185,12 @@ const Product: React.FC = () => {
   const handleInputChangeFilter = (event: SelectChangeEvent<string>) => {
     const { name, value } = event.target;
     //console.log('name, value',name, value)
-    setFormFilterData((prevForm) => ({ ...prevForm, [name]: value }));
+    setFilters((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
-  const handleChangeFilter = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange  = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setFormFilterData({ ...formData, [name]: value });
+    setFilters({ ...filters, [name]: value });
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -265,7 +268,7 @@ const Product: React.FC = () => {
           <TextField
             label="SKU"
             name="sku"
-            onChange={handleChangeFilter}
+            onChange={handleFilterChange}
             sx={inputField}
             slotProps={{
               inputLabel: {
@@ -282,7 +285,7 @@ const Product: React.FC = () => {
           <TextField
             label="Name"
             name="name"
-            onChange={handleChangeFilter}
+            onChange={handleFilterChange}
             sx={inputField}
             slotProps={{
               inputLabel: {
@@ -312,7 +315,7 @@ const Product: React.FC = () => {
             <Select
               labelId="parent-select-label"
               name="category"
-              value={formfilterData.category} // Garantiza un valor seguro
+              value={filters.category} // Garantiza un valor seguro
               onChange={handleInputChangeFilter}
             >
               {categories.map((r) => {
@@ -342,6 +345,7 @@ const Product: React.FC = () => {
             variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
             color="secondary" // O el color que prefieras
             startIcon={<SearchIcon  />}
+            onClick={handleSearch}
             sx={searchButton}
           >
             Search

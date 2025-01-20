@@ -19,7 +19,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import DownloadIcon from '@mui/icons-material/Download';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import * as XLSX from 'xlsx';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import {
@@ -92,6 +94,19 @@ const Product: React.FC = () => {
 
   // Filtrar parámetros por unit
   const unitParameters = parameters.filter((param) => param.category === 'Unit');
+
+  const handleExportToExcel = () => {
+    // Crea una hoja de trabajo (worksheet) con los datos del DataGrid
+    const worksheet = XLSX.utils.json_to_sheet(rows); // `rows` ya contiene los datos del DataGrid
+    const workbook = XLSX.utils.book_new();
+  
+    // Agrega la hoja de trabajo al libro de trabajo (workbook)
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+  
+    // Genera y descarga el archivo Excel
+    XLSX.writeFile(workbook, 'products.xlsx');
+  };
+  
 
   const handleDeleteDialogOpen = (id: string) => {
     setSelectedProductId(id);
@@ -349,6 +364,15 @@ const Product: React.FC = () => {
             sx={searchButton}
           >
             Search
+          </Button>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<DownloadIcon />}
+            onClick={handleExportToExcel}
+            sx={searchButton}
+          >
+            Export to Excel
           </Button>
         </Box>        
       </Paper>        

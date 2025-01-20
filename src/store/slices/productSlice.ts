@@ -87,7 +87,7 @@ export const searchProducts = createAsyncThunk<
   try {
     //console.log('(searchProducts) ->', filters)
     const response = await axiosInstance.get('/products/search', {
-      params: filters, // Pasa los parámetros como query
+      params: { ...filters, status: 'active' }, // Asegúrate de incluir el estado 'active'
     });
     return response.data;
   } catch (error) {

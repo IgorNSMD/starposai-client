@@ -21,7 +21,8 @@ import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
-import * as XLSX from 'xlsx';
+import ExcelJS, { Row, Cell } from 'exceljs';
+import { saveAs } from 'file-saver';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import {
@@ -95,16 +96,57 @@ const Product: React.FC = () => {
   // Filtrar parámetros por unit
   const unitParameters = parameters.filter((param) => param.category === 'Unit');
 
-  const handleExportToExcel = () => {
-    // Crea una hoja de trabajo (worksheet) con los datos del DataGrid
-    const worksheet = XLSX.utils.json_to_sheet(rows); // `rows` ya contiene los datos del DataGrid
-    const workbook = XLSX.utils.book_new();
+  const handleExportToExcel = async () => {
+    // Crear un nuevo libro de trabajo
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Products');
   
-    // Agrega la hoja de trabajo al libro de trabajo (workbook)
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+    // Definir columnas y encabezados con estilos
+    worksheet.columns = [
+      { header: 'ID', key: 'id', width: 30 },
+      { header: 'SKU', key: 'sku', width: 15 },
+      { header: 'Name', key: 'name', width: 20 },
+      { header: 'Description', key: 'description', width: 30 },
+      { header: 'Price', key: 'price', width: 10 },
+      { header: 'Category', key: 'category', width: 20 },
+      { header: 'Cost', key: 'cost', width: 10 },
+      { header: 'Stock', key: 'stock', width: 10 },
+      { header: 'Unit', key: 'unit', width: 10 },
+    ];
   
-    // Genera y descarga el archivo Excel
-    XLSX.writeFile(workbook, 'products.xlsx');
+    // Aplicar estilos a los encabezados
+    worksheet.getRow(1).eachCell((cell: Cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; // Texto blanco y negrita
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '4472C4' }, // Azul de fondo
+      };
+    });
+  
+    // Agregar datos desde `rows`
+    rows.forEach((row) => {
+      worksheet.addRow(row);
+    });
+  
+    // Aplicar bordes y estilos a las celdas de datos
+    worksheet.eachRow((row: Row, rowNumber: number) => {
+      if (rowNumber !== 1) { // Excluir los encabezados
+        row.eachCell((cell: Cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+        });
+      }
+    });
+  
+    // Generar archivo Excel y descargarlo
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'products.xlsx');
   };
   
 

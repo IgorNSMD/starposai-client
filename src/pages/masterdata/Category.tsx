@@ -33,7 +33,7 @@ import {
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 import { useToastMessages } from '../../hooks/useToastMessage';
 
-const Categories: React.FC = () => {
+const Category: React.FC = () => {
 
   const dispatch = useAppDispatch();
   const { categories, errorMessage, successMessage } = useAppSelector((state) => state.categories);
@@ -135,12 +135,12 @@ const Categories: React.FC = () => {
   };
 
    // Mapear datos para DataGrid
-   const rows = categories.filter((cat) => cat._id && cat.name && cat.description && cat.prefix) // Filtra registros válidos
-   .map((category) => ({
-     id: category._id, // Usa `_id` como identificador único
-     name: category.name,
-     description: category.description,
-     prefix: category.prefix,
+   const rows = categories.filter((cat) => cat._id && cat.name && cat.description) // Filtra registros válidos
+   .map((cat) => ({
+     id: cat._id, // Usa `_id` como identificador único
+     name: cat.name,
+     description: cat.description,
+     prefix: cat.prefix,
    }));
 
   //console.log('rows:', rows);
@@ -307,4 +307,4 @@ const Categories: React.FC = () => {
   );
 };
 
-export default Categories;
+export default Category;

@@ -32,8 +32,9 @@ export const fetchCategories = createAsyncThunk<
   try {
     const response = await axiosInstance.get("/categories");
     // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
+    //console.log('response.data-> ', response.data)  
     return response.data;
-    //console.log('data::', data)  
+    
 
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

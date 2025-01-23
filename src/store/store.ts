@@ -13,6 +13,7 @@ import parameterReducer  from './slices/parameterSlice'; // Ajusta la ruta segú
 import generalSettingReducer  from './slices/generalSettingSlice'; // Ajusta la ruta según tu estructura
 import productReducer  from './slices/productSlice'; // Ajusta la ruta según tu estructura
 import categoryReducer  from './slices/categorySlice'; // Ajusta la ruta según tu estructura
+import providerReducer  from './slices/providerSlice'; // Ajusta la ruta según tu estructura
 
 // Configuración de persistencia
 const persistConfig = {
@@ -36,6 +37,7 @@ const store = configureStore({
     generalSettings: generalSettingReducer, // Reducer para actions
     products: productReducer, // Reducer para actions
     categories: categoryReducer, // Reducer para actions
+    providers: providerReducer, // Reducer para actions
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

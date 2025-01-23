@@ -4,6 +4,7 @@ import { CircularProgress } from "@mui/material";
 
 import PrivateRoute from "./PrivateRoute";
 
+
 const HomeLayout = lazy(() => import('../layout/HomeLayout'));
 const AdminLayout = lazy(() => import('../layout/AdminLayout'));
 const Login = lazy(()=> import('../pages/auth/Login'))   
@@ -16,6 +17,7 @@ const Users = lazy(() => import('../pages/management/User'));
 const Setting = lazy(() => import('../pages/setting/Setting'));
 const Product = lazy(() => import('../pages/masterdata/Product'));
 const Category = lazy(() => import('../pages/masterdata/Category'));
+const Provider = lazy(() => import('../pages/masterdata/Provider'));
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -40,6 +42,7 @@ const routes = [
       { path: 'setting', element: <Setting /> },
       { path: 'product', element: <Product /> },
       { path: 'category', element: <Category /> },
+      { path: 'provider', element: <Provider /> },
     ],
   },
 ];

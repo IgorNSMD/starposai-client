@@ -174,6 +174,18 @@ export const inputContainer: SxProps<Theme> = {
   },
 };
 
+export const inputContainerForm: SxProps<Theme> = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, 1fr)',
+  gap: '20px',
+  padding: '10px',
+  width: '100%',
+  '@media (max-width: 960px)': {
+    flexDirection: 'column', // Cambia a diseño vertical
+    gap: '10px',
+  },
+};
+
 // Estilo para la tabla de permisos
 export const permissionsTable: SxProps<Theme> = {
   width: '100%',

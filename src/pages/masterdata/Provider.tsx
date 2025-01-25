@@ -34,6 +34,7 @@ import {
   cancelButton,
   modalTitleStyle,
   datagridStyle_v2,
+  inputContainerForm,
 } from '../../styles/AdminStyles';
 import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
 import { useToastSuccessMessage } from '../../hooks/useToastMessage';
@@ -216,6 +217,17 @@ const Provider: React.FC = () => {
             value={filters.name}
             onChange={handleFilterChange}
             sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
           />
           <TextField
             label="RUT"
@@ -223,6 +235,17 @@ const Provider: React.FC = () => {
             value={filters.rut}
             onChange={handleFilterChange}
             sx={inputField}
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}
           />
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '16px' }}>
@@ -277,13 +300,24 @@ const Provider: React.FC = () => {
             </Box>
           )}
           <DialogContent>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+            <Box sx={inputContainerForm}>
               <TextField
                 label="Name"
                 name="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
               <TextField
                 label="RUT"
@@ -291,6 +325,17 @@ const Provider: React.FC = () => {
                 value={formData.rut}
                 onChange={(e) => setFormData({ ...formData, rut: e.target.value })}
                 sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
               <TextField
                 label="Email"
@@ -298,6 +343,17 @@ const Provider: React.FC = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
               <TextField
                 label="Phone"
@@ -305,6 +361,17 @@ const Provider: React.FC = () => {
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
               <TextField
                 label="Address"
@@ -312,6 +379,17 @@ const Provider: React.FC = () => {
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
               <TextField
                 label="Country"
@@ -319,6 +397,17 @@ const Provider: React.FC = () => {
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
+                  },
+                }}
               />
             </Box>
           </DialogContent>

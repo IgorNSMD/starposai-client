@@ -670,7 +670,7 @@ const Product: React.FC = () => {
       <CustomDialog
         isOpen={isDeleteDialogOpen}
         title="Confirm Delete"
-        message="Are you sure you want to delete this product? This action will set the product to inactive."
+        message="Are you sure you want to delete this product?."
         onClose={handleDeleteDialogClose}
         onConfirm={handleConfirmDelete}
       />

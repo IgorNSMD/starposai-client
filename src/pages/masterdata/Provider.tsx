@@ -35,7 +35,8 @@ import {
   modalTitleStyle,
   datagridStyle_v2,
 } from '../../styles/AdminStyles';
-import { useToastMessages } from '../../hooks/useToastMessage';
+import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
+import { useToastSuccessMessage } from '../../hooks/useToastMessage';
 
 const DraggablePaper = (props: PaperProps) => {
   const nodeRef = useRef(null);
@@ -50,7 +51,9 @@ const DraggablePaper = (props: PaperProps) => {
 
 const Provider: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { providers, errorMessage, successMessage } = useAppSelector((state) => state.providers);
+  const { providers, successMessage } = useAppSelector((state) => state.providers);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Estado para el diálogo de confirmación
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null); // Producto seleccionado
 
   const [formData, setFormData] = useState({
     name: '',
@@ -69,11 +72,11 @@ const Provider: React.FC = () => {
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchProviders());
+    dispatch(fetchProviders({ status: 'active' }));
   }, [dispatch]);
 
   // Manejo de mensajes
-  useToastMessages(successMessage, errorMessage);
+  useToastSuccessMessage(successMessage);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
@@ -94,6 +97,7 @@ const Provider: React.FC = () => {
       dispatch(updateProvider({ id: editingId, data: { ...formData } }))
         .unwrap()
         .then(() => {
+          setLocalError(null)
           handleCloseModal(); // Cierra el modal si la operación fue exitosa
         })
         .catch((error) => {
@@ -128,8 +132,29 @@ const Provider: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    dispatch(changeProviderStatus({ id, status: 'inactive' }));
+  const handleDeleteDialogOpen = (id: string) => {
+    setSelectedProviderId(id);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const handleDeleteDialogClose = () => {
+    setSelectedProviderId(null);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+        if (selectedProviderId) {
+          dispatch(changeProviderStatus({ id: selectedProviderId, status: 'inactive' }))
+            .unwrap()
+            .then(() => {
+              console.log('Estado cambiado a inactive con éxito');
+              dispatch(fetchProviders({ status: 'active' }));
+            })
+            .catch((error) => {
+              console.error('Error al cambiar el estado del producto:', error);
+            });
+        }
+        handleDeleteDialogClose();
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,7 +195,8 @@ const Provider: React.FC = () => {
           <IconButton
             color="error"
             size="small"
-            onClick={() => handleDelete(params.row.id)}
+            onClick={() => handleDeleteDialogOpen(params.row.id)}
+            //onClick={() => handleDelete(params.row.id)}
           >
             <DeleteIcon />
           </IconButton>
@@ -316,6 +342,15 @@ const Provider: React.FC = () => {
           </DialogActions>
         </Dialog>
       )}
+
+      <CustomDialog
+        isOpen={isDeleteDialogOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this provider?."
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
+      />
+
     </Box>
   );
 };

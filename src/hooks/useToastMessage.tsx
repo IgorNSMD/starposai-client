@@ -17,3 +17,14 @@ export const useToastMessages = (successMessage: string | null, errorMessage: st
     }
   }, [successMessage, errorMessage, dispatch]);
 };
+
+export const useToastSuccessMessage = (successMessage: string | null) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages());
+    }
+  }, [successMessage, dispatch]);
+};

@@ -29,11 +29,13 @@ const initialState: ProviderState = {
 };
 
 // Thunks
-export const fetchProviders = createAsyncThunk<Provider[]>(
+export const fetchProviders = createAsyncThunk<Provider[], { status?: string }>(
   'providers/fetchProviders',
-  async (_, { rejectWithValue }) => {
+  async ({ status } = {}, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get('/providers');
+      const response = await axiosInstance.get('/providers', {
+        params: { status }, // Pasar los parámetros de consulta
+      });
       return response.data;
     } catch (error) {
         if (axiosInstance.isAxiosError?.(error)) {

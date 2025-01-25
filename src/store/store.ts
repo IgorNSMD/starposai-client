@@ -14,6 +14,7 @@ import generalSettingReducer  from './slices/generalSettingSlice'; // Ajusta la 
 import productReducer  from './slices/productSlice'; // Ajusta la ruta según tu estructura
 import categoryReducer  from './slices/categorySlice'; // Ajusta la ruta según tu estructura
 import providerReducer  from './slices/providerSlice'; // Ajusta la ruta según tu estructura
+import clientReducer from './slices/clientSlice';
 
 // Configuración de persistencia
 const persistConfig = {
@@ -38,6 +39,7 @@ const store = configureStore({
     products: productReducer, // Reducer para actions
     categories: categoryReducer, // Reducer para actions
     providers: providerReducer, // Reducer para actions
+    clients: clientReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

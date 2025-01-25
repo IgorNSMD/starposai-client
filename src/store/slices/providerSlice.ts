@@ -28,6 +28,29 @@ const initialState: ProviderState = {
   successMessage: null,
 };
 
+export const searchProviders = createAsyncThunk<
+  Provider[],
+  { name?: string; rut?: string },
+  { rejectValue: string }
+>('providers/search', async (filters, thunkAPI) => {
+  try {
+    //console.log('(searchProviders) ->', filters)
+    const response = await axiosInstance.get('/providers/search', {
+      params: { ...filters, status: 'active' }, // Asegúrate de incluir el estado 'active'
+    });
+
+    //console.log('response.data', response.data)
+
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Error al buscar providers'
+      );
+    }
+  }
+});
+
 // Thunks
 export const fetchProviders = createAsyncThunk<Provider[], { status?: string }>(
   'providers/fetchProviders',
@@ -157,6 +180,18 @@ const providerSlice = createSlice({
         }
       })
       .addCase(changeProviderStatus.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
+      })
+      .addCase(searchProviders.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null;
+      })
+      .addCase(searchProviders.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.providers = action.payload; // Actualiza los productos con el resultado de la búsqueda
+      })
+      .addCase(searchProviders.rejected, (state, action) => {
         state.isLoading = false;
         state.errorMessage = action.payload as string;
       });

@@ -22,6 +22,7 @@ import {
   createProvider,
   updateProvider,
   changeProviderStatus,
+  searchProviders,
 } from '../../store/slices/providerSlice';
 import {
   formContainer,
@@ -116,6 +117,9 @@ const Provider: React.FC = () => {
     }
   };
   
+  const handleSearch = () => {
+    dispatch(searchProviders(filters));
+  };
 
   const handleEdit = (id: string) => {
     const provider = providers.find((prov) => prov._id === id);
@@ -262,6 +266,7 @@ const Provider: React.FC = () => {
             variant="outlined"
             color="secondary"
             startIcon={<SearchIcon />}
+            onClick={handleSearch}
             sx={searchButton}
           >
             Search

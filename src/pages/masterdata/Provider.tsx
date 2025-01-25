@@ -8,6 +8,7 @@ import {
   PaperProps,
   TextField,
   IconButton,
+  Alert,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
@@ -34,6 +35,7 @@ import {
   modalTitleStyle,
   datagridStyle_v2,
 } from '../../styles/AdminStyles';
+import { useToastMessages } from '../../hooks/useToastMessage';
 
 const DraggablePaper = (props: PaperProps) => {
   const nodeRef = useRef(null);
@@ -48,7 +50,7 @@ const DraggablePaper = (props: PaperProps) => {
 
 const Provider: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { providers } = useAppSelector((state) => state.providers);
+  const { providers, errorMessage, successMessage } = useAppSelector((state) => state.providers);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -64,10 +66,14 @@ const Provider: React.FC = () => {
   });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchProviders());
   }, [dispatch]);
+
+  // Manejo de mensajes
+  useToastMessages(successMessage, errorMessage);
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => {
@@ -85,12 +91,26 @@ const Provider: React.FC = () => {
 
   const handleSubmit = () => {
     if (editingId) {
-      dispatch(updateProvider({ id: editingId, data: { ...formData } }));
+      dispatch(updateProvider({ id: editingId, data: { ...formData } }))
+        .unwrap()
+        .then(() => {
+          handleCloseModal(); // Cierra el modal si la operación fue exitosa
+        })
+        .catch((error) => {
+          setLocalError(error); // Muestra el error si falla
+        });
     } else {
-      dispatch(createProvider(formData));
+      dispatch(createProvider(formData))
+        .unwrap()
+        .then(() => {
+          handleCloseModal(); // Cierra el modal si la operación fue exitosa
+        })
+        .catch((error) => {
+          setLocalError(error); // Muestra el error si falla
+        });
     }
-    handleCloseModal();
   };
+  
 
   const handleEdit = (id: string) => {
     const provider = providers.find((prov) => prov._id === id);
@@ -224,6 +244,12 @@ const Provider: React.FC = () => {
           <DialogTitle id="draggable-dialog-title" sx={modalTitleStyle}>
             {editingId ? 'Edit Provider' : 'New Provider'}
           </DialogTitle>
+          {/* Mostrar el mensaje de error */}
+          {localError && (
+            <Box sx={{ marginTop: '8px', marginBottom: '-8px', padding: '0 16px' }}>
+              <Alert severity="error">{localError}</Alert>
+            </Box>
+          )}
           <DialogContent>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
               <TextField

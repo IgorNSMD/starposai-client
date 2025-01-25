@@ -30,7 +30,7 @@ const initialState: ProviderState = {
 
 // Thunks
 export const fetchProviders = createAsyncThunk<Provider[]>(
-  'providers/fetchAll',
+  'providers/fetchProviders',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get('/providers');
@@ -52,6 +52,7 @@ export const createProvider = createAsyncThunk<Provider, Partial<Provider>>(
       return response.data;
     } catch (error) {
         if (axiosInstance.isAxiosError?.(error)) {
+            //console.log('error.response?.data?.message ->', error.response?.data?.message)
             return rejectWithValue(error.response?.data?.message || " Error create provider");
          }
         return rejectWithValue("Unknown error occurred");
@@ -113,9 +114,21 @@ const providerSlice = createSlice({
         state.isLoading = false;
         state.errorMessage = action.payload as string;
       })
+      .addCase(createProvider.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null;
+      })
       .addCase(createProvider.fulfilled, (state, action) => {
         state.providers.push(action.payload);
         state.successMessage = 'Proveedor creado con éxito';
+        state.errorMessage = null;
+      })
+      .addCase(createProvider.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
+      })
+      .addCase(updateProvider.pending, (state) => {
+        state.isLoading = true;
         state.errorMessage = null;
       })
       .addCase(updateProvider.fulfilled, (state, action) => {
@@ -126,11 +139,24 @@ const providerSlice = createSlice({
         state.successMessage = 'Proveedor actualizado con éxito';
         state.errorMessage = null;
       })
+      .addCase(updateProvider.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
+      })
+      // Change Provider Status
+      .addCase(changeProviderStatus.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null;
+      })      
       .addCase(changeProviderStatus.fulfilled, (state, action) => {
         const index = state.providers.findIndex((p) => p._id === action.payload._id);
         if (index !== -1) {
           state.providers[index].status = action.payload.status;
         }
+      })
+      .addCase(changeProviderStatus.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
       });
   },
 });

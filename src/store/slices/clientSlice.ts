@@ -26,6 +26,29 @@ const initialState: ClientState = {
   successMessage: null,
 };
 
+export const searchClients = createAsyncThunk<
+  Client[],
+  { name?: string; rut?: string },
+  { rejectValue: string }
+>('clients/search', async (filters, thunkAPI) => {
+  try {
+    console.log('(searchClients) ->', filters)
+    const response = await axiosInstance.get('/clients/search', {
+      params: { ...filters, status: 'active' }, // Asegúrate de incluir el estado 'active'
+    });
+
+    console.log('response.data', response.data)
+
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || 'Error al buscar clients'
+      );
+    }
+  }
+});
+
 // ** Fetch all clients
 export const fetchClients = createAsyncThunk<Client[], { status?: string }>(
   'clients/fetchClients',
@@ -131,6 +154,18 @@ const clientSlice = createSlice({
           state.clients[index].status = action.payload.status;
         }
       })
+      .addCase(searchClients.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null;
+      })
+      .addCase(searchClients.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.clients = action.payload; // Actualiza los clientes con el resultado de la búsqueda
+      })
+      .addCase(searchClients.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
+      })      
       .addMatcher(
         (action): action is { type: string; payload: string } => action.type.endsWith('/rejected'),
         (state, action) => {

@@ -25,6 +25,7 @@ import {
   createClient,
   updateClient,
   changeClientStatus,
+  searchClients,
 } from '../../store/slices/clientSlice';
 import {
   formContainer,
@@ -81,8 +82,8 @@ const Client: React.FC = () => {
     dispatch(fetchClients({ status: 'active' }));
   }, [dispatch]);
 
-    // Manejo de mensajes
-    useToastSuccessMessage(successMessage);
+  // Manejo de mensajes
+  useToastSuccessMessage(successMessage);
 
   const handleOpenModal = () => setIsModalOpen(true);
 
@@ -121,6 +122,10 @@ const Client: React.FC = () => {
         setLocalError(error); // Muestra el error si falla
         });
     }
+  };
+
+  const handleSearch = () => {
+    dispatch(searchClients(filters));
   };
 
   const handleEdit = (id: string) => {
@@ -267,6 +272,7 @@ const Client: React.FC = () => {
             variant="outlined"
             color="secondary"
             startIcon={<SearchIcon />}
+            onClick={handleSearch}
             sx={searchButton}
           >
             Search

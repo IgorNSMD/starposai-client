@@ -27,11 +27,13 @@ const initialState: ClientState = {
 };
 
 // ** Fetch all clients
-export const fetchClients = createAsyncThunk<Client[]>(
-  'clients/fetchAll',
-  async (_, thunkAPI) => {
+export const fetchClients = createAsyncThunk<Client[], { status?: string }>(
+  'clients/fetchClients',
+  async ({ status } = {}, thunkAPI) => {
     try {
-      const response = await axiosInstance.get('/clients');
+      const response = await axiosInstance.get('/clients', {
+        params: { status }, // Pasar los parámetros de consulta
+      });
       return response.data;
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {

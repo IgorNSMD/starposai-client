@@ -78,7 +78,7 @@ const Client: React.FC = () => {
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchClients());
+    dispatch(fetchClients({ status: 'active' }));
   }, [dispatch]);
 
     // Manejo de mensajes
@@ -151,7 +151,15 @@ const Client: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (selectedClientId) {
-      dispatch(changeClientStatus({ id: selectedClientId, status: 'inactive' }));
+      dispatch(changeClientStatus({ id: selectedClientId, status: 'inactive' }))
+        .unwrap()
+        .then(() => {
+          console.log('Estado cambiado a inactive con éxito');
+          dispatch(fetchClients({ status: 'active' }));
+        })
+        .catch((error) => {
+          console.error('Error al cambiar el estado del producto:', error);
+        });      
     }
     handleDeleteDialogClose();
   };
@@ -214,6 +222,17 @@ const Client: React.FC = () => {
             value={filters.name}
             onChange={handleFilterChange}
             sx={inputField}
+            slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
+                  },
+                },
+              }}
           />
           <TextField
             label="RUT"
@@ -221,6 +240,17 @@ const Client: React.FC = () => {
             value={filters.rut}
             onChange={handleFilterChange}
             sx={inputField}
+            slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
+                  },
+                },
+              }}
           />
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '10px', marginTop: '16px' }}>
@@ -269,12 +299,114 @@ const Client: React.FC = () => {
           )}
           <DialogContent>
             <Box sx={inputContainerForm}>
-              <TextField label="Name" name="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} sx={inputField} />
-              <TextField label="RUT" name="rut" value={formData.rut} onChange={(e) => setFormData({ ...formData, rut: e.target.value })} sx={inputField} />
-              <TextField label="Email" name="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} sx={inputField} />
-              <TextField label="Phone" name="phone" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} sx={inputField} />
-              <TextField label="Address" name="address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} sx={inputField} />
-              <TextField label="Country" name="country" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} sx={inputField} />
+              <TextField 
+                label="Name" 
+                name="name" 
+                value={formData.name} 
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                sx={inputField} 
+                slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                      sx: {
+                        color: '#444444',
+                        '&.Mui-focused': {
+                          color: '#47b2e4',
+                        },
+                      },
+                    },
+                }}
+                />
+              <TextField 
+                label="RUT" 
+                name="rut" 
+                value={formData.rut} 
+                onChange={(e) => setFormData({ ...formData, rut: e.target.value })} 
+                sx={inputField} 
+                slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                      sx: {
+                        color: '#444444',
+                        '&.Mui-focused': {
+                          color: '#47b2e4',
+                        },
+                      },
+                    },
+                }}
+              />
+              <TextField 
+                label="Email" 
+                name="email" 
+                value={formData.email} 
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                sx={inputField} 
+                slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                      sx: {
+                        color: '#444444',
+                        '&.Mui-focused': {
+                          color: '#47b2e4',
+                        },
+                      },
+                    },
+                }}                
+               />
+              <TextField 
+                label="Phone" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })} 
+                sx={inputField} 
+                slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                      sx: {
+                        color: '#444444',
+                        '&.Mui-focused': {
+                          color: '#47b2e4',
+                        },
+                      },
+                    },
+                }}
+                />
+              <TextField 
+                label="Address" 
+                name="address" 
+                value={formData.address} 
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })} 
+                sx={inputField} 
+                slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                      sx: {
+                        color: '#444444',
+                        '&.Mui-focused': {
+                          color: '#47b2e4',
+                        },
+                      },
+                    },
+                }}
+                />
+              <TextField 
+                label="Country" 
+                name="country" 
+                value={formData.country} 
+                onChange={(e) => setFormData({ ...formData, country: e.target.value })} 
+                sx={inputField} 
+                slotProps={{
+                    inputLabel: {
+                      shrink: true,
+                      sx: {
+                        color: '#444444',
+                        '&.Mui-focused': {
+                          color: '#47b2e4',
+                        },
+                      },
+                    },
+                }}
+                />
             </Box>
           </DialogContent>
           <DialogActions>

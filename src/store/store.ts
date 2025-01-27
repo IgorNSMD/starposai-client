@@ -15,6 +15,7 @@ import productReducer  from './slices/productSlice'; // Ajusta la ruta según tu
 import categoryReducer  from './slices/categorySlice'; // Ajusta la ruta según tu estructura
 import providerReducer  from './slices/providerSlice'; // Ajusta la ruta según tu estructura
 import clientReducer from './slices/clientSlice';
+import inventoryMovementsReducer from './slices/inventoryMovementSlice';
 
 // Configuración de persistencia
 const persistConfig = {
@@ -39,7 +40,8 @@ const store = configureStore({
     products: productReducer, // Reducer para actions
     categories: categoryReducer, // Reducer para actions
     providers: providerReducer, // Reducer para actions
-    clients: clientReducer,
+    clients: clientReducer, // Reducer para actions
+    inventorymovements: inventoryMovementsReducer, // Reducer para actions
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -18,6 +18,7 @@ const Product = lazy(() => import('../pages/masterdata/Product'));
 const Category = lazy(() => import('../pages/masterdata/Category'));
 const Provider = lazy(() => import('../pages/masterdata/Provider'));
 const Client = lazy(() => import('../pages/masterdata/Client'));
+const InventoryMovement = lazy(() => import('../pages/inventory/InventoryMovement'));
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -44,6 +45,7 @@ const routes = [
       { path: 'category', element: <Category /> },
       { path: 'provider', element: <Provider /> },
       { path: 'client', element: <Client /> },
+      { path: 'movements', element: <InventoryMovement /> },
     ],
   },
 ];

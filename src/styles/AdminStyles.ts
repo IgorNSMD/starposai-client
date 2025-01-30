@@ -39,6 +39,16 @@ export const sidebarStyle: SxProps<Theme> = {
   '&::-webkit-scrollbar-track': {
     backgroundColor: '#37517e', // Color de fondo del scrollbar
   },
+  // 🔹 Aplica el tamaño de fuente a los nombres de los menús principales
+  '& .MuiListItemText-primary': {
+    fontSize: '12px', // 🔹 Reduce el tamaño de los menús principales
+    fontWeight: '500',
+  },
+  // 🔹 Aplica el tamaño de fuente a los submenús
+  '& .MuiCollapse-root .MuiListItemText-primary': {
+    fontSize: '11px', // 🔹 Reduce el tamaño de los submenús
+    fontWeight: '400',
+  },
 };
 
 

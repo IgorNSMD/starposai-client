@@ -269,7 +269,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                     </ListItemIcon>
 
                     
-                    {isOpen && <ListItemText primary={item.component} sx={{ color: '#ffffff' }} />}
+                    {isOpen && <ListItemText primary={item.component} sx={{ color: '#ffffff', fontSize: '12px' }} />}
                     {isOpen && item.subMenus && item.subMenus.length > 0 && (
                       openMenus[item.component ?? ''] ? (
                         <ExpandLess sx={{ color: '#ffffff' }} />
@@ -321,7 +321,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                             {isOpen && (
                               <ListItemText
                                 primary={subItem.component}
-                                sx={{ color: '#ffffff' }}
+                                sx={{ color: '#ffffff', fontSize: '11px' }}
                               />
                             )}
                           </Button>

@@ -19,14 +19,28 @@ export const sidebarStyle: SxProps<Theme> = {
   position: 'fixed',
   top: '64px',
   height: 'calc(100vh - 64px)',
-  overflow: 'hidden', // Oculta el contenido al contraerse
+  overflowY: 'auto', // Habilita el scroll vertical cuando haya muchos elementos
+  overflowX: 'hidden', // Evita que aparezca un scroll horizontal innecesario
   zIndex: 1200,
   transition: 'width 0.3s ease-in-out', // Animación suave
   width: '250px', // Ancho cuando está abierto
+  scrollbarWidth: 'thin', // Hace que el scroll sea más delgado (Firefox)
+  scrollbarColor: '#999 #37517e', // Color del scroll (Firefox)
   '@media (max-width: 960px)': {
-    width: '0', // Sidebar completamente contraído
+    width: '0', // Sidebar completamente contraído en pantallas pequeñas
+  },
+  '&::-webkit-scrollbar': {
+    width: '6px', // Ancho del scrollbar (Chrome y Edge)
+  },
+  '&::-webkit-scrollbar-thumb': {
+    backgroundColor: '#999', // Color del thumb (Chrome y Edge)
+    borderRadius: '10px',
+  },
+  '&::-webkit-scrollbar-track': {
+    backgroundColor: '#37517e', // Color de fondo del scrollbar
   },
 };
+
 
 
 export const headerStyle: SxProps<Theme> = {

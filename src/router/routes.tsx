@@ -35,17 +35,32 @@ const routes = [
     ),
     children: [
       // Subrutas dentro de "/admin"
-      { path: 'permissions', element: <Permissions /> },
-      { path: 'actions', element: <Actions /> },
-      { path: 'roles', element: <Roles /> },
-      { path: 'menus', element: <Menus /> },
-      { path: 'users', element: <Users /> },
       { path: 'setting', element: <Setting /> },
-      { path: 'product', element: <Product /> },
-      { path: 'category', element: <Category /> },
-      { path: 'provider', element: <Provider /> },
-      { path: 'client', element: <Client /> },
-      { path: 'movements', element: <InventoryMovement /> },
+      {
+        path: 'inventory',
+        children: [
+          { path: 'movements', element: <InventoryMovement /> },
+        ],
+      },
+      {
+        path: 'management',
+        children: [
+          { path: 'permissions', element: <Permissions /> },
+          { path: 'actions', element: <Actions /> },
+          { path: 'roles', element: <Roles /> },
+          { path: 'menus', element: <Menus /> },
+          { path: 'users', element: <Users /> },
+        ],
+      },
+      {
+        path: 'masterdata',
+        children: [
+          { path: 'product', element: <Product /> },
+          { path: 'category', element: <Category /> },
+          { path: 'provider', element: <Provider /> },
+          { path: 'client', element: <Client /> },
+        ],
+      },
     ],
   },
 ];

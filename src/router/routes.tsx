@@ -19,6 +19,7 @@ import Category from "../pages/masterdata/Category";
 import Provider from "../pages/masterdata/Provider";
 import Client from "../pages/masterdata/Client";
 import InventoryMovement from "../pages/inventory/InventoryMovement";
+import PurchaseOrder from "../pages/purchasing/PurchaseOrder";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -45,7 +46,7 @@ const routes = [
       {
         path: 'purchasing',
         children: [
-          { path: 'PO', element: <InventoryMovement /> },
+          { path: 'po', element: <PurchaseOrder /> },
         ],
       },
       {

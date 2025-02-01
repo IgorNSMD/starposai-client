@@ -27,7 +27,11 @@ export const sidebarStyle: SxProps<Theme> = {
   scrollbarWidth: 'thin', // Hace que el scroll sea más delgado (Firefox)
   scrollbarColor: '#999 #37517e', // Color del scroll (Firefox)
   '@media (max-width: 960px)': {
-    width: '0', // Sidebar completamente contraído en pantallas pequeñas
+    width: (theme) => (theme.breakpoints.down('md') ? '0px' : '250px'), // ✅ Esto permite que el sidebar respete su estado
+    //width: '0', // Sidebar completamente contraído en pantallas pequeñas
+  },
+  '&.open': {
+    width: '250px', // ✅ Cuando está abierto, debe expandirse
   },
   '&::-webkit-scrollbar': {
     width: '6px', // Ancho del scrollbar (Chrome y Edge)
@@ -75,7 +79,8 @@ export const mainContentStyle: SxProps<Theme> = {
   transition: 'margin-left 0.3s ease-in-out',
   marginLeft: '250px',
   '@media (max-width: 960px)': {
-    marginLeft: '0',
+    marginLeft: (theme) => (theme.breakpoints.down('md') ? '0px' : '250px'), // ✅ Ajusta el margen según el estado del sidebar
+    //marginLeft: '0',
   },
 };
 

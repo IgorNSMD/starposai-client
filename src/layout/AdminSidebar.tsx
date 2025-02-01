@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, } from '@mui/material';
+import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Divider, Collapse, useTheme, useMediaQuery, } from '@mui/material';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 //import { OverridableComponent } from '@mui/material/OverridableComponent';
 
@@ -11,12 +11,14 @@ import { fetchMenus, fetchMenuByRole, fetchMenuTree } from '../store/slices/menu
 import { baseURL_MENUICONS } from '../utils/Parameters'; // Importa tu baseURL exportable
 
 //import { menuAdmin } from './AdminMenu';
+import MenuIcon from '@mui/icons-material/Menu';
 
 // JSON de menú dinámico
 //const menuItems = menuAdmin
 
 interface AdminSidebarProps {
   isOpen: boolean;
+  toggleSidebar: () => void; // Agregamos una función para alternar el Sidebar
 }
 
 interface MenuItem {
@@ -79,10 +81,12 @@ const logoutItem: MenuItem = {
 };
 
 
-const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Detecta si es móvil
+
   const dispatch = useAppDispatch();
-  //const { menus, menusRoles, menusTrees, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
-  const {menusRoles, menusTrees, isLoaded, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
+  const {menusRoles, menusTrees, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
   const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
   const location = useLocation();
 
@@ -91,22 +95,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
 
   // Cargar los menús al montar el componente
   useEffect(() => {
-    if (!isMenuLoaded) {
-      dispatch(fetchMenus());
-    }
-  }, [dispatch, isMenuLoaded]);
-  
-  useEffect(() => {
-    if (!isMenuByRoleLoaded && role) {
-      dispatch(fetchMenuByRole(role));
-    }
-  }, [dispatch, isMenuByRoleLoaded, role]);
-  
-  useEffect(() => {
-    if (!isMenuTreeLoaded) {
-      dispatch(fetchMenuTree());
-    }
-  }, [dispatch, isMenuTreeLoaded]);
+    if (!isMenuLoaded) dispatch(fetchMenus());
+    if (!isMenuByRoleLoaded && role) dispatch(fetchMenuByRole(role));
+    if (!isMenuTreeLoaded) dispatch(fetchMenuTree());
+  }, [dispatch, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded, role]);
 
   const toggleSubMenu = (name: string | undefined) => {
     if (name) {
@@ -218,7 +210,16 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
         width: isOpen ? '250px' : '0px',
         transition: 'width 0.3s',
       }}
+      className={isOpen ? 'open' : ''} // ✅ Agrega la clase 'open' si está abierto
     >
+      {/* Botón para abrir/cerrar el Sidebar */}
+      <Button
+        onClick={toggleSidebar}
+        sx={{ margin: '10px', display: isOpen ? 'none' : 'block', backgroundColor: 'transparent', color: '#fff' }}
+      >
+        <MenuIcon />
+      </Button>
+
       <List>
         {filteredMenus.map((item, index) => (
           <React.Fragment key={index}>
@@ -230,7 +231,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                   <Button
                     component={RouterLink}
                     to={item.path || '#'}
-                    onClick={item.subMenus ? () => toggleSubMenu(item.component) : undefined}
+                    onClick={() => {
+                      console.log('onClick...')
+                      if (item.subMenus) {
+                        toggleSubMenu(item.component);
+                      } else {
+                        if (isMobile) toggleSidebar(); // ✅ Ahora también se cierra si se selecciona un submenú
+                      }
+                    }}
                     sx={{
                       textDecoration: 'none',
                       width: '100%',
@@ -294,6 +302,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen }) => {
                               padding: 0,
                               backgroundColor: isActive(subItem.path ?? '') ? '#1e3a8a' : 'transparent',
                               '&:hover': { backgroundColor: '#314e8a' },
+                            }}
+                            onClick={() => {
+                              console.log('Clic en submenú:', subItem.component);
+                              if (isMobile) toggleSidebar(); // ✅ Cierra el Sidebar en móviles al hacer clic en un submenú
                             }}
                           >
 

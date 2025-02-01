@@ -25,12 +25,28 @@ import {
 } from "../../store/slices/purchaseOrderSlice";
 import { fetchProducts } from "../../store/slices/productSlice";
 
+// 🔹 Definir la interfaz de un Producto dentro de la PO
+interface POProduct {
+  productId?: string; // Si es un producto registrado
+  genericProduct?: string; // Si es un producto genérico
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+interface PurchaseOrderFormData {
+  supplier: string;
+  products: POProduct[];
+  total: number;
+  estimatedDeliveryDate: string;
+}
+
 const PurchaseOrder: React.FC = () => {
   const dispatch = useAppDispatch();
   const { purchaseOrders } = useAppSelector((state) => state.purchaseorders);
   const { products } = useAppSelector((state) => state.products);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<PurchaseOrderFormData>({
     supplier: "",
     products: [],
     total: 0,
@@ -69,7 +85,12 @@ const PurchaseOrder: React.FC = () => {
   const handleEdit = (id: string) => {
     const po = purchaseOrders.find((order) => order._id === id);
     if (po) {
-      setFormData(po);
+      setFormData({
+        supplier: po.supplier || "",
+        products: po.products || [],
+        total: po.total || 0,
+        estimatedDeliveryDate: po.estimatedDeliveryDate || "",
+      });
       setEditingId(id);
       setIsModalOpen(true);
     }

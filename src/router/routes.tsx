@@ -1,4 +1,4 @@
-import { lazy, Suspense  } from "react"; 
+import { Suspense  } from "react"; 
 import { useRoutes } from 'react-router-dom';
 import { CircularProgress } from "@mui/material";
 

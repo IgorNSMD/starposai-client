@@ -4,21 +4,21 @@ import { CircularProgress } from "@mui/material";
 
 import PrivateRoute from "./PrivateRoute";
 
-const HomeLayout = lazy(() => import('../layout/HomeLayout'));
-const AdminLayout = lazy(() => import('../layout/AdminLayout'));
-const Login = lazy(()=> import('../pages/auth/Login'))   
-const Register = lazy(() => import('../pages/auth/Register'));
-const Permissions = lazy(() => import('../pages/management/Permissions'));
-const Roles = lazy(() => import('../pages/management/Roles'));
-const Menus = lazy(() => import('../pages/management/Menus'));
-const Actions = lazy(() => import('../pages/management/Actions'));
-const Users = lazy(() => import('../pages/management/User'));
-const Setting = lazy(() => import('../pages/setting/Setting'));
-const Product = lazy(() => import('../pages/masterdata/Product'));
-const Category = lazy(() => import('../pages/masterdata/Category'));
-const Provider = lazy(() => import('../pages/masterdata/Provider'));
-const Client = lazy(() => import('../pages/masterdata/Client'));
-const InventoryMovement = lazy(() => import('../pages/inventory/InventoryMovement'));
+import HomeLayout from "../layout/HomeLayout";
+import AdminLayout from "../layout/AdminLayout";
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
+import Permissions from "../pages/management/Permissions";
+import Roles from "../pages/management/Roles";
+import Menus from "../pages/management/Menus";
+import Actions from "../pages/management/Actions";
+import Users from "../pages/management/User";
+import Setting from "../pages/setting/Setting";
+import Product from "../pages/masterdata/Product";
+import Category from "../pages/masterdata/Category";
+import Provider from "../pages/masterdata/Provider";
+import Client from "../pages/masterdata/Client";
+import InventoryMovement from "../pages/inventory/InventoryMovement";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -40,6 +40,12 @@ const routes = [
         path: 'inventory',
         children: [
           { path: 'movements', element: <InventoryMovement /> },
+        ],
+      },
+      {
+        path: 'purchasing',
+        children: [
+          { path: 'PO', element: <InventoryMovement /> },
         ],
       },
       {

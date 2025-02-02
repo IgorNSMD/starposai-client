@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -6,24 +6,32 @@ import {
   Paper,
   TextField,
   IconButton,
+  Select,
+  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  MenuItem,
-  Select,
-} from "@mui/material";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
 import {
   fetchPurchaseOrders,
   createPurchaseOrder,
   updatePurchaseOrder,
-} from "../../store/slices/purchaseOrderSlice";
-import { fetchProducts } from "../../store/slices/productSlice";
+  changePurchaseOrderStatus ,
+} from '../../store/slices/purchaseOrderSlice';
+import { fetchProviders } from '../../store/slices/providerSlice';
+import { fetchProducts } from '../../store/slices/productSlice';
 
 // 🔹 Definir la interfaz de un Producto dentro de la PO
 interface POProduct {
@@ -34,196 +42,235 @@ interface POProduct {
   subtotal: number;
 }
 
+export interface Provider {
+  _id: string;
+  name: string;
+}
+
 interface PurchaseOrderFormData {
-  supplier: string;
+  provider: string | Provider; // 👈 Permitimos string o el objeto Provider
   products: POProduct[];
   total: number;
   estimatedDeliveryDate: string;
 }
 
+
 const PurchaseOrder: React.FC = () => {
   const dispatch = useAppDispatch();
   const { purchaseOrders } = useAppSelector((state) => state.purchaseorders);
+  const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<PurchaseOrderFormData>({
-    supplier: "",
+    provider: '',
+    estimatedDeliveryDate: '',
     products: [],
     total: 0,
-    estimatedDeliveryDate: "",
   });
-
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(fetchPurchaseOrders());
+    dispatch(fetchProviders({ status: 'active' }));
     dispatch(fetchProducts({ status: 'active' }));
   }, [dispatch]);
 
-  const handleOpenModal = () => setIsModalOpen(true);
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    setFormData({
+      provider: '',
+      estimatedDeliveryDate: '',
+      products: [],
+      total: 0,
+    });
+    setEditingId(null);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
-    setFormData({ supplier: "", products: [], total: 0, estimatedDeliveryDate: "" });
   };
 
   const handleSubmit = () => {
+    const processedFormData = {
+      ...formData,
+      provider: typeof formData.provider === "string"
+        ? { _id: formData.provider, name: "" } // 👈 Si es string, conviértelo a objeto
+        : formData.provider, // Si ya es objeto, lo mantiene
+    };
+  
     if (editingId) {
-      dispatch(updatePurchaseOrder({ id: editingId, data: formData }))
+      dispatch(updatePurchaseOrder({ id: editingId, data: processedFormData }))
         .unwrap()
-        .then(() => handleCloseModal())
-        .catch((error) => console.error(error));
+        .then(handleCloseModal);
     } else {
-      dispatch(createPurchaseOrder(formData))
+      dispatch(createPurchaseOrder(processedFormData)) // 👈 Ahora enviamos `processedFormData`
         .unwrap()
-        .then(() => handleCloseModal())
-        .catch((error) => console.error(error));
+        .then(handleCloseModal);
     }
   };
+  
 
   const handleEdit = (id: string) => {
     const po = purchaseOrders.find((order) => order._id === id);
     if (po) {
-      setFormData({
-        supplier: po.supplier || "",
-        products: po.products || [],
-        total: po.total || 0,
-        estimatedDeliveryDate: po.estimatedDeliveryDate || "",
-      });
+      setFormData(po);
       setEditingId(id);
       setIsModalOpen(true);
     }
   };
 
-  const handleDelete = (id: string) => {
-    console.log("Eliminar PO con ID:", id);
-    // Aquí se podría agregar una acción de Redux para eliminar o cambiar el estado de la PO.
+  const handleDelete = (poId: string) => {
+    dispatch(changePurchaseOrderStatus({ id: poId, status: "inactive" }));
   };
 
-  const rows = purchaseOrders.map((order) => ({
-    id: order._id,
-    supplier: order.supplier,
-    total: order.total,
-    estimatedDeliveryDate: order.estimatedDeliveryDate,
-    status: order.status,
-  }));
+  const handleProductChange = (index: number, field: string, value: string | number) => {
+    const updatedProducts = [...formData.products];
+    updatedProducts[index] = { ...updatedProducts[index], [field]: value };
+
+    // Calcular subtotal y total
+    updatedProducts[index].subtotal = updatedProducts[index].quantity * updatedProducts[index].unitPrice;
+    const newTotal = updatedProducts.reduce((sum, p) => sum + (p.subtotal || 0), 0);
+
+    setFormData({ ...formData, products: updatedProducts, total: newTotal });
+  };
+
+  // *se habilitará codigo mas adelante*
+  // const addProduct = () => {
+  //   setFormData({
+  //     ...formData,
+  //     products: [
+  //       ...formData.products,
+  //       {
+  //         productId: '', // Si el producto es del sistema
+  //         genericProduct: '', // Si es un producto genérico
+  //         quantity: 1,
+  //         unitPrice: 0,
+  //         subtotal: 0
+  //       }
+  //     ]
+  //   });
+  // };
+
+  const removeProduct = (index: number) => {
+    const updatedProducts = [...formData.products];
+    updatedProducts.splice(index, 1);
+    const newTotal = updatedProducts.reduce((sum, p) => sum + (p.subtotal || 0), 0);
+    setFormData({ ...formData, products: updatedProducts, total: newTotal });
+  };
 
   const columns: GridColDef[] = [
-    { field: "supplier", headerName: "Supplier", flex: 1 },
-    { field: "total", headerName: "Total", flex: 1 },
-    { field: "estimatedDeliveryDate", headerName: "Delivery Date", flex: 1 },
-    { field: "status", headerName: "Status", flex: 1 },
+    { field: 'provider', headerName: 'Provider', flex: 1 },
+    { field: 'total', headerName: 'Total', flex: 1 },
+    { field: 'estimatedDeliveryDate', headerName: 'Delivery Date', flex: 1 },
     {
-      field: "actions",
-      headerName: "Actions",
-      width: 150,
+      field: 'actions',
+      headerName: 'Actions',
+      flex: 1,
       renderCell: (params) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton color="primary" size="small" onClick={() => handleEdit(params.row.id)}>
+        <>
+          <IconButton color="primary" onClick={() => handleEdit(params.row.id)}>
             <EditIcon />
           </IconButton>
-          <IconButton color="error" size="small" onClick={() => handleDelete(params.row.id)}>
+          <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
             <DeleteIcon />
           </IconButton>
-        </Box>
+        </>
       ),
     },
   ];
 
+  const rows = purchaseOrders.map((po) => ({
+    id: po._id,
+    provider: po.provider.name,
+    total: po.total,
+    estimatedDeliveryDate: po.estimatedDeliveryDate,
+  }));
+
   return (
-    <Box sx={{ padding: 3 }}>
-      <Paper sx={{ padding: 3, marginBottom: 3 }}>
-        <Typography variant="h5" sx={{ marginBottom: 2 }}>
-          Purchase Order Management
-        </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenModal}>
+    <Box>
+      <Paper sx={{ padding: 2 }}>
+        <Typography variant="h6">Purchase Order Management</Typography>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
           New Purchase Order
         </Button>
       </Paper>
 
-      <Paper>
-        <DataGrid rows={rows} columns={columns} pageSizeOptions={[5, 10, 20]} autoHeight />
+      <Paper sx={{ marginTop: 2 }}>
+        <DataGrid rows={rows} columns={columns} pageSizeOptions={[5, 10, 20]} />
       </Paper>
 
-      {/* 📌 Modal para Crear / Editar PO */}
       {isModalOpen && (
         <Dialog open={isModalOpen} onClose={handleCloseModal}>
-          <DialogTitle>{editingId ? "Edit Purchase Order" : "New Purchase Order"}</DialogTitle>
+          <DialogTitle>{editingId ? 'Edit Purchase Order' : 'New Purchase Order'}</DialogTitle>
           <DialogContent>
-            <Box sx={{ display: "grid", gap: 2, marginTop: 2 }}>
-              <TextField
-                label="Supplier"
-                value={formData.supplier}
-                onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                fullWidth
-              />
-              <TextField
-                label="Estimated Delivery Date"
-                type="date"
-                InputLabelProps={{ shrink: true }}
-                value={formData.estimatedDeliveryDate}
-                onChange={(e) => setFormData({ ...formData, estimatedDeliveryDate: e.target.value })}
-                fullWidth
-              />
-
-              <Typography variant="subtitle1">Products</Typography>
-              <Select
-                value=""
-                onChange={(e) => {
-                  const product = products.find((p) => p._id === e.target.value);
-                  if (product) {
-                    setFormData({
-                      ...formData,
-                      products: [...formData.products, { productId: product._id, quantity: 1, unitPrice: product.cost, subtotal: product.cost }],
-                      total: formData.total + product.cost,
-                    });
-                  }
-                }}
-                displayEmpty
-                fullWidth
-              >
-                <MenuItem value="" disabled>
-                  Select Product
+            <TextField
+              select
+              label="Provider"
+              fullWidth
+              value={formData.provider}
+              onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+              sx={{ marginBottom: 2 }}
+            >
+              {providers.map((s) => (
+                <MenuItem key={s._id} value={s._id}>
+                  {s.name}
                 </MenuItem>
-                {products.map((product) => (
-                  <MenuItem key={product._id} value={product._id}>
-                    {product.name} - ${product.cost}
-                  </MenuItem>
-                ))}
-              </Select>
+              ))}
+            </TextField>
 
-              <Box>
-                {formData.products.map((item, index) => (
-                  <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Typography>{products.find((p) => p._id === item.productId)?.name || item.genericProduct}</Typography>
-                    <TextField
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => {
-                        const updatedProducts = [...formData.products];
-                        updatedProducts[index].quantity = Number(e.target.value);
-                        updatedProducts[index].subtotal = updatedProducts[index].quantity * updatedProducts[index].unitPrice;
-                        setFormData({ ...formData, products: updatedProducts, total: updatedProducts.reduce((acc, p) => acc + p.subtotal, 0) });
-                      }}
-                      sx={{ width: 80 }}
-                    />
-                    <IconButton onClick={() => setFormData({ ...formData, products: formData.products.filter((_, i) => i !== index) })}>
-                      <DeleteIcon color="error" />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
+            <TextField
+              type="date"
+              label="Estimated Delivery Date"
+              fullWidth
+              value={formData.estimatedDeliveryDate}
+              onChange={(e) => setFormData({ ...formData, estimatedDeliveryDate: e.target.value })}
+              sx={{ marginBottom: 2 }}
+            />
 
-              <Typography variant="h6">Total: ${formData.total.toFixed(2)}</Typography>
-            </Box>
+            <Typography variant="subtitle1">Products</Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Product</TableCell>
+                    <TableCell>Quantity</TableCell>
+                    <TableCell>Unit Price</TableCell>
+                    <TableCell>Subtotal</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {formData.products.map((p, index) => (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <Select value={p.productId} onChange={(e) => handleProductChange(index, 'product', e.target.value)}>
+                          {products.map((prod) => (
+                            <MenuItem key={prod._id} value={prod._id}>
+                              {prod.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
+                      <TableCell>{p.quantity}</TableCell>
+                      <TableCell>{p.unitPrice}</TableCell>
+                      <TableCell>{p.subtotal}</TableCell>
+                      <TableCell>
+                        <IconButton color="error" onClick={() => removeProduct(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseModal} color="secondary">
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} variant="contained" color="primary">
-              {editingId ? "Update" : "Save"}
+            <Button onClick={handleCloseModal}>Cancel</Button>
+            <Button variant="contained" onClick={handleSubmit}>
+              Save
             </Button>
           </DialogActions>
         </Dialog>

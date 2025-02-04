@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
 import {
   Box,
   Button,
@@ -18,6 +19,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  PaperProps,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
@@ -32,6 +34,10 @@ import {
 } from '../../store/slices/purchaseOrderSlice';
 import { fetchProviders } from '../../store/slices/providerSlice';
 import { fetchProducts } from '../../store/slices/productSlice';
+
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 // 🔹 Definir la interfaz de un Producto dentro de la PO
 interface POProduct {
@@ -54,6 +60,14 @@ interface PurchaseOrderFormData {
   estimatedDeliveryDate: string;
 }
 
+const DraggablePaper = (props: PaperProps) => {
+  const nodeRef = useRef(null);
+  return (
+    <Draggable handle="#draggable-dialog-title" nodeRef={nodeRef}>
+      <Paper ref={nodeRef} {...props} />
+    </Draggable>
+  );
+};
 
 const PurchaseOrder: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -93,21 +107,31 @@ const PurchaseOrder: React.FC = () => {
   };
 
   const handleSubmit = () => {
+
     const processedFormData = {
       ...formData,
       provider: typeof formData.provider === "string"
-        ? { _id: formData.provider, name: "" } // 👈 Si es string, conviértelo a objeto
-        : formData.provider, // Si ya es objeto, lo mantiene
+        ? { _id: formData.provider, name: "" } // Convierte a un objeto `Provider`
+        : formData.provider, // Mantiene si ya es `Provider`
+      estimatedDeliveryDate:
+        formData.estimatedDeliveryDate && dayjs(formData.estimatedDeliveryDate).isValid()
+          ? dayjs(formData.estimatedDeliveryDate).toISOString()
+          : "",
     };
   
     if (editingId) {
-      dispatch(updatePurchaseOrder({ id: editingId, data: processedFormData }))
-        .unwrap()
-        .then(handleCloseModal);
+      dispatch(
+        updatePurchaseOrder({
+          id: editingId,
+          data: processedFormData, // Ahora `provider` siempre será de tipo `Provider`
+        })
+      )
+      .unwrap()
+      .then(handleCloseModal);
     } else {
-      dispatch(createPurchaseOrder(processedFormData)) // 👈 Ahora enviamos `processedFormData`
-        .unwrap()
-        .then(handleCloseModal);
+      dispatch(createPurchaseOrder(processedFormData)) // 👈 Ahora `provider` tiene el tipo correcto
+      .unwrap()
+      .then(handleCloseModal);
     }
   };
   
@@ -183,9 +207,11 @@ const PurchaseOrder: React.FC = () => {
 
   const rows = purchaseOrders.map((po) => ({
     id: po._id,
-    provider: po.provider.name,
+    provider: po.provider?.name || "N/A",
     total: po.total,
-    estimatedDeliveryDate: po.estimatedDeliveryDate,
+    estimatedDeliveryDate: po.estimatedDeliveryDate
+      ? dayjs(po.estimatedDeliveryDate).format("DD-MM-YYYY")
+      : "N/A",
   }));
 
   return (
@@ -202,8 +228,14 @@ const PurchaseOrder: React.FC = () => {
       </Paper>
 
       {isModalOpen && (
-        <Dialog open={isModalOpen} onClose={handleCloseModal}>
-          <DialogTitle>{editingId ? 'Edit Purchase Order' : 'New Purchase Order'}</DialogTitle>
+        <Dialog 
+          open={isModalOpen} 
+          onClose={handleCloseModal}
+          PaperComponent={DraggablePaper} // Usa el componente ajustado
+          >
+           <DialogTitle id="draggable-dialog-title" style={{ cursor: "move" }}>
+            {editingId ? 'Edit Purchase Order' : 'New Purchase Order'}
+          </DialogTitle>
           <DialogContent>
             <TextField
               select
@@ -220,14 +252,19 @@ const PurchaseOrder: React.FC = () => {
               ))}
             </TextField>
 
-            <TextField
-              type="date"
-              label="Estimated Delivery Date"
-              fullWidth
-              value={formData.estimatedDeliveryDate}
-              onChange={(e) => setFormData({ ...formData, estimatedDeliveryDate: e.target.value })}
-              sx={{ marginBottom: 2 }}
-            />
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="Estimated Delivery Date"
+                value={formData.estimatedDeliveryDate ? dayjs(formData.estimatedDeliveryDate) : null}
+                onChange={(newDate) => {
+                  setFormData({
+                    ...formData,
+                    estimatedDeliveryDate: newDate ? newDate.toISOString() : "",
+                  });
+                }}
+                format="DD-MM-YYYY"
+              />
+            </LocalizationProvider>
 
             <Typography variant="subtitle1">Products</Typography>
             <TableContainer component={Paper}>

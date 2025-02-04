@@ -20,6 +20,7 @@ import {
   TableHead,
   TableRow,
   PaperProps,
+  Autocomplete,
 } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
@@ -237,20 +238,21 @@ const PurchaseOrder: React.FC = () => {
             {editingId ? 'Edit Purchase Order' : 'New Purchase Order'}
           </DialogTitle>
           <DialogContent>
-            <TextField
-              select
-              label="Provider"
-              fullWidth
-              value={formData.provider}
-              onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-              sx={{ marginBottom: 2 }}
-            >
-              {providers.map((s) => (
-                <MenuItem key={s._id} value={s._id}>
-                  {s.name}
-                </MenuItem>
-              ))}
-            </TextField>
+
+          <Autocomplete
+            options={providers} // Lista de proveedores
+            getOptionLabel={(option) => option.name} // Mostrar solo el nombre
+            value={typeof formData.provider === "string" 
+              ? providers.find((p) => p._id === formData.provider) || null 
+              : formData.provider}
+            onChange={(_, newValue) => {
+              setFormData({ ...formData, provider: newValue || "" });
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Provider" fullWidth sx={{ marginBottom: 2 }} />
+            )}
+          />
+
 
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker

@@ -140,11 +140,25 @@ const PurchaseOrder: React.FC = () => {
   const handleEdit = (id: string) => {
     const po = purchaseOrders.find((order) => order._id === id);
     if (po) {
-      setFormData(po);
+      setFormData({
+        provider: providers.find((p) => p._id === (typeof po.provider === "string" ? po.provider : po.provider._id)) || "",
+        estimatedDeliveryDate: po.estimatedDeliveryDate,
+        products: po.products.map((p) => ({
+          ...p,
+          productId: products.find((prod) => prod._id === p.productId)?._id || "", // ✅ Asegura un string válido
+        })),
+        total: po.total,
+      });
       setEditingId(id);
       setIsModalOpen(true);
     }
   };
+  
+  
+  
+  
+  
+  
 
   const handleDelete = (poId: string) => {
     dispatch(changePurchaseOrderStatus({ id: poId, status: "inactive" }));
@@ -229,31 +243,36 @@ const PurchaseOrder: React.FC = () => {
       </Paper>
 
       {isModalOpen && (
-        <Dialog 
-          open={isModalOpen} 
+        <Dialog
+          open={isModalOpen}
           onClose={handleCloseModal}
-          PaperComponent={DraggablePaper} // Usa el componente ajustado
-          >
-           <DialogTitle id="draggable-dialog-title" style={{ cursor: "move" }}>
+          PaperComponent={DraggablePaper}
+          maxWidth="md" // ✅ Aumenta el ancho del modal
+          fullWidth  // ✅ Usa todo el ancho disponible
+        >
+          <DialogTitle id="draggable-dialog-title" style={{ cursor: "move" }}>
             {editingId ? 'Edit Purchase Order' : 'New Purchase Order'}
           </DialogTitle>
           <DialogContent>
 
-          <Autocomplete
-            options={providers} // Lista de proveedores
-            getOptionLabel={(option) => option.name} // Mostrar solo el nombre
-            value={typeof formData.provider === "string" 
-              ? providers.find((p) => p._id === formData.provider) || null 
-              : formData.provider}
-            onChange={(_, newValue) => {
-              setFormData({ ...formData, provider: newValue || "" });
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="Provider" fullWidth sx={{ marginBottom: 2 }} />
-            )}
-          />
+            {/* Selector de Proveedores con Autocomplete */}
+            <Autocomplete
+              options={providers}
+              getOptionLabel={(option) => option.name}
+              value={
+                typeof formData.provider === "string"
+                  ? providers.find((p) => p._id === formData.provider) || null
+                  : formData.provider
+              }
+              onChange={(_, newValue) => {
+                setFormData({ ...formData, provider: newValue ? newValue : "" });
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Provider" fullWidth sx={{ marginBottom: 2 }} />
+              )}
+            />
 
-
+            {/* Selector de Fecha con DatePicker */}
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
                 label="Estimated Delivery Date"
@@ -265,12 +284,14 @@ const PurchaseOrder: React.FC = () => {
                   });
                 }}
                 format="DD-MM-YYYY"
+                sx={{ marginBottom: 2, width: "100%" }} // ✅ Responsive
               />
             </LocalizationProvider>
 
+            {/* Tabla de Productos - Editable */}
             <Typography variant="subtitle1">Products</Typography>
-            <TableContainer component={Paper}>
-              <Table>
+            <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
                     <TableCell>Product</TableCell>
@@ -283,18 +304,47 @@ const PurchaseOrder: React.FC = () => {
                 <TableBody>
                   {formData.products.map((p, index) => (
                     <TableRow key={index}>
+                      {/* Selector de Producto */}
                       <TableCell>
-                        <Select value={p.productId} onChange={(e) => handleProductChange(index, 'product', e.target.value)}>
-                          {products.map((prod) => (
-                            <MenuItem key={prod._id} value={prod._id}>
-                              {prod.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                      <Select
+                        value={formData.products[index]?.productId || ""}
+                        onChange={(e) => handleProductChange(index, "productId", e.target.value)}
+                        fullWidth
+                      >
+                        {products.map((prod) => (
+                          <MenuItem key={prod._id} value={prod._id}>
+                            {prod.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
                       </TableCell>
-                      <TableCell>{p.quantity}</TableCell>
-                      <TableCell>{p.unitPrice}</TableCell>
-                      <TableCell>{p.subtotal}</TableCell>
+
+                      {/* Input Editable - Quantity */}
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          value={p.quantity}
+                          onChange={(e) => handleProductChange(index, "quantity", Number(e.target.value))}
+                          inputProps={{ min: 1 }}
+                          fullWidth
+                        />
+                      </TableCell>
+
+                      {/* Input Editable - Unit Price */}
+                      <TableCell>
+                        <TextField
+                          type="number"
+                          value={p.unitPrice}
+                          onChange={(e) => handleProductChange(index, "unitPrice", Number(e.target.value))}
+                          inputProps={{ min: 0 }}
+                          fullWidth
+                        />
+                      </TableCell>
+
+                      {/* Subtotal (Calculado) */}
+                      <TableCell>{(p.quantity * p.unitPrice).toFixed(2)}</TableCell>
+
+                      {/* Botón de Eliminar Producto */}
                       <TableCell>
                         <IconButton color="error" onClick={() => removeProduct(index)}>
                           <DeleteIcon />
@@ -305,7 +355,9 @@ const PurchaseOrder: React.FC = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
           </DialogContent>
+
           <DialogActions>
             <Button onClick={handleCloseModal}>Cancel</Button>
             <Button variant="contained" onClick={handleSubmit}>
@@ -313,6 +365,7 @@ const PurchaseOrder: React.FC = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
       )}
     </Box>
   );

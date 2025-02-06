@@ -411,6 +411,7 @@ const PurchaseOrderPage: React.FC = () => {
                         size="small"
                         onClick={() => {
                           setSelectedProduct({ ...prod, quantity: 1 });
+                          setSearchTerm(prod.sku);  // 👈 Ahora se llena automáticamente el campo Code Input
                           setSearchModalOpen(false);
                         }}
                       >

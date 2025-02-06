@@ -1,46 +1,48 @@
-import React, { useEffect, useRef, useState } from 'react';
-import Draggable from 'react-draggable';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  Typography,
-  Paper,
   TextField,
-  IconButton,
   Select,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  IconButton,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  PaperProps,
-  Autocomplete,
-} from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
-import {
-  fetchPurchaseOrders,
-  createPurchaseOrder,
-  updatePurchaseOrder,
-  changePurchaseOrderStatus ,
-} from '../../store/slices/purchaseOrderSlice';
-import { fetchProviders } from '../../store/slices/providerSlice';
-import { fetchProducts } from '../../store/slices/productSlice';
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Typography,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { fetchProviders } from "../../store/slices/providerSlice";
+import { fetchProducts } from "../../store/slices/productSlice";
+import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import dayjs from "dayjs";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+export interface Product {
+  _id: string;
+  sku: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  cost: number;
+  stock: number;
+  unit: string;
+  status: 'active' | 'inactive';
+}
 
-// 🔹 Definir la interfaz de un Producto dentro de la PO
+interface SelectedProduct extends Product {
+  quantity: number;
+}
+
 interface POProduct {
   productId?: string; // Si es un producto registrado
   genericProduct?: string; // Si es un producto genérico
@@ -55,320 +57,316 @@ export interface Provider {
 }
 
 interface PurchaseOrderFormData {
-  provider: string | Provider; // 👈 Permitimos string o el objeto Provider
-  products: POProduct[];
+  provider: string | Provider;
+  products: POProduct[];  // Asegúrate de que es un array de POProduct
   total: number;
   estimatedDeliveryDate: string;
 }
 
-const DraggablePaper = (props: PaperProps) => {
-  const nodeRef = useRef(null);
-  return (
-    <Draggable handle="#draggable-dialog-title" nodeRef={nodeRef}>
-      <Paper ref={nodeRef} {...props} />
-    </Draggable>
-  );
-};
 
-const PurchaseOrder: React.FC = () => {
+const PurchaseOrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { purchaseOrders } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<PurchaseOrderFormData>({
     provider: '',
     estimatedDeliveryDate: '',
-    products: [],
+    products: [] as POProduct[], // <-- Agrega la tipificación explícita
     total: 0,
-  });
-  const [editingId, setEditingId] = useState<string | null>(null);
+ });
+
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [selectedProduct, setSelectedProduct] = useState<SelectedProduct | null>(null);
+
+  //const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
   useEffect(() => {
-    dispatch(fetchPurchaseOrders());
-    dispatch(fetchProviders({ status: 'active' }));
-    dispatch(fetchProducts({ status: 'active' }));
+    dispatch(fetchProviders({ status: "active" }));
+    dispatch(fetchProducts({ status: "active" }));
   }, [dispatch]);
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-    setFormData({
-      provider: '',
-      estimatedDeliveryDate: '',
-      products: [],
-      total: 0,
-    });
-    setEditingId(null);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setEditingId(null);
-  };
-
-  const handleSubmit = () => {
-
-    const processedFormData = {
-      ...formData,
-      provider: typeof formData.provider === "string"
-        ? { _id: formData.provider, name: "" } // Convierte a un objeto `Provider`
-        : formData.provider, // Mantiene si ya es `Provider`
-      estimatedDeliveryDate:
-        formData.estimatedDeliveryDate && dayjs(formData.estimatedDeliveryDate).isValid()
-          ? dayjs(formData.estimatedDeliveryDate).toISOString()
-          : "",
-    };
-  
-    if (editingId) {
-      dispatch(
-        updatePurchaseOrder({
-          id: editingId,
-          data: processedFormData, // Ahora `provider` siempre será de tipo `Provider`
-        })
+  useEffect(() => {
+    setFilteredProducts(
+      products.filter((prod) =>
+        prod.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      .unwrap()
-      .then(handleCloseModal);
-    } else {
-      dispatch(createPurchaseOrder(processedFormData)) // 👈 Ahora `provider` tiene el tipo correcto
-      .unwrap()
-      .then(handleCloseModal);
+    );
+  }, [searchTerm, products]);
+
+  const handleProductSearch = () => {
+    const foundProduct = products.find((prod) => prod.sku === searchTerm);
+    if (foundProduct) {
+      setSelectedProduct({ ...foundProduct, quantity: 1 });
     }
   };
-  
 
-  const handleEdit = (id: string) => {
-    const po = purchaseOrders.find((order) => order._id === id);
-    if (po) {
-      setFormData({
-        provider: providers.find((p) => p._id === (typeof po.provider === "string" ? po.provider : po.provider._id)) || "",
-        estimatedDeliveryDate: po.estimatedDeliveryDate,
-        products: po.products.map((p) => ({
-          ...p,
-          productId: products.find((prod) => prod._id === p.productId)?._id || "", // ✅ Asegura un string válido
-        })),
-        total: po.total,
-      });
-      setEditingId(id);
-      setIsModalOpen(true);
-    }
-  };
-  
-  
-  
-  
-  
-  
+  const handleAddProduct = () => {
+    if (!selectedProduct) return;
 
-  const handleDelete = (poId: string) => {
-    dispatch(changePurchaseOrderStatus({ id: poId, status: "inactive" }));
+    const updatedProducts: POProduct[] = [selectedProduct].map((p) => ({
+      productId: p.sku,
+      quantity: p.quantity,
+      unitPrice: p.price,
+      subtotal: p.quantity * p.price,
+    }));
+
+    const newTotal = updatedProducts.reduce(
+      (sum, p) => sum + p.unitPrice * p.quantity,
+      0
+    );
+
+    setFormData({
+      ...formData,
+      products: updatedProducts,
+      total: newTotal,
+    });
+
+    setSelectedProduct(null);
+    setSearchTerm("");
   };
 
-  const handleProductChange = (index: number, field: string, value: string | number) => {
-    const updatedProducts = [...formData.products];
-    updatedProducts[index] = { ...updatedProducts[index], [field]: value };
-
-    // Calcular subtotal y total
-    updatedProducts[index].subtotal = updatedProducts[index].quantity * updatedProducts[index].unitPrice;
-    const newTotal = updatedProducts.reduce((sum, p) => sum + (p.subtotal || 0), 0);
-
+  const handleRemoveProduct = (index: number) => {
+    const updatedProducts = formData.products.filter((_, i) => i !== index);
+    const newTotal = updatedProducts.reduce(
+      (sum, p) => sum + p.unitPrice * p.quantity,
+      0
+    );
     setFormData({ ...formData, products: updatedProducts, total: newTotal });
   };
-
-  // *se habilitará codigo mas adelante*
-  // const addProduct = () => {
-  //   setFormData({
-  //     ...formData,
-  //     products: [
-  //       ...formData.products,
-  //       {
-  //         productId: '', // Si el producto es del sistema
-  //         genericProduct: '', // Si es un producto genérico
-  //         quantity: 1,
-  //         unitPrice: 0,
-  //         subtotal: 0
-  //       }
-  //     ]
-  //   });
-  // };
-
-  const removeProduct = (index: number) => {
-    const updatedProducts = [...formData.products];
-    updatedProducts.splice(index, 1);
-    const newTotal = updatedProducts.reduce((sum, p) => sum + (p.subtotal || 0), 0);
-    setFormData({ ...formData, products: updatedProducts, total: newTotal });
-  };
-
-  const columns: GridColDef[] = [
-    { field: 'provider', headerName: 'Provider', flex: 1 },
-    { field: 'total', headerName: 'Total', flex: 1 },
-    { field: 'estimatedDeliveryDate', headerName: 'Delivery Date', flex: 1 },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      flex: 1,
-      renderCell: (params) => (
-        <>
-          <IconButton color="primary" onClick={() => handleEdit(params.row.id)}>
-            <EditIcon />
-          </IconButton>
-          <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-            <DeleteIcon />
-          </IconButton>
-        </>
-      ),
-    },
-  ];
-
-  const rows = purchaseOrders.map((po) => ({
-    id: po._id,
-    provider: po.provider?.name || "N/A",
-    total: po.total,
-    estimatedDeliveryDate: po.estimatedDeliveryDate
-      ? dayjs(po.estimatedDeliveryDate).format("DD-MM-YYYY")
-      : "N/A",
-  }));
 
   return (
-    <Box>
-      <Paper sx={{ padding: 2 }}>
-        <Typography variant="h6">Purchase Order Management</Typography>
-        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={handleOpenModal}>
-          New Purchase Order
-        </Button>
-      </Paper>
+    <Box sx={{ padding: 4 }}>
+      <Typography variant="h4" align="center" sx={{ marginBottom: 2 }}>
+        PURCHASE ORDER
+      </Typography>
 
-      <Paper sx={{ marginTop: 2 }}>
-        <DataGrid rows={rows} columns={columns} pageSizeOptions={[5, 10, 20]} />
-      </Paper>
-
-      {isModalOpen && (
-        <Dialog
-          open={isModalOpen}
-          onClose={handleCloseModal}
-          PaperComponent={DraggablePaper}
-          maxWidth="md" // ✅ Aumenta el ancho del modal
-          fullWidth  // ✅ Usa todo el ancho disponible
+      {/* Dropdown Proveedor */}
+      <Box sx={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+        gap: 2, 
+        mb: 3
+      }}>
+        <Select
+          value={formData.provider}
+          onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+          displayEmpty
+          fullWidth
         >
-          <DialogTitle id="draggable-dialog-title" style={{ cursor: "move" }}>
-            {editingId ? 'Edit Purchase Order' : 'New Purchase Order'}
-          </DialogTitle>
-          <DialogContent>
+          <MenuItem value="">Select Provider</MenuItem>
+          {providers.map((provider) => (
+            <MenuItem key={provider._id} value={provider._id}>
+              {provider.name}
+            </MenuItem>
+          ))}
+        </Select>
 
-            {/* Selector de Proveedores con Autocomplete */}
-            <Autocomplete
-              options={providers}
-              getOptionLabel={(option) => option.name}
-              value={
-                typeof formData.provider === "string"
-                  ? providers.find((p) => p._id === formData.provider) || null
-                  : formData.provider
-              }
-              onChange={(_, newValue) => {
-                setFormData({ ...formData, provider: newValue ? newValue : "" });
-              }}
-              renderInput={(params) => (
-                <TextField {...params} label="Provider" fullWidth sx={{ marginBottom: 2 }} />
-              )}
-            />
+        <TextField
+          variant="outlined" // 👈 Esto asegura un borde visible
+          sx={{ 
+            borderRadius: 1, 
+            border: "1px solid #ccc", // 👈 Define un borde gris claro
+            fontSize: "1.2rem", 
+            fontWeight: "bold", 
+            color: "#555" 
+          }}
+          label="Order Number"
+          value="Auto-generated"
+          disabled
+          fullWidth
+        />
+      </Box>
 
-            {/* Selector de Fecha con DatePicker */}
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                label="Estimated Delivery Date"
-                value={formData.estimatedDeliveryDate ? dayjs(formData.estimatedDeliveryDate) : null}
-                onChange={(newDate) => {
-                  setFormData({
-                    ...formData,
-                    estimatedDeliveryDate: newDate ? newDate.toISOString() : "",
-                  });
-                }}
-                format="DD-MM-YYYY"
-                sx={{ marginBottom: 2, width: "100%" }} // ✅ Responsive
-              />
-            </LocalizationProvider>
+      {/* Búsqueda de Producto */}
+      <Box sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr auto 2fr auto 1fr 1fr auto", 
+        gap: 1,
+        alignItems: "center",
+        mb: 3
+      }}>
+        {/* Code Input */}
+        <TextField 
+          label="Code" 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)} 
+          fullWidth 
+        />
+        
+        {/* Search Icon dentro del campo Code */}
+        <IconButton onClick={handleProductSearch}>
+          <SearchIcon />
+        </IconButton>
 
-            {/* Tabla de Productos - Editable */}
-            <Typography variant="subtitle1">Products</Typography>
-            <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Product</TableCell>
-                    <TableCell>Quantity</TableCell>
-                    <TableCell>Unit Price</TableCell>
-                    <TableCell>Subtotal</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {formData.products.map((p, index) => (
-                    <TableRow key={index}>
-                      {/* Selector de Producto */}
-                      <TableCell>
-                      <Select
-                        value={formData.products[index]?.productId || ""}
-                        onChange={(e) => handleProductChange(index, "productId", e.target.value)}
-                        fullWidth
-                      >
-                        {products.map((prod) => (
-                          <MenuItem key={prod._id} value={prod._id}>
-                            {prod.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      </TableCell>
+        {/* Product Name Input */}
+        <TextField 
+          label="Product Name" 
+          value={selectedProduct?.name || ""} 
+          fullWidth 
+          disabled 
+          variant="outlined" // 👈 Esto asegura un borde visible
+          sx={{ 
+            borderRadius: 1, 
+            border: "1px solid #ccc", // 👈 Define un borde gris claro
+            fontSize: "1.2rem", 
+            fontWeight: "bold", 
+            color: "#555" 
+          }}
+        />
+        
+        {/* Product List Icon dentro del campo Product Name */}
+        <IconButton onClick={() => setSearchModalOpen(true)}>
+          📋
+        </IconButton>
 
-                      {/* Input Editable - Quantity */}
-                      <TableCell>
-                        <TextField
-                          type="number"
-                          value={p.quantity}
-                          onChange={(e) => handleProductChange(index, "quantity", Number(e.target.value))}
-                          inputProps={{ min: 1 }}
-                          fullWidth
-                        />
-                      </TableCell>
+        {/* Price Input */}
+        <TextField 
+          label="Price" 
+          value={selectedProduct?.price || ""} 
+          fullWidth 
+          disabled 
+          variant="outlined" // 👈 Esto asegura un borde visible
+          sx={{ 
+            borderRadius: 1, 
+            border: "1px solid #ccc", // 👈 Define un borde gris claro
+            fontSize: "1.2rem", 
+            fontWeight: "bold", 
+            color: "#555" 
+          }}
+        />
 
-                      {/* Input Editable - Unit Price */}
-                      <TableCell>
-                        <TextField
-                          type="number"
-                          value={p.unitPrice}
-                          onChange={(e) => handleProductChange(index, "unitPrice", Number(e.target.value))}
-                          inputProps={{ min: 0 }}
-                          fullWidth
-                        />
-                      </TableCell>
+        {/* Total Input */}
+        <TextField 
+          label="Total" 
+          value={(selectedProduct?.quantity || 0) * (selectedProduct?.price || 0)} 
+          fullWidth 
+          disabled 
+          variant="outlined" // 👈 Esto asegura un borde visible
+          sx={{ 
+            borderRadius: 1, 
+            border: "1px solid #ccc", // 👈 Define un borde gris claro
+            fontSize: "1.2rem", 
+            fontWeight: "bold", 
+            color: "#555" 
+          }}
+        />
 
-                      {/* Subtotal (Calculado) */}
-                      <TableCell>{(p.quantity * p.unitPrice).toFixed(2)}</TableCell>
+        {/* Add Product Button */}
+        <IconButton color="primary" onClick={handleAddProduct}>
+          <AddIcon />
+        </IconButton>
+      </Box>
 
-                      {/* Botón de Eliminar Producto */}
-                      <TableCell>
-                        <IconButton color="error" onClick={() => removeProduct(index)}>
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
 
-          </DialogContent>
+      {/* Tabla de Productos */}
+      <TableContainer component={Paper} sx={{ 
+        borderRadius: 2, 
+        overflowX: "auto",  // Hace scroll horizontal en móviles
+        boxShadow: 3,
+        maxWidth: "100%",  // Evita que la tabla se desborde
+      }}>
+        <Table stickyHeader>
+          <TableHead sx={{ bgcolor: "primary.main" }}>
+            <TableRow>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Quantity</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Price</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Subtotal</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Delete</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {formData.products.map((p, index) => (
+               <TableRow key={index} sx={{ bgcolor: index % 2 ? "#f9f9f9" : "white" }}>
+                <TableCell>{p.productId}</TableCell>
+                <TableCell>{p.quantity}</TableCell>
+                <TableCell>{p.unitPrice}</TableCell>
+                <TableCell>{p.quantity * p.unitPrice}</TableCell>
+                <TableCell>
+                  <IconButton color="error" onClick={() => handleRemoveProduct(index)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-          <DialogActions>
-            <Button onClick={handleCloseModal}>Cancel</Button>
-            <Button variant="contained" onClick={handleSubmit}>
-              Save
-            </Button>
-          </DialogActions>
-        </Dialog>
+      {/* Totales */}
+      <Box sx={{ 
+        bgcolor: "#f5f5f5", 
+        padding: 2, 
+        borderRadius: 2, 
+        textAlign: "right", 
+        fontWeight: "bold",
+        boxShadow: 2,
+        mt: 2, 
+        fontSize: "1.1rem" 
+      }}>
+        <Typography sx={{ color: "#333", fontWeight: "bold" }} variant="h6">Subtotal: ${formData.total.toFixed(2)}</Typography>
+        <Typography sx={{ color: "#333", fontWeight: "bold" }} variant="h6">Tax (19%): ${(formData.total * 0.19).toFixed(2)}</Typography>
+        <Typography variant="h5" sx={{ color: "primary.main", fontSize: "1.5rem", fontWeight: "bold" }}>
+          Total: ${(formData.total * 1.19).toFixed(2)}
+        </Typography>
+      </Box>
 
-      )}
+      {/* Botones */}
+      <Box sx={{
+        display: "flex",
+        flexWrap: "wrap",  // Permite que los botones se apilen en pantallas chicas
+        justifyContent: "center",
+        gap: 2,
+        mt: 3
+      }}>
+        <Button 
+          variant="contained" 
+          color="primary" 
+          sx={{ 
+            px: 4, 
+            py: 1, 
+            fontSize: "1rem", 
+            borderRadius: "8px",
+            minWidth: "150px"  // Asegura que los botones sean grandes en móviles
+          }}
+        >
+          Save
+        </Button>
+        
+        <Button 
+          variant="outlined" 
+          color="error" 
+          sx={{ 
+            px: 4, 
+            py: 1, 
+            fontSize: "1rem", 
+            borderRadius: "8px",
+            minWidth: "150px"
+          }}
+        >
+          Cancel
+        </Button>
+      </Box>
+
+      {/* Modal de Búsqueda Avanzada */}
+      <Dialog open={searchModalOpen} onClose={() => setSearchModalOpen(false)}>
+        <DialogTitle>Search Product</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Enter text to search"
+            fullWidth
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSearchModalOpen(false)}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
-export default PurchaseOrder;
+export default PurchaseOrderPage;

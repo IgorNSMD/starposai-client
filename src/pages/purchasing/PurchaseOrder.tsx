@@ -63,6 +63,10 @@ interface PurchaseOrderFormData {
   estimatedDeliveryDate: string;
 }
 
+const formatNumber = (value: number) => {
+  return new Intl.NumberFormat("en-US").format(Math.round(value));
+};
+
 
 const PurchaseOrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -129,6 +133,9 @@ const PurchaseOrderPage: React.FC = () => {
   };
 
   const handleRemoveProduct = (index: number) => {
+    const confirmDelete = window.confirm("Are you sure you want to remove this product?");
+    if (!confirmDelete) return;
+        
     const updatedProducts = formData.products.filter((_, i) => i !== index);
     const newTotal = updatedProducts.reduce(
       (sum, p) => sum + p.unitPrice * p.quantity,
@@ -296,21 +303,25 @@ const PurchaseOrderPage: React.FC = () => {
         <Table stickyHeader>
           <TableHead sx={{ bgcolor: "primary.main" }}>
             <TableRow>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Quantity</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Price</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Subtotal</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Delete</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>#</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Code</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
+              <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Quantity</TableCell>
+              <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Price</TableCell>
+              <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Subtotal</TableCell>
+              <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Delete</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {formData.products.map((p, index) => (
                <TableRow key={index} sx={{ bgcolor: index % 2 ? "#f9f9f9" : "white" }}>
+                <TableCell>{index + 1}</TableCell>
                 <TableCell>{p.productId}</TableCell>
-                <TableCell>{p.quantity}</TableCell>
-                <TableCell>{p.unitPrice}</TableCell>
-                <TableCell>{p.quantity * p.unitPrice}</TableCell>
-                <TableCell>
+                <TableCell>{p.productId}</TableCell>
+                <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity)}</TableCell>
+                <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.unitPrice)}</TableCell>
+                <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.quantity * p.unitPrice)}</TableCell>
+                <TableCell sx={{ textAlign: "right" }}>
                   <IconButton color="error" onClick={() => handleRemoveProduct(index)}>
                     <DeleteIcon />
                   </IconButton>
@@ -332,10 +343,10 @@ const PurchaseOrderPage: React.FC = () => {
         mt: 2, 
         fontSize: "1.1rem" 
       }}>
-        <Typography sx={{ color: "#333", fontWeight: "bold" }} variant="h6">Subtotal: ${formData.total.toFixed(2)}</Typography>
-        <Typography sx={{ color: "#333", fontWeight: "bold" }} variant="h6">Tax (19%): ${(formData.total * 0.19).toFixed(2)}</Typography>
+        <Typography sx={{ color: "#333", fontWeight: "bold" }} variant="h6">Subtotal: ${formatNumber(formData.total)}</Typography>
+        <Typography sx={{ color: "#333", fontWeight: "bold" }} variant="h6">Tax (19%): ${formatNumber(formData.total * 0.19)}</Typography>
         <Typography variant="h5" sx={{ color: "primary.main", fontSize: "1.5rem", fontWeight: "bold" }}>
-          Total: ${(formData.total * 1.19).toFixed(2)}
+          Total: ${formatNumber(formData.total * 1.19)}
         </Typography>
       </Box>
 

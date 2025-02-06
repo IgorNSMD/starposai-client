@@ -365,19 +365,66 @@ const PurchaseOrderPage: React.FC = () => {
       </Box>
 
       {/* Modal de Búsqueda Avanzada */}
-      <Dialog open={searchModalOpen} onClose={() => setSearchModalOpen(false)}>
-        <DialogTitle>Search Product</DialogTitle>
+      <Dialog open={searchModalOpen} onClose={() => setSearchModalOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>Select a Product</DialogTitle>
         <DialogContent>
-          <TextField
-            label="Enter text to search"
-            fullWidth
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          {/* Campo de búsqueda */}
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <TextField
+              label="Enter product name or code"
+              fullWidth
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </Box>
+
+          {/* Tabla de resultados */}
+          <TableContainer component={Paper} sx={{ maxHeight: 300, overflowY: "auto" }}>
+            <Table>
+              <TableHead sx={{ bgcolor: "primary.main" }}>
+                <TableRow>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Code</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Category</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Price</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Stock</TableCell>
+                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredProducts.map((prod) => (
+                  <TableRow key={prod._id} hover>
+                    <TableCell>{prod.sku}</TableCell>
+                    <TableCell>{prod.name}</TableCell>
+                    <TableCell>{prod.category}</TableCell>
+                    <TableCell>${prod.price.toFixed(2)}</TableCell>
+                    <TableCell>{prod.stock}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => {
+                          setSelectedProduct({ ...prod, quantity: 1 });
+                          setSearchModalOpen(false);
+                        }}
+                      >
+                        Select
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSearchModalOpen(false)}>Cancel</Button>
+          <Button onClick={() => setSearchModalOpen(false)} color="error" variant="outlined">
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
+
     </Box>
   );
 };

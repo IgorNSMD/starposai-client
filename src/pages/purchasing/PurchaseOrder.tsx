@@ -183,7 +183,7 @@ const PurchaseOrderPage: React.FC = () => {
       {/* Búsqueda de Producto */}
       <Box sx={{
         display: "grid",
-        gridTemplateColumns: "1fr auto 2fr auto 1fr 1fr auto", 
+        gridTemplateColumns: "0.7fr auto 2fr auto 0.5fr 1fr 0.8fr auto", 
         gap: 1,
         alignItems: "center",
         mb: 3
@@ -197,7 +197,7 @@ const PurchaseOrderPage: React.FC = () => {
         />
         
         {/* Search Icon dentro del campo Code */}
-        <IconButton onClick={handleProductSearch}>
+        <IconButton onClick={handleProductSearch} sx={{ marginLeft: "-15px" }}>
           <SearchIcon />
         </IconButton>
 
@@ -218,9 +218,22 @@ const PurchaseOrderPage: React.FC = () => {
         />
         
         {/* Product List Icon dentro del campo Product Name */}
-        <IconButton onClick={() => setSearchModalOpen(true)}>
+        <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-15px" }}>
           📋
         </IconButton>
+
+        {/* Cantidad */}
+        <TextField
+          label="Qty"
+          type="number"
+          value={selectedProduct?.quantity || ""}
+          onChange={(e) =>
+            setSelectedProduct((prev) =>
+              prev ? { ...prev, quantity: Number(e.target.value) } : null
+            )
+          }
+          fullWidth
+        />
 
         {/* Price Input */}
         <TextField 

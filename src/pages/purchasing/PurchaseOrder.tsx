@@ -375,6 +375,11 @@ const PurchaseOrderPage: React.FC = () => {
               fullWidth
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              sx={{
+                minHeight: 50, // Asegura que tenga suficiente altura
+                '& .MuiInputBase-root': { height: 50 }, // Ajusta el input interno
+                '& .MuiInputLabel-root': { top: "6px" }, // Ajusta la posición de la etiqueta
+              }}
             />
           </Box>
 

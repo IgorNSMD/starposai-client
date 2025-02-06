@@ -183,11 +183,23 @@ const PurchaseOrderPage: React.FC = () => {
       {/* Búsqueda de Producto */}
       <Box sx={{
         display: "grid",
-        gridTemplateColumns: "0.7fr auto 2fr auto 0.5fr 1fr 0.8fr auto", 
+        gridTemplateColumns: "auto auto auto 2fr auto 0.5fr 1fr 0.8fr auto", 
         gap: 1,
         alignItems: "center",
         mb: 3
       }}>
+        {/* Botón de limpiar */}
+        <IconButton 
+          onClick={() => {
+            setSearchTerm("");
+            setSelectedProduct(null);
+          }} 
+          color="secondary"
+          //sx={{ marginLeft: "-15px" }}
+        >
+          ❌ {/* Puedes usar un icono más estilizado como "CloseIcon" de MUI */}
+        </IconButton>
+
         {/* Code Input */}
         <TextField 
           label="Code" 
@@ -197,7 +209,7 @@ const PurchaseOrderPage: React.FC = () => {
         />
         
         {/* Search Icon dentro del campo Code */}
-        <IconButton onClick={handleProductSearch} sx={{ marginLeft: "-15px" }}>
+        <IconButton onClick={handleProductSearch} sx={{ marginLeft: "-10px" }}>
           <SearchIcon />
         </IconButton>
 
@@ -218,7 +230,7 @@ const PurchaseOrderPage: React.FC = () => {
         />
         
         {/* Product List Icon dentro del campo Product Name */}
-        <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-15px" }}>
+        <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-10px" }}>
           📋
         </IconButton>
 

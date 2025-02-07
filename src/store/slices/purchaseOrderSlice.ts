@@ -18,6 +18,7 @@ export interface Provider {
 // 🔹 Definir la interfaz de una Orden de Compra (PO)
 export interface PurchaseOrder {
   _id: string;
+  orderNumber?: string;  // 👈 Agregar orderNumber opcional
   provider: Provider; // 👈 Ahora es un objeto con `_id` y `name`
   products: POProduct[];
   total: number;

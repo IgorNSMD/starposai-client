@@ -17,14 +17,17 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Typography,
+  Typography
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { createPurchaseOrder } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { fetchProducts } from "../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
+import { useToastMessages } from  "../../hooks/useToastMessage"
+import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
 
 export interface Product {
   _id: string;
@@ -58,9 +61,10 @@ export interface Provider {
 
 interface PurchaseOrderFormData {
   provider: string | Provider;
-  products: POProduct[];  // Asegúrate de que es un array de POProduct
+  products: POProduct[];
   total: number;
   estimatedDeliveryDate: string;
+  orderNumber?: string;  // Agregamos orderNumber opcionalmente
 }
 
 const formatNumber = (value: number) => {
@@ -70,8 +74,10 @@ const formatNumber = (value: number) => {
 
 const PurchaseOrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
+
 
   const [formData, setFormData] = useState<PurchaseOrderFormData>({
     provider: '',
@@ -84,6 +90,10 @@ const PurchaseOrderPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [selectedProduct, setSelectedProduct] = useState<SelectedProduct | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  
 
   //const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
@@ -99,6 +109,9 @@ const PurchaseOrderPage: React.FC = () => {
       )
     );
   }, [searchTerm, products]);
+
+  // Manejo de mensajes
+  useToastMessages(successMessage, errorMessage);
 
   const handleProductSearch = () => {
     const foundProduct = products.find((prod) => prod.sku === searchTerm);
@@ -132,16 +145,71 @@ const PurchaseOrderPage: React.FC = () => {
     setSearchTerm("");
   };
 
-  const handleRemoveProduct = (index: number) => {
-    const confirmDelete = window.confirm("Are you sure you want to remove this product?");
-    if (!confirmDelete) return;
-        
-    const updatedProducts = formData.products.filter((_, i) => i !== index);
-    const newTotal = updatedProducts.reduce(
-      (sum, p) => sum + p.unitPrice * p.quantity,
-      0
-    );
-    setFormData({ ...formData, products: updatedProducts, total: newTotal });
+  const handleSubmit = () => {
+
+    console.log('handleSubmit -> Inicio')
+
+    const providerObject: Provider | undefined = 
+      typeof formData.provider === "string"
+        ? providers.find((p) => p._id === formData.provider)
+        : formData.provider;
+  
+    if (!providerObject) {
+      return;
+    }
+    
+    console.log('handleSubmit -> p1')
+
+    const purchaseOrderData = { ...formData, provider: providerObject };
+
+    console.log('handleSubmit -> p2')
+
+    dispatch(createPurchaseOrder(purchaseOrderData))
+      .unwrap()
+      .then((data) => {
+        console.error('PO creada exitosamente');
+        setFormData({ ...formData, orderNumber: data.orderNumber });
+      })
+      .catch((error) => {
+        console.error('Error al crear PO: ', error);
+      });
+
+      console.log('handleSubmit -> fin')
+  };
+
+  const handleDeleteDialogOpen = (index: number) => {
+    setSelectedProductIndex(index);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedProductIndex !== null) {
+      const updatedProducts = formData.products.filter((_, i) => i !== selectedProductIndex);
+      const newTotal = updatedProducts.reduce(
+        (sum, p) => sum + p.unitPrice * p.quantity,
+        0
+      );
+      setFormData({ ...formData, products: updatedProducts, total: newTotal });
+    }
+    setDeleteDialogOpen(false);
+  };
+
+  const handleCancelDialogOpen = () => {
+    if (formData.products.length > 0) {
+      setCancelDialogOpen(true);
+    } else {
+      handleConfirmCancel();
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setFormData({
+      provider: '',
+      estimatedDeliveryDate: '',
+      products: [],
+      total: 0,
+    });
+    setCancelDialogOpen(false);
   };
 
   return (
@@ -322,7 +390,7 @@ const PurchaseOrderPage: React.FC = () => {
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.unitPrice)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.quantity * p.unitPrice)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>
-                  <IconButton color="error" onClick={() => handleRemoveProduct(index)}>
+                  <IconButton color="error" onClick={() => handleDeleteDialogOpen(index)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -361,6 +429,7 @@ const PurchaseOrderPage: React.FC = () => {
         <Button 
           variant="contained" 
           color="primary" 
+          onClick={handleSubmit}
           sx={{ 
             px: 4, 
             py: 1, 
@@ -375,6 +444,7 @@ const PurchaseOrderPage: React.FC = () => {
         <Button 
           variant="outlined" 
           color="error" 
+          onClick={handleCancelDialogOpen}
           sx={{ 
             px: 4, 
             py: 1, 
@@ -453,6 +523,14 @@ const PurchaseOrderPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <CustomDialog
+        isOpen={deleteDialogOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to remove this product?"
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleConfirmDelete}
+      />
 
     </Box>
   );

@@ -146,10 +146,9 @@ const PurchaseOrderPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-
-    console.log('handleSubmit -> Inicio')
-
-    const providerObject: Provider | undefined = 
+    console.log('handleSubmit -> Inicio');
+  
+    const providerObject: Provider | undefined =
       typeof formData.provider === "string"
         ? providers.find((p) => p._id === formData.provider)
         : formData.provider;
@@ -157,25 +156,30 @@ const PurchaseOrderPage: React.FC = () => {
     if (!providerObject) {
       return;
     }
-    
-    console.log('handleSubmit -> p1')
-
+  
+    console.log('handleSubmit -> p1');
+  
     const purchaseOrderData = { ...formData, provider: providerObject };
-
-    console.log('handleSubmit -> p2')
-
+  
+    console.log('handleSubmit -> p2');
+  
     dispatch(createPurchaseOrder(purchaseOrderData))
       .unwrap()
       .then((data) => {
-        console.error('PO creada exitosamente');
-        setFormData({ ...formData, orderNumber: data.orderNumber });
+        console.log("Orden creada exitosamente", data);
+        setFormData((prevForm) => ({
+          ...prevForm,
+          orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
+        }));
       })
       .catch((error) => {
-        console.error('Error al crear PO: ', error);
+        console.error("Error al crear PO: ", error);
       });
-
-      console.log('handleSubmit -> fin')
+  
+    console.log('handleSubmit -> fin');
+    console.log(formData);
   };
+  
 
   const handleDeleteDialogOpen = (index: number) => {
     setSelectedProductIndex(index);
@@ -256,7 +260,7 @@ const PurchaseOrderPage: React.FC = () => {
             color: "#555" 
           }}
           label="Order Number"
-          value="Auto-generated"
+          value={formData.orderNumber || "Auto-generated"}
           disabled
           fullWidth
         />

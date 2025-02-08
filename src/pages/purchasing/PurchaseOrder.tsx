@@ -213,8 +213,15 @@ const PurchaseOrderPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ padding: 4 }}>
-      <Typography variant="h4" align="center" sx={{ marginBottom: 2 }}>
+    <Box 
+      sx={{ 
+        padding: 4, 
+       "@media (max-width: 900px)": {padding: 4, maxWidth: "400px", margin: "0 auto"}}}
+      >
+      <Typography 
+        variant="h4" 
+        align="center" 
+        sx={{ marginBottom: 2,fontWeight: "bold", color: "#666", mb: 2  }}>
         PURCHASE ORDER
       </Typography>
 
@@ -256,110 +263,153 @@ const PurchaseOrderPage: React.FC = () => {
       </Box>
 
       {/* Búsqueda de Producto */}
-      <Box sx={{
-        display: "grid",
-        gridTemplateColumns: "auto auto auto 2fr auto 0.5fr 1fr 0.8fr auto", 
-        gap: 1,
-        alignItems: "center",
-        mb: 3
-      }}>
-        {/* Botón de limpiar */}
-        <IconButton 
-          onClick={() => {
-            setSearchTerm("");
-            setSelectedProduct(null);
-          }} 
-          color="secondary"
-          //sx={{ marginLeft: "-15px" }}
+      {/* Sección de búsqueda de producto en dos líneas */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr", // Web: dos columnas para separar filas
+          gap: 2,
+          alignItems: "center",
+          mb: 3,
+          "@media (max-width: 900px)": {
+            gridTemplateColumns: "1fr", // Móvil: una sola columna
+          },
+        }}
+      >
+        {/* Primera línea en web */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "auto 1fr auto 1fr auto", // Web: Distribución normal
+            gap: 1,
+            alignItems: "center",
+            "@media (max-width: 900px)": {
+              gridTemplateColumns: "40px 1fr", // Móvil: Acomoda en una sola columna
+            },
+          }}
         >
-          ❌ {/* Puedes usar un icono más estilizado como "CloseIcon" de MUI */}
-        </IconButton>
+          {/* Botón de limpiar */}
+          <IconButton onClick={() => { setSearchTerm(""); setSelectedProduct(null); }} color="secondary">
+            ❌
+          </IconButton>
 
-        {/* Code Input */}
-        <TextField 
-          label="Code" 
-          value={searchTerm} 
-          onChange={(e) => setSearchTerm(e.target.value)} 
-          fullWidth 
-        />
-        
-        {/* Search Icon dentro del campo Code */}
-        <IconButton onClick={handleProductSearch} sx={{ marginLeft: "-10px" }}>
-          <SearchIcon />
-        </IconButton>
+          {/* Code Input */}
+          <TextField label="Code" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} fullWidth />
 
-        {/* Product Name Input */}
-        <TextField 
-          label="Product Name" 
-          value={selectedProduct?.name || ""} 
-          fullWidth 
-          disabled 
-          variant="outlined" // 👈 Esto asegura un borde visible
-          sx={{ 
-            borderRadius: 1, 
-            border: "1px solid #ccc", // 👈 Define un borde gris claro
-            fontSize: "1.2rem", 
-            fontWeight: "bold", 
-            color: "#555" 
+          {/* Buscar producto */}
+          <IconButton onClick={handleProductSearch} sx={{ marginLeft: "-10px" }}>
+            <SearchIcon />
+          </IconButton>
+
+          {/* Product Name Input */}
+          <TextField label="Product Name" value={selectedProduct?.name || ""} fullWidth disabled />
+
+          {/* Product List Icon */}
+          <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-10px" }}>
+            📋
+          </IconButton>
+        </Box>
+
+        {/* Segunda línea en web */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr auto", // Web: Distribución normal en 4 columnas
+            gap: 1,
+            alignItems: "center",
+            "@media (max-width: 900px)": {
+              gridTemplateColumns: "1fr", // Móvil: Apilado
+              gap: 2,
+            },
           }}
-        />
-        
-        {/* Product List Icon dentro del campo Product Name */}
-        <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-10px" }}>
-          📋
-        </IconButton>
+        >
+          {/* Cantidad */}
+          <TextField
+            label="Qty"
+            type="number"
+            value={selectedProduct?.quantity || ""}
+            onChange={(e) =>
+              setSelectedProduct((prev) =>
+                prev ? { ...prev, quantity: Number(e.target.value) } : null
+              )
+            }
+            fullWidth
+          />
 
-        {/* Cantidad */}
-        <TextField
-          label="Qty"
-          type="number"
-          value={selectedProduct?.quantity || ""}
-          onChange={(e) =>
-            setSelectedProduct((prev) =>
-              prev ? { ...prev, quantity: Number(e.target.value) } : null
-            )
-          }
-          fullWidth
-        />
+          {/* Precio */}
+          <TextField
+            label="Price"
+            value={selectedProduct?.price || ""}
+            fullWidth
+            disabled
+            sx={{
+              borderRadius: 1,
+              border: "1px solid #ccc",
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+              color: "#555",
+              "@media (max-width: 900px)": {
+                textAlign: "center",
+                fontSize: "1rem",
+                fontWeight: "bold",
+                pt: 1,
+              },
+            }}
+          />
 
-        {/* Price Input */}
-        <TextField 
-          label="Price" 
-          value={selectedProduct?.price || ""} 
-          fullWidth 
-          disabled 
-          variant="outlined" // 👈 Esto asegura un borde visible
-          sx={{ 
-            borderRadius: 1, 
-            border: "1px solid #ccc", // 👈 Define un borde gris claro
-            fontSize: "1.2rem", 
-            fontWeight: "bold", 
-            color: "#555" 
-          }}
-        />
+          {/* Total */}
+          <TextField
+            label="Total"
+            value={(selectedProduct?.quantity || 0) * (selectedProduct?.price || 0)}
+            fullWidth
+            disabled
+            sx={{
+              borderRadius: 1,
+              border: "1px solid #ccc",
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+              color: "#555",
+              "@media (max-width: 900px)": {
+                marginTop: "8px",
+              },
+            }}
+          />
 
-        {/* Total Input */}
-        <TextField 
-          label="Total" 
-          value={(selectedProduct?.quantity || 0) * (selectedProduct?.price || 0)} 
-          fullWidth 
-          disabled 
-          variant="outlined" // 👈 Esto asegura un borde visible
-          sx={{ 
-            borderRadius: 1, 
-            border: "1px solid #ccc", // 👈 Define un borde gris claro
-            fontSize: "1.2rem", 
-            fontWeight: "bold", 
-            color: "#555" 
-          }}
-        />
-
-        {/* Add Product Button */}
-        <IconButton color="primary" onClick={handleAddProduct}>
-          <AddIcon />
-        </IconButton>
+          {/* Botón "+" */}
+          <IconButton
+            color="primary"
+            onClick={handleAddProduct}
+            sx={{
+              fontSize: "2rem",
+              width: "48px",
+              height: "48px",
+              "@media (max-width: 900px)": {
+                fontSize: "2.5rem",
+                width: "56px",
+                height: "56px",
+              },
+            }}
+          >
+            <AddIcon />
+          </IconButton>
+        </Box>
       </Box>
 
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          gap: 1,
+          width: "100%",
+          alignItems: "center",
+          "@media (max-width: 900px)": {
+            flexDirection: "column", // 🔹 Lo apilamos en móviles
+            gap: 2,
+          }
+        }}
+      >
+      </Box>   
 
       {/* Tabla de Productos */}
       <TableContainer component={Paper} sx={{ 

@@ -77,7 +77,7 @@ const PurchaseOrderPage: React.FC = () => {
   const { successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
-
+  const { userInfo } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState<PurchaseOrderFormData>({
     provider: '',
@@ -147,21 +147,29 @@ const PurchaseOrderPage: React.FC = () => {
 
   const handleSubmit = () => {
     console.log('handleSubmit -> Inicio');
-  
+    
+    const userId = userInfo?.id || undefined;
+    console.log("handleSubmit -> Usuario autenticado:", userId);
+
     const providerObject: Provider | undefined =
       typeof formData.provider === "string"
         ? providers.find((p) => p._id === formData.provider)
         : formData.provider;
   
     if (!providerObject) {
+      console.error("Proveedor no encontrado");
       return;
     }
   
-    console.log('handleSubmit -> p1');
+    console.log("handleSubmit -> Proveedor encontrado:", providerObject);
   
-    const purchaseOrderData = { ...formData, provider: providerObject };
-  
-    console.log('handleSubmit -> p2');
+    // Construir objeto de orden de compra
+    const purchaseOrderData = {
+      ...formData,
+      provider: providerObject,
+      createdBy: userId,  // Agregar el usuario que creó la orden
+    };
+    console.log("handleSubmit -> Datos de la PO:", purchaseOrderData);
   
     dispatch(createPurchaseOrder(purchaseOrderData))
       .unwrap()
@@ -170,6 +178,7 @@ const PurchaseOrderPage: React.FC = () => {
         setFormData((prevForm) => ({
           ...prevForm,
           orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
+          createdBy: userId, // Agregar el usuario
         }));
       })
       .catch((error) => {

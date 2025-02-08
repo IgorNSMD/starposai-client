@@ -451,13 +451,17 @@ const PurchaseOrderPage: React.FC = () => {
         overflowX: "auto",  // Hace scroll horizontal en móviles
         boxShadow: 3,
         maxWidth: "100%",  // Evita que la tabla se desborde
+        "@media (max-width: 900px)": {
+          maxWidth: "100%",
+          overflowX: "auto",
+        },        
       }}>
-        <Table stickyHeader>
+        <Table stickyHeader size="small"> {/* Se cambia a "small" para hacerla más compacta */}
           <TableHead sx={{ bgcolor: "primary.main" }}>
             <TableRow>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>#</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Code</TableCell>
-              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
+              <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product</TableCell>
               <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Quantity</TableCell>
               <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Price</TableCell>
               <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Subtotal</TableCell>

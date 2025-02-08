@@ -546,8 +546,10 @@ const PurchaseOrderPage: React.FC = () => {
       </Box>
 
       {/* Modal de Búsqueda Avanzada */}
+      {/* Modal de Búsqueda Avanzada */}
       <Dialog open={searchModalOpen} onClose={() => setSearchModalOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>Select a Product</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.5rem", pb: 1 }}>Select a Product</DialogTitle>
+        
         <DialogContent>
           {/* Campo de búsqueda */}
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
@@ -557,42 +559,42 @@ const PurchaseOrderPage: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               sx={{
-                minHeight: 50, // Asegura que tenga suficiente altura
-                '& .MuiInputBase-root': { height: 50 }, // Ajusta el input interno
-                '& .MuiInputLabel-root': { top: "6px" }, // Ajusta la posición de la etiqueta
+                "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                "& .MuiInputBase-root": { height: 48 }, 
+                "& .MuiInputLabel-root": { top: "4px" },
               }}
             />
           </Box>
 
           {/* Tabla de resultados */}
-          <TableContainer component={Paper} sx={{ maxHeight: 300, overflowY: "auto" }}>
-            <Table>
+          <TableContainer component={Paper} sx={{ maxHeight: 300, overflowY: "auto", borderRadius: 2 }}>
+            <Table size="small">
               <TableHead sx={{ bgcolor: "primary.main" }}>
                 <TableRow>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Code</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product Name</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Category</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Price</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Stock</TableCell>
-                  <TableCell sx={{ color: "white", fontWeight: "bold" }}>Action</TableCell>
+                  {["Code", "Product Name", "Category", "Price", "Stock", "Action"].map((head) => (
+                    <TableCell key={head} sx={{ color: "white", fontWeight: "bold", p: 1, textAlign: head === "Action" ? "center" : "left" }}>
+                      {head}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {filteredProducts.map((prod) => (
                   <TableRow key={prod._id} hover>
-                    <TableCell>{prod.sku}</TableCell>
-                    <TableCell>{prod.name}</TableCell>
-                    <TableCell>{prod.category}</TableCell>
-                    <TableCell>${prod.price.toFixed(2)}</TableCell>
-                    <TableCell>{prod.stock}</TableCell>
-                    <TableCell>
+                    <TableCell sx={{ p: 1 }}>{prod.sku}</TableCell>
+                    <TableCell sx={{ p: 1 }}>{prod.name}</TableCell>
+                    <TableCell sx={{ p: 1, maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.category}</TableCell>
+                    <TableCell sx={{ p: 1, textAlign: "right" }}>${prod.price.toFixed(2)}</TableCell>
+                    <TableCell sx={{ p: 1, textAlign: "center" }}>{prod.stock}</TableCell>
+                    <TableCell sx={{ p: 1, textAlign: "center" }}>
                       <Button
                         variant="contained"
                         color="primary"
                         size="small"
+                        sx={{ borderRadius: 2, minWidth: 80 }}
                         onClick={() => {
                           setSelectedProduct({ ...prod, quantity: 1 });
-                          setSearchTerm(prod.sku);  // 👈 Ahora se llena automáticamente el campo Code Input
+                          setSearchTerm(prod.sku);
                           setSearchModalOpen(false);
                         }}
                       >
@@ -605,12 +607,14 @@ const PurchaseOrderPage: React.FC = () => {
             </Table>
           </TableContainer>
         </DialogContent>
-        <DialogActions>
+
+        <DialogActions sx={{ justifyContent: "flex-end", pr: 2 }}>
           <Button onClick={() => setSearchModalOpen(false)} color="error" variant="outlined">
             Cancel
           </Button>
         </DialogActions>
       </Dialog>
+
 
       <CustomDialog
         isOpen={deleteDialogOpen}

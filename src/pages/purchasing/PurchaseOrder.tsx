@@ -281,7 +281,7 @@ const PurchaseOrderPage: React.FC = () => {
           sx={{
             display: "grid",
             gridTemplateColumns: "auto 1fr auto 1fr auto", // Web: Distribución normal
-            gap: 1,
+            gap: 2, // Aumenta el espacio entre los elementos
             alignItems: "center",
             "@media (max-width: 900px)": {
               gridTemplateColumns: "40px 1fr", // Móvil: Acomoda en una sola columna
@@ -302,20 +302,36 @@ const PurchaseOrderPage: React.FC = () => {
           </IconButton>
 
           {/* Product Name Input */}
-          <TextField label="Product Name" value={selectedProduct?.name || ""} fullWidth disabled />
+          <TextField 
+            label="Product Name" 
+            value={selectedProduct?.name || ""} 
+            fullWidth 
+            disabled 
+            variant="outlined" // Asegura que tenga bordes visibles
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)", // Color del borde
+                },
+                "&:hover fieldset": {
+                  borderColor: "primary.main", // Color del borde al pasar el mouse
+                },
+                "&.Mui-disabled fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.1)", // Color del borde cuando está deshabilitado
+                },
+              },
+            }}
+            />
 
-          {/* Product List Icon */}
-          <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-10px" }}>
-            📋
-          </IconButton>
+
         </Box>
 
         {/* Segunda línea en web */}
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr auto", // Web: Distribución normal en 4 columnas
-            gap: 1,
+            gridTemplateColumns: "auto auto auto auto auto", // Web: Distribución normal
+            gap: 2,
             alignItems: "center",
             "@media (max-width: 900px)": {
               gridTemplateColumns: "1fr", // Móvil: Apilado
@@ -323,6 +339,11 @@ const PurchaseOrderPage: React.FC = () => {
             },
           }}
         >
+          {/* Product List Icon */}
+          <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-10px" }}>
+            📋
+          </IconButton>
+
           {/* Cantidad */}
           <TextField
             label="Qty"
@@ -339,7 +360,8 @@ const PurchaseOrderPage: React.FC = () => {
           {/* Precio */}
           <TextField
             label="Price"
-            value={selectedProduct?.price || ""}
+            type="text" 
+            value={selectedProduct?.price ? new Intl.NumberFormat("es-CL").format(selectedProduct.price) : ""}
             fullWidth
             disabled
             sx={{
@@ -348,6 +370,10 @@ const PurchaseOrderPage: React.FC = () => {
               fontSize: "1.2rem",
               fontWeight: "bold",
               color: "#555",
+              textAlign: "right",
+              "& .MuiInputBase-input": {
+                textAlign: "right", // Asegura que el texto dentro del input esté a la derecha
+              },
               "@media (max-width: 900px)": {
                 textAlign: "center",
                 fontSize: "1rem",
@@ -360,7 +386,9 @@ const PurchaseOrderPage: React.FC = () => {
           {/* Total */}
           <TextField
             label="Total"
-            value={(selectedProduct?.quantity || 0) * (selectedProduct?.price || 0)}
+            value={selectedProduct?.quantity && selectedProduct?.price
+              ? new Intl.NumberFormat("es-CL").format(selectedProduct.quantity * selectedProduct.price)
+              : ""}
             fullWidth
             disabled
             sx={{
@@ -369,6 +397,10 @@ const PurchaseOrderPage: React.FC = () => {
               fontSize: "1.2rem",
               fontWeight: "bold",
               color: "#555",
+              textAlign: "right",
+              "& .MuiInputBase-input": {
+                textAlign: "right", // Asegura que el texto dentro del input esté a la derecha
+              },
               "@media (max-width: 900px)": {
                 marginTop: "8px",
               },
@@ -384,9 +416,11 @@ const PurchaseOrderPage: React.FC = () => {
               width: "48px",
               height: "48px",
               "@media (max-width: 900px)": {
-                fontSize: "2.5rem",
-                width: "56px",
-                height: "56px",
+                fontSize: "3rem", // Aumenta tamaño del ícono en móvil
+                width: "64px", // Aumenta el tamaño del botón en móvil
+                height: "64px",
+                justifySelf: "center", // Centra horizontalmente en la grid
+                alignSelf: "center", // Centra verticalmente en la grid
               },
             }}
           >

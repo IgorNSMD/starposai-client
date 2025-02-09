@@ -65,6 +65,7 @@ interface PurchaseOrderFormData {
   total: number;
   estimatedDeliveryDate: string;
   orderNumber?: string;  // Agregamos orderNumber opcionalmente
+  createdAt?: string;  // Agregamos orderNumber opcionalmente
 }
 
 const formatNumber = (value: number) => {
@@ -84,6 +85,7 @@ const PurchaseOrderPage: React.FC = () => {
     estimatedDeliveryDate: '',
     products: [] as POProduct[], // <-- Agrega la tipificación explícita
     total: 0,
+    createdAt: "", // 👈 Agregar createdAt
  });
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -179,6 +181,7 @@ const PurchaseOrderPage: React.FC = () => {
           ...prevForm,
           orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
           createdBy: userId, // Agregar el usuario
+          createdAt: data.createdAt, // 👈 Guardar createdAt en formData
         }));
       })
       .catch((error) => {
@@ -186,7 +189,7 @@ const PurchaseOrderPage: React.FC = () => {
       });
   
     console.log('handleSubmit -> fin');
-    console.log(formData);
+    //console.log(formData);
   };
   
 
@@ -261,17 +264,32 @@ const PurchaseOrderPage: React.FC = () => {
 
         <TextField
           variant="outlined" // 👈 Esto asegura un borde visible
+          label="Order Number"
+          value={formData.orderNumber || "Auto-generated"}
+          disabled
+          fullWidth
           sx={{ 
             borderRadius: 1, 
             border: "1px solid #ccc", // 👈 Define un borde gris claro
             fontSize: "1.2rem", 
             fontWeight: "bold", 
             color: "#555" 
-          }}
-          label="Order Number"
-          value={formData.orderNumber || "Auto-generated"}
+          }}          
+        />
+
+        <TextField
+          variant="outlined" // 👈 Esto asegura un borde visible
+          label="Created At"
+          value={formData.createdAt ? new Date(formData.createdAt).toLocaleDateString() : ""}
           disabled
           fullWidth
+          sx={{ 
+            borderRadius: 1, 
+            border: "1px solid #ccc", // 👈 Define un borde gris claro
+            fontSize: "1.2rem", 
+            fontWeight: "bold", 
+            color: "#555" 
+          }}          
         />
       </Box>
 

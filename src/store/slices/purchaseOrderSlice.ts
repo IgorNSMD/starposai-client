@@ -25,6 +25,7 @@ export interface PurchaseOrder {
   estimatedDeliveryDate: string;
   status: "pending" | "partial" | "received" | "inactive";
   createdBy?: string;
+  createdAt?: string;  // 👈 Agregar este campo opcionalmente
 }
 
 // 🔹 Definir el estado inicial
@@ -65,7 +66,11 @@ export const createPurchaseOrder = createAsyncThunk<
 >("purchaseOrders/create", async (purchaseOrderData, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post("/purchase-orders", purchaseOrderData);
-    return response.data;
+    return {
+      ...response.data,
+      createdAt: response.data.createdAt, // 👈 Asegurar que createdAt se guarde
+      status: response.data.status, // 👈 Asegurar que createdAt se guarde
+    };
 } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
         return rejectWithValue(error.response?.data?.message || " Error create PO");

@@ -65,7 +65,8 @@ interface PurchaseOrderFormData {
   total: number;
   estimatedDeliveryDate: string;
   orderNumber?: string;  // Agregamos orderNumber opcionalmente
-  createdAt?: string;  // Agregamos orderNumber opcionalmente
+  createdAt?: string;  // Agregamos createdAt opcionalmente
+  status?: "pending" | "partial" | "received" | "inactive";
 }
 
 const formatNumber = (value: number) => {
@@ -86,6 +87,7 @@ const PurchaseOrderPage: React.FC = () => {
     products: [] as POProduct[], // <-- Agrega la tipificación explícita
     total: 0,
     createdAt: "", // 👈 Agregar createdAt
+    status: "", // 👈 Agregar status
  });
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -182,6 +184,7 @@ const PurchaseOrderPage: React.FC = () => {
           orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
           createdBy: userId, // Agregar el usuario
           createdAt: data.createdAt, // 👈 Guardar createdAt en formData
+          status: data.status, // 👈 Guardar el status en formData
         }));
       })
       .catch((error) => {
@@ -291,6 +294,21 @@ const PurchaseOrderPage: React.FC = () => {
             color: "#555" 
           }}          
         />
+
+        <TextField
+            variant="outlined" // 👈 Esto asegura un borde visible
+            label="Status"
+            value={formData.status ? formData.status.toUpperCase() : ""}
+            disabled
+            fullWidth
+            sx={{ 
+              borderRadius: 1, 
+              border: "1px solid #ccc", // 👈 Define un borde gris claro
+              fontSize: "1.2rem", 
+              fontWeight: "bold", 
+              color: "#555" 
+            }}          
+          />
       </Box>
 
       {/* Búsqueda de Producto */}

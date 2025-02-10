@@ -22,7 +22,7 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { createPurchaseOrder } from "../../store/slices/purchaseOrderSlice";
+import { fetchPurchaseOrders, createPurchaseOrder, updatePurchaseOrder } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { fetchProducts } from "../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
@@ -80,6 +80,7 @@ const PurchaseOrderPage: React.FC = () => {
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
   const { userInfo } = useAppSelector((state) => state.auth);
+  const { purchaseOrders } = useAppSelector((state) => state.purchaseorders);
 
   const [formData, setFormData] = useState<PurchaseOrderFormData>({
     provider: '',
@@ -87,7 +88,7 @@ const PurchaseOrderPage: React.FC = () => {
     products: [] as POProduct[], // <-- Agrega la tipificación explícita
     total: 0,
     createdAt: "", // 👈 Agregar createdAt
-    status: "", // 👈 Agregar status
+    status: "pending",  // ✅ Esto asegura que status siempre tenga un valor válido
  });
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -104,6 +105,7 @@ const PurchaseOrderPage: React.FC = () => {
   useEffect(() => {
     dispatch(fetchProviders({ status: "active" }));
     dispatch(fetchProducts({ status: "active" }));
+    dispatch(fetchPurchaseOrders());
   }, [dispatch]);
 
   useEffect(() => {
@@ -126,28 +128,55 @@ const PurchaseOrderPage: React.FC = () => {
 
   const handleAddProduct = () => {
     if (!selectedProduct) return;
-
-    const updatedProducts: POProduct[] = [selectedProduct].map((p) => ({
-      productId: p.sku,
-      quantity: p.quantity,
-      unitPrice: p.price,
-      subtotal: p.quantity * p.price,
-    }));
-
-    const newTotal = updatedProducts.reduce(
-      (sum, p) => sum + p.unitPrice * p.quantity,
-      0
-    );
-
-    setFormData({
-      ...formData,
-      products: updatedProducts,
-      total: newTotal,
+  
+    setFormData((prevFormData) => {
+      // Buscar si el producto ya existe en la lista
+      const existingProductIndex = prevFormData.products.findIndex(
+        (p) => p.productId === selectedProduct.sku
+      );
+  
+      let updatedProducts;
+      if (existingProductIndex !== -1) {
+        // Si el producto ya está en la lista, actualizamos la cantidad
+        updatedProducts = prevFormData.products.map((p, index) =>
+          index === existingProductIndex
+            ? {
+                ...p,
+                quantity: p.quantity + selectedProduct.quantity, // Incrementa la cantidad
+                subtotal: (p.quantity + selectedProduct.quantity) * p.unitPrice,
+              }
+            : p
+        );
+      } else {
+        // Si es un producto nuevo, lo agregamos a la lista
+        updatedProducts = [
+          ...prevFormData.products,
+          {
+            productId: selectedProduct.sku,
+            quantity: selectedProduct.quantity,
+            unitPrice: selectedProduct.price,
+            subtotal: selectedProduct.quantity * selectedProduct.price,
+          },
+        ];
+      }
+  
+      // Calcular el total de la orden sumando todos los subtotales
+      const newTotal = updatedProducts.reduce(
+        (sum, p) => sum + p.unitPrice * p.quantity,
+        0
+      );
+  
+      return {
+        ...prevFormData,
+        products: updatedProducts,
+        total: newTotal,
+      };
     });
-
+  
     setSelectedProduct(null);
     setSearchTerm("");
   };
+  
 
   const handleSubmit = () => {
     console.log('handleSubmit -> Inicio');
@@ -174,23 +203,57 @@ const PurchaseOrderPage: React.FC = () => {
       createdBy: userId,  // Agregar el usuario que creó la orden
     };
     console.log("handleSubmit -> Datos de la PO:", purchaseOrderData);
-  
-    dispatch(createPurchaseOrder(purchaseOrderData))
+
+    if (formData.orderNumber) {
+      // Buscar la orden en la lista de Redux usando el número de orden
+      const existingOrder = purchaseOrders.find(po => po.orderNumber === formData.orderNumber);
+
+      if (!existingOrder) {
+        console.error("No se encontró la orden con el número:", formData.orderNumber);
+        return;
+      }      
+
+      // Si ya tiene un número de orden, actualizamos
+      dispatch(updatePurchaseOrder({
+        id: existingOrder._id,  // 👈 Aquí enviamos el ID correcto desde MongoDB
+        data: {
+          provider: providerObject,
+          products: formData.products,
+          total: formData.total,
+          estimatedDeliveryDate: formData.estimatedDeliveryDate,
+        }
+      }))
       .unwrap()
       .then((data) => {
-        console.log("Orden creada exitosamente", data);
+        console.log("Orden actualizada exitosamente", data);
         setFormData((prevForm) => ({
           ...prevForm,
-          orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
-          createdBy: userId, // Agregar el usuario
-          createdAt: data.createdAt, // 👈 Guardar createdAt en formData
-          status: data.status, // 👈 Guardar el status en formData
+          orderNumber: data.orderNumber, 
+          createdBy: userId, 
+          createdAt: data.createdAt, 
+          status: data.status, 
         }));
       })
       .catch((error) => {
-        console.error("Error al crear PO: ", error);
+        console.error("Error al actualizar PO: ", error);
       });
-  
+    }  else {      
+      dispatch(createPurchaseOrder(purchaseOrderData))
+        .unwrap()
+        .then((data) => {
+          console.log("Orden creada exitosamente", data);
+          setFormData((prevForm) => ({
+            ...prevForm,
+            orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
+            createdBy: userId, // Agregar el usuario
+            createdAt: data.createdAt, // 👈 Guardar createdAt en formData
+            status: data.status, // 👈 Guardar el status en formData
+          }));
+        })
+        .catch((error) => {
+          console.error("Error al crear PO: ", error);
+        });
+    }  
     console.log('handleSubmit -> fin');
     //console.log(formData);
   };

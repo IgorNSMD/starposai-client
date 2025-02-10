@@ -199,7 +199,7 @@ const PurchaseOrderPage: React.FC = () => {
     // Construir objeto de orden de compra
     const purchaseOrderData = {
       ...formData,
-      provider: providerObject,
+      provider: providerObject._id, // ✅ Solo enviamos el _id
       createdBy: userId,  // Agregar el usuario que creó la orden
     };
     console.log("handleSubmit -> Datos de la PO:", purchaseOrderData);

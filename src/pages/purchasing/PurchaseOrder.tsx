@@ -22,7 +22,11 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { fetchPurchaseOrders, createPurchaseOrder, updatePurchaseOrder } from "../../store/slices/purchaseOrderSlice";
+import { 
+    fetchPurchaseOrders, 
+    createPurchaseOrder, 
+    updatePurchaseOrder,
+    fetchPurchaseOrderByNumber  } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { fetchProducts } from "../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
@@ -100,6 +104,8 @@ const PurchaseOrderPage: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [searchOrderNumber, setSearchOrderNumber] = useState(""); // Estado del input
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false); // Estado del modal  
   
 
   //const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
@@ -120,6 +126,42 @@ const PurchaseOrderPage: React.FC = () => {
 
   // Manejo de mensajes
   useToastMessages(successMessage, errorMessage);
+
+  // ✅ Función para buscar la orden
+  const handleSearchOrder = async () => {
+    if (!searchOrderNumber.trim()) return;
+
+    try {
+      const response = await dispatch(fetchPurchaseOrderByNumber(searchOrderNumber)).unwrap();
+
+      // ✅ Buscar el proveedor en la lista de providers
+      const foundProvider = providers.find(p => p._id === response.provider) || response.provider;
+      
+      // Si encontramos la orden, actualizamos el formulario
+      setFormData({
+        provider: foundProvider,
+        orderNumber: response.orderNumber,
+        createdAt: response.createdAt,
+        status: response.status,
+        products: response.products.map((p) => ({
+          productId: p.productId,
+          name: p.name,
+          sku: p.sku,
+          quantity: p.quantity,
+          unitPrice: p.unitPrice,
+          subtotal: p.subtotal,
+        })),
+        total: response.total,
+        estimatedDeliveryDate: response.estimatedDeliveryDate,
+      });
+
+      setSearchDialogOpen(false);
+      setSearchOrderNumber("");
+    } catch (error) {
+      console.error("❌ Error al buscar la orden:", error);
+      alert("Order not found.");
+    }
+  };
 
   const handleProductSearch = () => {
     const foundProduct = products.find((prod) => prod.sku === searchTerm);
@@ -324,7 +366,7 @@ const PurchaseOrderPage: React.FC = () => {
         mb: 3
       }}>
         <Select
-          value={formData.provider}
+          value={typeof formData.provider === "string" ? formData.provider : formData.provider?._id || ""}
           onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
           displayEmpty
           fullWidth
@@ -635,6 +677,7 @@ const PurchaseOrderPage: React.FC = () => {
         gap: 2,
         mt: 3
       }}>
+         {/* Botón de Guardar */}
         <Button 
           variant="contained" 
           color="primary" 
@@ -649,7 +692,14 @@ const PurchaseOrderPage: React.FC = () => {
         >
           Save
         </Button>
+
+        {/* Botón de Buscar Orden */}
+        <Button variant="outlined" color="info" onClick={() => setSearchDialogOpen(true)} sx={{ px: 4, py: 1 }}>
+          <SearchIcon sx={{ mr: 1 }} />
+          Find Order
+        </Button>
         
+        {/* Botón de Cancelar */}
         <Button 
           variant="outlined" 
           color="error" 
@@ -666,7 +716,24 @@ const PurchaseOrderPage: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Modal de Búsqueda Avanzada */}
+      {/* 🔍 Modal para Buscar Orden */}
+      <Dialog open={searchDialogOpen} onClose={() => setSearchDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: "bold", color: "#666" }}>Find Purchase Order</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Enter Order Number"
+            fullWidth
+            value={searchOrderNumber}
+            onChange={(e) => setSearchOrderNumber(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSearchDialogOpen(false)} color="error" variant="outlined">Cancel</Button>
+          <Button onClick={handleSearchOrder} color="primary" variant="contained">Search</Button>
+        </DialogActions>
+      </Dialog>
+
       {/* Modal de Búsqueda Avanzada */}
       <Dialog open={searchModalOpen} onClose={() => setSearchModalOpen(false)} fullWidth maxWidth="md">
         <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.5rem", pb: 1 }}>Select a Product</DialogTitle>

@@ -45,6 +45,22 @@ const initialState: PurchaseOrderState = {
   successMessage: null,
 };
 
+// ✅ AsyncThunk para obtener una PO por su Order Number
+export const fetchPurchaseOrderByNumber = createAsyncThunk<PurchaseOrder, string>(
+  "purchaseOrders/fetchByNumber",
+  async (orderNumber, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/purchase-orders/order-number/${orderNumber}`);
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error fetching PO");
+      }
+      return rejectWithValue("Unknown error occurred");
+    }
+  }
+);
+
 // ✅ AsyncThunk para obtener todas las PO
 export const fetchPurchaseOrders = createAsyncThunk<PurchaseOrder[]>(
   "purchaseOrders/fetchAll",
@@ -168,6 +184,18 @@ const purchaseOrderSlice = createSlice({
         }
         state.successMessage = "Status updated successfully";
         state.errorMessage = null;
+      })
+      .addCase(fetchPurchaseOrderByNumber.pending, (state) => {
+        state.isLoading = true;
+        state.errorMessage = null;
+      })
+      .addCase(fetchPurchaseOrderByNumber.fulfilled, (state, action) => {
+        state.isLoading = false;
+        console.log("✅ Orden encontrada:", action.payload);
+      })
+      .addCase(fetchPurchaseOrderByNumber.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload as string;
       });
   },
 });

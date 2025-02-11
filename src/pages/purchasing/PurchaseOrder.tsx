@@ -103,7 +103,6 @@ const PurchaseOrderPage: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<SelectedProduct | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [searchOrderNumber, setSearchOrderNumber] = useState(""); // Estado del input
   const [searchDialogOpen, setSearchDialogOpen] = useState(false); // Estado del modal  
   
@@ -327,13 +326,6 @@ const PurchaseOrderPage: React.FC = () => {
     setDeleteDialogOpen(false);
   };
 
-  const handleCancelDialogOpen = () => {
-    if (formData.products.length > 0) {
-      setCancelDialogOpen(true);
-    } else {
-      handleConfirmCancel();
-    }
-  };
 
   const handleConfirmCancel = () => {
     setFormData({
@@ -341,9 +333,16 @@ const PurchaseOrderPage: React.FC = () => {
       estimatedDeliveryDate: '',
       products: [],
       total: 0,
+      orderNumber: undefined,
+      createdAt: "",
+      status: "pending",
     });
-    setCancelDialogOpen(false);
+  
+    setSelectedProduct(null);
+    setSearchTerm("");
+    setSearchOrderNumber("");
   };
+  
 
   return (
     <Box 
@@ -703,7 +702,7 @@ const PurchaseOrderPage: React.FC = () => {
         <Button 
           variant="outlined" 
           color="error" 
-          onClick={handleCancelDialogOpen}
+          onClick={handleConfirmCancel}
           sx={{ 
             px: 4, 
             py: 1, 

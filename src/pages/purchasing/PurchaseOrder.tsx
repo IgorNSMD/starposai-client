@@ -47,7 +47,9 @@ interface SelectedProduct extends Product {
 }
 
 interface POProduct {
-  productId?: string; // Si es un producto registrado
+  productId: string; // 🔹 Ahora directamente el ID del producto
+  sku: string;
+  name: string;  
   genericProduct?: string; // Si es un producto genérico
   quantity: number;
   unitPrice: number;
@@ -126,13 +128,14 @@ const PurchaseOrderPage: React.FC = () => {
     }
   };
 
+  
   const handleAddProduct = () => {
     if (!selectedProduct) return;
   
     setFormData((prevFormData) => {
       // Buscar si el producto ya existe en la lista
       const existingProductIndex = prevFormData.products.findIndex(
-        (p) => p.productId === selectedProduct.sku
+        (p) => p.productId === selectedProduct._id // 🔹 Ahora compara con `productId`
       );
   
       let updatedProducts;
@@ -142,7 +145,7 @@ const PurchaseOrderPage: React.FC = () => {
           index === existingProductIndex
             ? {
                 ...p,
-                quantity: p.quantity + selectedProduct.quantity, // Incrementa la cantidad
+                quantity: p.quantity + selectedProduct.quantity,
                 subtotal: (p.quantity + selectedProduct.quantity) * p.unitPrice,
               }
             : p
@@ -152,7 +155,9 @@ const PurchaseOrderPage: React.FC = () => {
         updatedProducts = [
           ...prevFormData.products,
           {
-            productId: selectedProduct.sku,
+            productId: selectedProduct._id, // ✅ Ahora se envía `productId`
+            name: selectedProduct.name,
+            sku: selectedProduct.sku,
             quantity: selectedProduct.quantity,
             unitPrice: selectedProduct.price,
             subtotal: selectedProduct.quantity * selectedProduct.price,
@@ -176,6 +181,8 @@ const PurchaseOrderPage: React.FC = () => {
     setSelectedProduct(null);
     setSearchTerm("");
   };
+  
+  
   
 
   const handleSubmit = () => {
@@ -586,8 +593,8 @@ const PurchaseOrderPage: React.FC = () => {
             {formData.products.map((p, index) => (
                <TableRow key={index} sx={{ bgcolor: index % 2 ? "#f9f9f9" : "white" }}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{p.productId}</TableCell>
-                <TableCell>{p.productId}</TableCell>
+                <TableCell>{p.sku || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `sku` */}
+                <TableCell>{p.name || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `name` */}
                 <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.unitPrice)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.quantity * p.unitPrice)}</TableCell>

@@ -3,7 +3,9 @@ import axiosInstance from "../../api/axiosInstance";
 
 // 🔹 Definir la interfaz de un Producto dentro de la PO
 interface POProduct {
-  productId?: string; // Si es un producto registrado
+  productId: string; // 🔹 Ahora directamente el ID del producto
+  sku: string;
+  name: string;
   genericProduct?: string; // Si es un producto genérico
   quantity: number;
   unitPrice: number;

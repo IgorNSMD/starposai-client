@@ -19,7 +19,7 @@ export interface Provider {
 export interface PurchaseOrder {
   _id: string;
   orderNumber?: string;  // 👈 Agregar orderNumber opcional
-  provider: Provider; // 👈 Ahora es un objeto con `_id` y `name`
+  provider: string;  // ✅ Ahora espera solo el `_id`
   products: POProduct[];
   total: number;
   estimatedDeliveryDate: string;
@@ -82,18 +82,28 @@ export const createPurchaseOrder = createAsyncThunk<
 // ✅ AsyncThunk para actualizar una PO
 export const updatePurchaseOrder = createAsyncThunk<
   PurchaseOrder,
-  { id: string; data: Partial<PurchaseOrder> }
+  { id: string; data: Partial<Omit<PurchaseOrder, "provider">> & { provider: string } }
 >("purchaseOrders/update", async ({ id, data }, { rejectWithValue }) => {
   try {
+    
+    console.log("🔍 updatePurchaseOrder -> ID recibido:", id); // <-- Agrega este log
+    console.log("🔍 updatePurchaseOrder -> Data enviada:", data); // <-- Agrega este log
+
+    if (!id) {
+      console.error("❌ Error: ID no recibido en el thunk.");
+      return rejectWithValue("El ID de la orden es requerido.");
+    }
+
     const response = await axiosInstance.put(`/purchase-orders/${id}`, data);
     return response.data;
-} catch (error) {
+  } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error update PO");
-     }
+      return rejectWithValue(error.response?.data?.message || "Error update PO");
+    }
     return rejectWithValue("Unknown error occurred");
-}
+  }
 });
+
 
 // ✅ AsyncThunk para cambiar el estado de una PO
 export const changePurchaseOrderStatus = createAsyncThunk<
@@ -130,6 +140,7 @@ const purchaseOrderSlice = createSlice({
       .addCase(fetchPurchaseOrders.fulfilled, (state, action) => {
         state.isLoading = false;
         state.purchaseOrders = action.payload;
+        console.log("✅ Ordenes de compra en Redux:", action.payload); // <-- Verificar si contienen _id
       })
       .addCase(fetchPurchaseOrders.rejected, (state, action) => {
         state.isLoading = false;

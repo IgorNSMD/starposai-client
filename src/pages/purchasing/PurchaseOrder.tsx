@@ -209,15 +209,17 @@ const PurchaseOrderPage: React.FC = () => {
       const existingOrder = purchaseOrders.find(po => po.orderNumber === formData.orderNumber);
 
       if (!existingOrder) {
-        console.error("No se encontró la orden con el número:", formData.orderNumber);
+        console.error("❌ No se encontró la orden con el número:", formData.orderNumber);
         return;
       }      
+
+      console.log("🔍 handleSubmit -> ID de la orden encontrada:", existingOrder); // <-- Agrega este log
 
       // Si ya tiene un número de orden, actualizamos
       dispatch(updatePurchaseOrder({
         id: existingOrder._id,  // 👈 Aquí enviamos el ID correcto desde MongoDB
         data: {
-          provider: providerObject,
+          provider: providerObject._id,  // ✅ SOLO EL ID
           products: formData.products,
           total: formData.total,
           estimatedDeliveryDate: formData.estimatedDeliveryDate,

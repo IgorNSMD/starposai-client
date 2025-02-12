@@ -22,6 +22,10 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+//import "jspdf-autotable";
+
 import { 
     fetchPurchaseOrders, 
     createPurchaseOrder, 
@@ -32,6 +36,7 @@ import { fetchProducts } from "../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 import { useToastMessages } from  "../../hooks/useToastMessage"
 import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
+import axiosInstance from "../../api/axiosInstance";
 
 export interface Product {
   _id: string;
@@ -73,6 +78,10 @@ interface PurchaseOrderFormData {
   orderNumber?: string;  // Agregamos orderNumber opcionalmente
   createdAt?: string;  // Agregamos createdAt opcionalmente
   status?: "pending" | "partial" | "received" | "inactive";
+}
+
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable?: { finalY: number };
 }
 
 const formatNumber = (value: number) => {
@@ -125,6 +134,47 @@ const PurchaseOrderPage: React.FC = () => {
 
   // Manejo de mensajes
   useToastMessages(successMessage, errorMessage);
+
+  const generatePDF = () => {
+    const doc = new jsPDF() as jsPDFWithAutoTable;
+
+    // Encabezado de la tabla
+    const columns = ["Product", "Quantity", "Price", "Subtotal"];
+    const rows = formData.products.map((p) => [p.name, p.quantity, `$${p.unitPrice}`, `$${p.subtotal}`]);
+  
+    // Generar la tabla
+    autoTable(doc, {
+      startY: 70,
+      head: [columns],
+      body: rows,
+    });
+  
+    // 🔥 Obtener la última posición de la tabla desde doc
+    const finalY = doc.lastAutoTable?.finalY || 80;
+  
+    // Agregar el total después de la tabla
+    doc.text(`Total: $${formData.total.toFixed(2)}`, 15, finalY + 10);
+  
+    // Guardar el PDF
+    doc.save(`PurchaseOrder_${formData.orderNumber}.pdf`);
+  };
+  
+  
+  
+  const sendEmailWithPDF = async () => {
+    if (!formData.orderNumber) {
+      alert("No hay orden de compra seleccionada");
+      return;
+    }
+  
+    try {
+      await axiosInstance.post(`/purchase-orders/send-email/${formData.orderNumber}`);
+      alert("Email enviado con éxito");
+    } catch (error) {
+      console.error("Error al enviar email:", error);
+      alert("Error al enviar email");
+    }
+  };
 
   // ✅ Función para buscar la orden
   const handleSearchOrder = async () => {
@@ -692,6 +742,25 @@ const PurchaseOrderPage: React.FC = () => {
           Save
         </Button>
 
+        <Button 
+          variant="outlined"
+          color="primary" 
+          onClick={generatePDF}
+          sx={{ px: 4, py: 1, fontSize: "1rem", borderRadius: "8px", minWidth: "150px" }}
+        >
+          Generate PDF
+        </Button>
+
+        <Button 
+          variant="outlined" 
+          color="success" 
+          onClick={sendEmailWithPDF}
+          //disabled={!generatePDF} // Deshabilita si no se ha generado el PDF
+          sx={{ px: 4, py: 1, fontSize: "1rem", borderRadius: "8px", minWidth: "150px" }}
+        >
+          Send Email
+        </Button>
+
         {/* Botón de Buscar Orden */}
         <Button variant="outlined" color="info" onClick={() => setSearchDialogOpen(true)} sx={{ px: 4, py: 1 }}>
           <SearchIcon sx={{ mr: 1 }} />
@@ -735,7 +804,7 @@ const PurchaseOrderPage: React.FC = () => {
 
       {/* Modal de Búsqueda Avanzada */}
       <Dialog open={searchModalOpen} onClose={() => setSearchModalOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.5rem", pb: 1 }}>Select a Product</DialogTitle>
+        <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.5rem", pb: 1, color: "#666" }}>Select a Product</DialogTitle>
         
         <DialogContent>
           {/* Campo de búsqueda */}

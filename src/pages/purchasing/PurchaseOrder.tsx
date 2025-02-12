@@ -135,28 +135,35 @@ const PurchaseOrderPage: React.FC = () => {
   // Manejo de mensajes
   useToastMessages(successMessage, errorMessage);
 
-  const generatePDF = () => {
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+  const generatePDF = async (): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const doc = new jsPDF() as jsPDFWithAutoTable;
+      doc.text("Purchase Order", 20, 20);
 
-    // Encabezado de la tabla
-    const columns = ["Product", "Quantity", "Price", "Subtotal"];
-    const rows = formData.products.map((p) => [p.name, p.quantity, `$${p.unitPrice}`, `$${p.subtotal}`]);
-  
-    // Generar la tabla
-    autoTable(doc, {
-      startY: 70,
-      head: [columns],
-      body: rows,
+      // Encabezado de la tabla
+      const columns = ["Product", "Quantity", "Price", "Subtotal"];
+      const rows = formData.products.map((p) => [p.name, p.quantity, `$${p.unitPrice}`, `$${p.subtotal}`]);
+    
+      // Generar la tabla
+      autoTable(doc, {
+        startY: 70,
+        head: [columns],
+        body: rows,
+      });
+    
+      // 🔥 Obtener la última posición de la tabla desde doc
+      const finalY = doc.lastAutoTable?.finalY || 80;
+    
+      // Agregar el total después de la tabla
+      doc.text(`Total: $${formData.total.toFixed(2)}`, 15, finalY + 10);
+    
+      // Guardar el PDF
+      doc.save(`PurchaseOrder_${formData.orderNumber}.pdf`);
+
+      // Convertir el PDF en Blob
+      const pdfBlob = doc.output("blob");
+      resolve(pdfBlob);
     });
-  
-    // 🔥 Obtener la última posición de la tabla desde doc
-    const finalY = doc.lastAutoTable?.finalY || 80;
-  
-    // Agregar el total después de la tabla
-    doc.text(`Total: $${formData.total.toFixed(2)}`, 15, finalY + 10);
-  
-    // Guardar el PDF
-    doc.save(`PurchaseOrder_${formData.orderNumber}.pdf`);
   };
   
   
@@ -168,6 +175,12 @@ const PurchaseOrderPage: React.FC = () => {
     }
   
     try {
+
+      const pdfBlob = await generatePDF();
+      const formDataToSend = new FormData();
+      formDataToSend.append("pdf", pdfBlob, `PurchaseOrder_${formData.orderNumber}.pdf`);
+      formDataToSend.append("email", "provider@example.com");
+
       await axiosInstance.post(`/purchase-orders/send-email/${formData.orderNumber}`);
       alert("Email enviado con éxito");
     } catch (error) {

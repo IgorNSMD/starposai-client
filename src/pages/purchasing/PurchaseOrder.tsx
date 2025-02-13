@@ -138,29 +138,68 @@ const PurchaseOrderPage: React.FC = () => {
   const generatePDF = async (): Promise<Blob> => {
     return new Promise((resolve) => {
       const doc = new jsPDF() as jsPDFWithAutoTable;
-      doc.text("Purchase Order", 20, 20);
+      console.log("generatePDF - Productos en la orden:", formData.products);
+      // 📌 Título centrado
+      doc.setFontSize(20);
+      doc.text("Purchase Order", doc.internal.pageSize.width / 2, 20, { align: "center" });
+  
+      // 📌 Información de la orden
+      doc.setFontSize(12);
+      doc.text(`Order Number: ${formData.orderNumber}`, 20, 40);
+      doc.text(`Provider: ${typeof formData.provider === "string" ? formData.provider : formData.provider.name}`, 20, 50);
 
-      // Encabezado de la tabla
-      const columns = ["Product", "Quantity", "Price", "Subtotal"];
-      const rows = formData.products.map((p) => [p.name, p.quantity, `$${p.unitPrice}`, `$${p.subtotal}`]);
-    
-      // Generar la tabla
+      // 📌 Formatear fecha como MM/DD/YYYY
+      const formattedDate = formData.createdAt 
+      ? new Date(formData.createdAt).toLocaleDateString("en-US")
+      : "N/A"; // O cualquier valor por defecto como "Not available"
+
+      doc.text(`Created At: ${formattedDate}`, 20, 60);
+      doc.text(`Status: ${formData.status}`, 20, 70);
+  
+      // 📌 Encabezados de la tabla
+      const columns = [
+        { header: "Code", dataKey: "sku" },
+        { header: "Product", dataKey: "name" },
+        { header: "Quantity", dataKey: "quantity" },
+        { header: "Price", dataKey: "unitPrice" },
+        { header: "Subtotal", dataKey: "subtotal" },
+      ];
+  
+      // 📌 Filas con los productos
+      const rows = formData.products.map((p) => ({
+        sku:  p.sku,     // 🔹 Asegura que se pase el SKU
+        name: p.name,
+        quantity: p.quantity.toLocaleString(),
+        unitPrice: `$${p.unitPrice.toLocaleString()}`,
+        subtotal: `$${p.subtotal.toLocaleString()}`,
+      }));
+  
+      // 📌 Generar la tabla con estilos
       autoTable(doc, {
-        startY: 70,
-        head: [columns],
-        body: rows,
+        startY: 90,
+        head: [columns.map(col => col.header)],
+        body: rows.map((p) => columns.map(col => p[col.dataKey as keyof typeof p])), // ✅ Corregido aquí
+        theme: "grid",
+        styles: { fontSize: 10, cellPadding: 3, halign: "right" },
+        columnStyles: { 0: { halign: "left" }, 1: { halign: "left" } }, // "Code" y "Product" alineados a la izquierda
+        headStyles: { fillColor: [31, 73, 125], textColor: [255, 255, 255] }, // Azul oscuro para encabezado
       });
-    
-      // 🔥 Obtener la última posición de la tabla desde doc
+  
+      // 📌 Obtener la última posición de la tabla
       const finalY = doc.lastAutoTable?.finalY || 80;
-    
-      // Agregar el total después de la tabla
-      doc.text(`Total: $${formData.total.toFixed(2)}`, 15, finalY + 10);
-    
-      // Guardar el PDF
+  
+      // 📌 Totales alineados a la derecha
+      const totalX = 140; // Posición en X a la derecha
+      doc.setFontSize(12);
+      doc.text(`Subtotal: $${formData.total.toLocaleString()}`, totalX, finalY + 10);
+      doc.text(`Tax (19%): $${(formData.total * 0.19).toLocaleString()}`, totalX, finalY + 20);
+      doc.setFontSize(14);
+      doc.text(`Total: $${(formData.total * 1.19).toLocaleString()}`, totalX, finalY + 30);
+  
+      // 📌 Guardar el PDF
       doc.save(`PurchaseOrder_${formData.orderNumber}.pdf`);
-
-      // Convertir el PDF en Blob
+  
+      // 📌 Convertir el PDF en Blob y resolver la promesa
       const pdfBlob = doc.output("blob");
       resolve(pdfBlob);
     });

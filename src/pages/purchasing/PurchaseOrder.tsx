@@ -214,19 +214,35 @@ const PurchaseOrderPage: React.FC = () => {
     }
   
     try {
-
+      console.log('sendEmailWithPDF init..');
       const pdfBlob = await generatePDF();
+      console.log('sendEmailWithPDF p2..');
+  
       const formDataToSend = new FormData();
+      console.log('sendEmailWithPDF p3..');
+  
       formDataToSend.append("pdf", pdfBlob, `PurchaseOrder_${formData.orderNumber}.pdf`);
-      formDataToSend.append("email", "provider@example.com");
-
-      await axiosInstance.post(`/purchase-orders/send-email/${formData.orderNumber}`);
+      console.log('sendEmailWithPDF p4..');
+  
+      formDataToSend.append("email", "insanmartind@gmail.com");
+      formDataToSend.append("orderNumber", formData.orderNumber);
+  
+      console.log('sendEmailWithPDF p5..', formDataToSend);
+  
+      await axiosInstance.post(`/purchase-orders/send-email/${formData.orderNumber}`, formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
       alert("Email enviado con éxito");
     } catch (error) {
       console.error("Error al enviar email:", error);
       alert("Error al enviar email");
     }
   };
+  
+  
 
   // ✅ Función para buscar la orden
   const handleSearchOrder = async () => {

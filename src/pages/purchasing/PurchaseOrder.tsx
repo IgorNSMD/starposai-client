@@ -787,24 +787,29 @@ const PurchaseOrderPage: React.FC = () => {
       </Box>
 
       {/* Botones */}
-      <Box sx={{
-        display: "flex",
-        flexWrap: "wrap",  // Permite que los botones se apilen en pantallas chicas
-        justifyContent: "center",
-        gap: 2,
-        mt: 3
-      }}>
+      <Box 
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "center",
+          gap: 2,
+          mt: 3,
+          "@media (max-width: 600px)": {
+            flexDirection: "column",
+            alignItems: "center",
+          },
+        }}
+        >
          {/* Botón de Guardar */}
         <Button 
           variant="contained" 
           color="primary" 
           onClick={handleSubmit}
-          sx={{ 
-            px: 4, 
-            py: 1, 
-            fontSize: "1rem", 
+          sx={{
+            minWidth: "180px",
+            height: "45px",
+            fontSize: "1rem",
             borderRadius: "8px",
-            minWidth: "150px"  // Asegura que los botones sean grandes en móviles
           }}
         >
           Save
@@ -814,7 +819,12 @@ const PurchaseOrderPage: React.FC = () => {
           variant="outlined"
           color="primary" 
           onClick={generatePDF}
-          sx={{ px: 4, py: 1, fontSize: "1rem", borderRadius: "8px", minWidth: "150px" }}
+          sx={{
+            minWidth: "180px",
+            height: "45px",
+            fontSize: "1rem",
+            borderRadius: "8px",
+          }}
         >
           Generate PDF
         </Button>
@@ -824,13 +834,27 @@ const PurchaseOrderPage: React.FC = () => {
           color="success" 
           onClick={sendEmailWithPDF}
           //disabled={!generatePDF} // Deshabilita si no se ha generado el PDF
-          sx={{ px: 4, py: 1, fontSize: "1rem", borderRadius: "8px", minWidth: "150px" }}
+          sx={{
+            minWidth: "180px",
+            height: "45px",
+            fontSize: "1rem",
+            borderRadius: "8px",
+          }}
         >
           Send Email
         </Button>
 
         {/* Botón de Buscar Orden */}
-        <Button variant="outlined" color="info" onClick={() => setSearchDialogOpen(true)} sx={{ px: 4, py: 1 }}>
+        <Button 
+          variant="outlined" 
+          color="info" 
+          onClick={() => setSearchDialogOpen(true)} 
+          sx={{
+            minWidth: "180px",
+            height: "45px",
+            fontSize: "1rem",
+            borderRadius: "8px",
+          }}>
           <SearchIcon sx={{ mr: 1 }} />
           Find Order
         </Button>
@@ -840,12 +864,11 @@ const PurchaseOrderPage: React.FC = () => {
           variant="outlined" 
           color="error" 
           onClick={handleConfirmCancel}
-          sx={{ 
-            px: 4, 
-            py: 1, 
-            fontSize: "1rem", 
+          sx={{
+            minWidth: "180px",
+            height: "45px",
+            fontSize: "1rem",
             borderRadius: "8px",
-            minWidth: "150px"
           }}
         >
           Cancel

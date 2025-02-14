@@ -83,6 +83,7 @@ export const createPurchaseOrder = createAsyncThunk<
   Partial<PurchaseOrder>
 >("purchaseOrders/create", async (purchaseOrderData, { rejectWithValue }) => {
   try {
+    console.log('createPurchaseOrder..')
     const response = await axiosInstance.post("/purchase-orders", purchaseOrderData);
     return {
       ...response.data,
@@ -168,6 +169,15 @@ const purchaseOrderSlice = createSlice({
         state.purchaseOrders.push(action.payload);
         state.successMessage = "Purchase Order created successfully";
         state.errorMessage = null;
+      })
+      .addCase(createPurchaseOrder.rejected, (state, action) => {
+        console.log('createPurchaseOrder.rejected...')
+        if (Array.isArray(action.payload)) {
+          // 📌 Si el backend devuelve errores en un array, los concatenamos
+          state.errorMessage = action.payload.map((err) => `❌ ${err.msg}`).join("\n");
+        } else {
+          state.errorMessage = `❌ ${action.payload}`;
+        }
       })
       .addCase(updatePurchaseOrder.fulfilled, (state, action) => {
         const index = state.purchaseOrders.findIndex((po) => po._id === action.payload._id);

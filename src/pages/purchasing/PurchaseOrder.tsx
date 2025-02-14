@@ -24,17 +24,18 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import toast from 'react-hot-toast';
 //import "jspdf-autotable";
 
 import { 
     fetchPurchaseOrders, 
     createPurchaseOrder, 
     updatePurchaseOrder,
-    fetchPurchaseOrderByNumber  } from "../../store/slices/purchaseOrderSlice";
+    fetchPurchaseOrderByNumber, clearMessages  } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { fetchProducts } from "../../store/slices/productSlice";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
-import { useToastMessages } from  "../../hooks/useToastMessage"
+
 import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
 import axiosInstance from "../../api/axiosInstance";
 
@@ -91,11 +92,11 @@ const formatNumber = (value: number) => {
 
 const PurchaseOrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
+  const { purchaseOrders, successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
   const { userInfo } = useAppSelector((state) => state.auth);
-  const { purchaseOrders } = useAppSelector((state) => state.purchaseorders);
+
 
   const [formData, setFormData] = useState<PurchaseOrderFormData>({
     provider: '',
@@ -133,7 +134,19 @@ const PurchaseOrderPage: React.FC = () => {
   }, [searchTerm, products]);
 
   // Manejo de mensajes
-  useToastMessages(successMessage, errorMessage);
+  useEffect(() => {
+    console.log("📢 Redux errorMessage:", errorMessage);
+    console.log("📢 Redux successMessage:", successMessage);
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearMessages()); // ✅ LIMPIA MENSAJES DESPUÉS DE MOSTRAR EL TOAST
+    }
+    if (errorMessage) {
+      errorMessage.split("\n").forEach((msg) => toast.error(msg)); // ✅ Muestra múltiples errores si es necesario
+      dispatch(clearMessages());
+    }
+  }, [successMessage, errorMessage, dispatch]);
+  
 
   const generatePDF = async (): Promise<Blob> => {
     return new Promise((resolve) => {
@@ -209,7 +222,8 @@ const PurchaseOrderPage: React.FC = () => {
   
   const sendEmailWithPDF = async () => {
     if (!formData.orderNumber) {
-      alert("No hay orden de compra seleccionada");
+      //alert("No hay orden de compra seleccionada");
+      toast.error("No hay orden de compra seleccionada")
       return;
     }
   
@@ -235,10 +249,13 @@ const PurchaseOrderPage: React.FC = () => {
         },
       });
   
-      alert("Email enviado con éxito");
+      //alert("Email enviado con éxito");
+      toast.success("Email enviado con éxito");
+
     } catch (error) {
       console.error("Error al enviar email:", error);
-      alert("Error al enviar email");
+      //alert("Error al enviar email");
+      toast.error("Error al enviar email");
     }
   };
   
@@ -276,7 +293,7 @@ const PurchaseOrderPage: React.FC = () => {
       setSearchOrderNumber("");
     } catch (error) {
       console.error("❌ Error al buscar la orden:", error);
-      alert("Order not found.");
+      //alert("Order not found.");
     }
   };
 
@@ -289,7 +306,10 @@ const PurchaseOrderPage: React.FC = () => {
 
   
   const handleAddProduct = () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct) {
+      toast.error("Seleccione Product")
+      return;
+    }
   
     setFormData((prevFormData) => {
       // Buscar si el producto ya existe en la lista
@@ -357,6 +377,7 @@ const PurchaseOrderPage: React.FC = () => {
   
     if (!providerObject) {
       console.error("Proveedor no encontrado");
+      toast.error("Proveedor no encontrado")
       return;
     }
   
@@ -376,6 +397,7 @@ const PurchaseOrderPage: React.FC = () => {
 
       if (!existingOrder) {
         console.error("❌ No se encontró la orden con el número:", formData.orderNumber);
+        toast.error("❌ No se encontró la PO ")
         return;
       }      
 
@@ -404,6 +426,7 @@ const PurchaseOrderPage: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error al actualizar PO: ", error);
+        toast.error("Error al actualizar PO")
       });
     }  else {      
       dispatch(createPurchaseOrder(purchaseOrderData))
@@ -420,6 +443,7 @@ const PurchaseOrderPage: React.FC = () => {
         })
         .catch((error) => {
           console.error("Error al crear PO: ", error);
+          toast.error("Error al crear PO")
         });
     }  
     console.log('handleSubmit -> fin');

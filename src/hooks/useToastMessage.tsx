@@ -28,3 +28,14 @@ export const useToastSuccessMessage = (successMessage: string | null) => {
     }
   }, [successMessage, dispatch]);
 };
+
+export const useToastErrorMessage = (errorMessage: string | null) => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (errorMessage) {
+      toast.error(errorMessage);
+      dispatch(clearMessages());
+    }
+  }, [errorMessage, dispatch]);
+};

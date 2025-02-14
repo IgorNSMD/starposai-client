@@ -43,35 +43,79 @@ const PurchaseOrdersList: React.FC = () => {
 
   const columns: GridColDef[] = [
     { field: "orderNumber", headerName: "Order #", flex: 1 },
+  
     { 
       field: "provider", 
       headerName: "Provider", 
       flex: 1, 
       valueGetter: (params) => {
-        const providerId = params.value as string; // Asegurar que params.value es un string
-        const provider = providers.find(p => p._id === providerId);
-        return provider ? provider.name : "Unknown";
+        if (!params.value || typeof params.value !== "object") return "Unknown";
+        return (params.value as { name: string }).name || "Unknown";
       }
     },
-    { field: "createdAt", headerName: "Created At", flex: 1, valueGetter: (params) => new Date(params.value as string).toLocaleDateString() },
-    { field: "status", headerName: "Status", flex: 1 },
-    { field: "createdBy", headerName: "Created By", flex: 1 },
+  
+    { 
+      field: "createdAt", 
+      headerName: "Created At", 
+      flex: 1, 
+      valueGetter: (params) => {
+        if (!params.value) return "Invalid Date";
+        return new Date(params.value).toLocaleDateString();
+      }
+    },
+  
+    { 
+      field: "status", 
+      headerName: "Status", 
+      flex: 1,
+      cellClassName: (params) => {
+        switch (params.value) {
+          case "pending": return "status-pending";
+          case "partial": return "status-partial";
+          case "received": return "status-received";
+          default: return "";
+        }
+      }
+    },
+  
+    { 
+      field: "createdBy", 
+      headerName: "Created By", 
+      flex: 1,
+      valueGetter: (params) => {
+        if (!params.value || typeof params.value !== "object") return "Unknown";
+        return (params.value as { name: string }).name || "Unknown";
+      }
+    },
+  
     {
       field: "actions",
       headerName: "Actions",
       flex: 1,
       renderCell: (params) => (
         <Box>
-          <Button variant="contained" color="primary" size="small" onClick={() => handleEdit(params.row.orderNumber)}>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            size="small" 
+            onClick={() => handleEdit(params.row.orderNumber)}
+          >
             Edit
           </Button>
-          <Button variant="outlined" color="error" size="small" sx={{ ml: 1 }} onClick={() => handleDelete(params.row._id)}>
+          <Button 
+            variant="outlined" 
+            color="error" 
+            size="small" 
+            sx={{ ml: 1 }} 
+            onClick={() => handleDelete(params.row._id)}
+          >
             Delete
           </Button>
         </Box>
       )
     }
   ];
+  
   
 
   return (
@@ -104,10 +148,18 @@ const PurchaseOrdersList: React.FC = () => {
       <DataGrid
         rows={filteredOrders}
         columns={columns}
-        pageSize={10}
-        autoHeight
         getRowId={(row) => row._id}
-      />
+        sx={{
+            "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
+            "& .status-partial": { color: "#2196F3", fontWeight: "bold" },
+            "& .status-received": { color: "#4CAF50", fontWeight: "bold" },
+            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF" },
+            "& .MuiDataGrid-cell": { padding: "10px" },
+            "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
+            "& .MuiButton-root": { borderRadius: "6px" }
+        }}
+        />
+🔹 🚀 Resul
     </Box>
   );
 };

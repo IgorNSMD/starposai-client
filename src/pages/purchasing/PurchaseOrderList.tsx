@@ -154,11 +154,21 @@ const PurchaseOrdersList: React.FC = () => {
           sx={{ flex: 1, minWidth: 200 }}
         />
         <FormControl sx={{ flex: 1, minWidth: 200 }}>
-          <InputLabel>All Providers</InputLabel>
+          {/* <InputLabel>All Providers</InputLabel> */}
           <Select
             value={filters.provider}
             onChange={(e) => setFilters({ ...filters, provider: e.target.value })}
             displayEmpty
+            fullWidth
+              sx={{
+                color: "#333", // Asegura que el texto siempre sea oscuro
+                "& .MuiSelect-select": {
+                  color: filters.provider ? "#333" : "#888", // Diferencia el color cuando está vacío
+                },
+                "& .MuiInputLabel-root": {
+                  color: "#555 !important", // Evita que el label se vea borroso
+                },
+            }}
           >
             <MenuItem value="">All Providers</MenuItem>
             {providers.map((provider) => (
@@ -167,7 +177,7 @@ const PurchaseOrdersList: React.FC = () => {
           </Select>
         </FormControl>
         <FormControl sx={{ flex: 1, minWidth: 200 }}>
-          <InputLabel>All Status</InputLabel>
+          {/* <InputLabel>All Status</InputLabel> */}
           <Select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}

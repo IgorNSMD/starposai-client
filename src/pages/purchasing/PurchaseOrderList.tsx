@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, TextField, Select, MenuItem, Typography } from "@mui/material";
+import { Box, Button, TextField, Select, MenuItem, Typography, IconButton } from "@mui/material";
 import { DataGrid, GridColDef, } from "@mui/x-data-grid";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { useNavigate } from "react-router-dom";
+
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 import { fetchPurchaseOrders, changePurchaseOrderStatus } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { useToastMessages } from "../../hooks/useToastMessage";
+
+
   
 
 const PurchaseOrdersList: React.FC = () => {
@@ -25,9 +31,9 @@ const PurchaseOrdersList: React.FC = () => {
     dispatch(fetchProviders({ status: "active" }));
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log("📌 Datos de las órdenes de compra:", purchaseOrders);
-}, [purchaseOrders]);
+//   useEffect(() => {
+//     console.log("📌 Datos de las órdenes de compra:", purchaseOrders);
+// }, [purchaseOrders]);
 
   useToastMessages(successMessage, errorMessage);
 
@@ -47,7 +53,7 @@ const PurchaseOrdersList: React.FC = () => {
     (filters.status ? po.status === filters.status : true)
   );
 
-  console.log("📌 filteredOrders:", filteredOrders);
+  //console.log("📌 filteredOrders:", filteredOrders);
 
   const rows = filteredOrders.map((po) => ({
     id: po._id,
@@ -70,13 +76,32 @@ const PurchaseOrdersList: React.FC = () => {
     { field: "orderNumber", headerName: "Order #", flex: 1 },
     { field: "provider", headerName: "Provider", flex: 1 }, // 🔹 Ahora contiene solo el nombre
     { field: "createdBy", headerName: "Created By", flex: 1 }, // 🔹 Ahora contiene solo el nombre
-    { field: "createdAt", headerName: "Created At", flex: 1 },
+    { field: "createdAt", headerName: "Created At", flex: 1, 
+      headerAlign: "center",
+      align: "center"  },
     {
       field: "status",
       headerName: "Status",
       flex: 1,
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
-        <Typography color={params.value === "pending" ? "orange" : "black"}>
+        <Typography
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color:
+              params.value === "pending"
+                ? "orange"
+                : params.value === "partial"
+                ? "blue"
+                : params.value === "received"
+                ? "green"
+                : "gray",
+          }}
+        >
           {params.value}
         </Typography>
       ),
@@ -85,28 +110,28 @@ const PurchaseOrdersList: React.FC = () => {
       field: "actions",
       headerName: "Actions",
       flex: 1,
+      headerAlign: "center",
+      align: "center",
       renderCell: (params) => (
-        <Box>
-          <Button
-            variant="contained"
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+          <IconButton
             color="primary"
             size="small"
             onClick={() => handleEdit(params.row.orderNumber)}
           >
-            Edit
-          </Button>
-          <Button
-            variant="outlined"
+            <EditIcon />
+          </IconButton>
+          <IconButton
             color="error"
             size="small"
-            sx={{ ml: 1 }}
             onClick={() => handleDelete(params.row.id)}
           >
-            Deactivate
-          </Button>
+            <DeleteIcon />
+          </IconButton>
         </Box>
       ),
     },
+    
   ];
   
 
@@ -160,10 +185,14 @@ const PurchaseOrdersList: React.FC = () => {
             "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
             "& .status-partial": { color: "#2196F3", fontWeight: "bold" },
             "& .status-received": { color: "#4CAF50", fontWeight: "bold" },
-            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF" },
-            "& .MuiDataGrid-cell": { padding: "10px" },
+            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
+            "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
             "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
-            "& .MuiButton-root": { borderRadius: "6px" }
+            "& .MuiButton-root": { borderRadius: "6px" },
+            "& .status-cell": {
+              textAlign: "center",
+            },
+            
         }}
         />
 🔹 🚀 Resul

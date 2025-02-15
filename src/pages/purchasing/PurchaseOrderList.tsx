@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, TextField, Select, MenuItem, Typography, IconButton } from "@mui/material";
+import { Box, Button, TextField, Select, MenuItem, Typography, IconButton, FormControl, InputLabel } from "@mui/material";
 import { DataGrid, GridColDef, } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 import { fetchPurchaseOrders, changePurchaseOrderStatus } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { useToastMessages } from "../../hooks/useToastMessage";
+import { Add, Download } from "@mui/icons-material";
 
 
   
@@ -45,6 +46,10 @@ const PurchaseOrdersList: React.FC = () => {
 
   const handleEdit = (orderNumber: string) => {
     navigate("/purchase-order", { state: { orderNumber } });
+  };
+
+  const handleExportToExcel = () => {
+    console.log("Exporting to Excel...");
   };
 
   const filteredOrders = purchaseOrders.filter((po) =>
@@ -134,8 +139,6 @@ const PurchaseOrdersList: React.FC = () => {
     
   ];
   
-
-  
   
   
 
@@ -143,44 +146,71 @@ const PurchaseOrdersList: React.FC = () => {
     <Box p={4} sx={{ maxWidth: "100%", overflowX: "auto" }}>
       <Typography variant="h4" sx={{ mb: 3 }}>Purchase Orders</Typography>
       
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
         <TextField
           label="Order Number"
           value={filters.orderNumber}
           onChange={(e) => setFilters({ ...filters, orderNumber: e.target.value })}
-          fullWidth
+          sx={{ flex: 1, minWidth: 200 }}
         />
-        <Select
-          value={filters.provider}
-          onChange={(e) => setFilters({ ...filters, provider: e.target.value })}
-          displayEmpty
-          fullWidth
-        >
-          <MenuItem value="">All Providers</MenuItem>
-          {providers.map((provider) => (
-            <MenuItem key={provider._id} value={provider._id}>{provider.name}</MenuItem>
-          ))}
-        </Select>
-        <Select
-          value={filters.status}
-          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-          displayEmpty
-          fullWidth
-        >
-          <MenuItem value="">All Status</MenuItem>
-          <MenuItem value="pending">Pending</MenuItem>
-          <MenuItem value="partial">Partial</MenuItem>
-          <MenuItem value="received">Received</MenuItem>
-          <MenuItem value="inactive">Inactive</MenuItem>
-        </Select>
-        <Button variant="contained" color="primary" onClick={() => navigate("/purchase-order")}>
-          + New PO
-        </Button>
+        <FormControl sx={{ flex: 1, minWidth: 200 }}>
+          <InputLabel>All Providers</InputLabel>
+          <Select
+            value={filters.provider}
+            onChange={(e) => setFilters({ ...filters, provider: e.target.value })}
+            displayEmpty
+          >
+            <MenuItem value="">All Providers</MenuItem>
+            {providers.map((provider) => (
+              <MenuItem key={provider._id} value={provider._id}>{provider.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ flex: 1, minWidth: 200 }}>
+          <InputLabel>All Status</InputLabel>
+          <Select
+            value={filters.status}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            displayEmpty
+          >
+            <MenuItem value="">All Status</MenuItem>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="partial">Partial</MenuItem>
+            <MenuItem value="received">Received</MenuItem>
+            <MenuItem value="inactive">Inactive</MenuItem>
+          </Select>
+        </FormControl>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<Download />}
+            onClick={handleExportToExcel}
+            sx={{ height: "100%" }}
+          >
+            Export
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Add />}
+            onClick={() => navigate("/purchase-order")}
+            sx={{ height: "100%" }}
+          >
+            New PO
+          </Button>
+        </Box>
       </Box>
 
       <DataGrid
         rows={rows} // Debes pasar rows, no filteredOrders
         columns={columns}
+        initialState={{
+          pagination: {
+            paginationModel: { pageSize: 25 },
+          },
+        }}
+        pageSizeOptions={[25, 50, 100]}        
         sx={{
             "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
             "& .status-partial": { color: "#2196F3", fontWeight: "bold" },

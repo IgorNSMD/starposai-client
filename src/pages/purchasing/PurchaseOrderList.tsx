@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, TextField, Select, MenuItem, Typography, IconButton, FormControl, InputLabel } from "@mui/material";
+import { Box, Button, TextField, Select, MenuItem, Typography, IconButton, FormControl } from "@mui/material";
 import { DataGrid, GridColDef, } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import { Add, Download } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import ExcelJS, { Row, Cell } from 'exceljs';
+import { saveAs } from 'file-saver';
 
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 import { fetchPurchaseOrders, changePurchaseOrderStatus } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { useToastMessages } from "../../hooks/useToastMessage";
-import { Add, Download } from "@mui/icons-material";
+
 
 
   
@@ -48,9 +50,62 @@ const PurchaseOrdersList: React.FC = () => {
     navigate("/purchase-order", { state: { orderNumber } });
   };
 
-  const handleExportToExcel = () => {
-    console.log("Exporting to Excel...");
+
+  const handleExportToExcel = async () => {
+    // Crear un nuevo libro de trabajo
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Purchase Orders');
+
+    // Definir columnas y encabezados con estilos
+    worksheet.columns = [
+      { header: 'Order #', key: 'orderNumber', width: 15 },
+      { header: 'Provider', key: 'provider', width: 20 },
+      { header: 'Created By', key: 'createdBy', width: 20 },
+      { header: 'Created At', key: 'createdAt', width: 15 },
+      { header: 'Status', key: 'status', width: 15 },
+    ];
+
+    // Aplicar estilos a los encabezados
+    worksheet.getRow(1).eachCell((cell: Cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }; // Texto blanco y negrita
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: '4472C4' }, // Azul de fondo
+      };
+    });
+
+    // Agregar datos desde `rows`
+    rows.forEach((row) => {
+      worksheet.addRow({
+        orderNumber: row.orderNumber,
+        provider: row.provider || 'Unknown',
+        createdBy: row.createdBy || 'Unknown',
+        createdAt: row.createdAt || 'N/A',
+        status: row.status,
+      });
+    });
+
+    // Aplicar bordes y estilos a las celdas de datos
+    worksheet.eachRow((row: Row, rowNumber: number) => {
+      if (rowNumber !== 1) { // Excluir los encabezados
+        row.eachCell((cell: Cell) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+          };
+        });
+      }
+    });
+
+    // Generar archivo Excel y descargarlo
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, 'purchase_orders.xlsx');
   };
+
 
   const filteredOrders = purchaseOrders.filter((po) =>
     (filters.orderNumber ? po.orderNumber?.includes(filters.orderNumber) : true) &&

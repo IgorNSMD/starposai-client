@@ -47,7 +47,7 @@ const PurchaseOrdersList: React.FC = () => {
   };
 
   const handleEdit = (orderNumber: string) => {
-    navigate("/purchase-order", { state: { orderNumber } });
+    navigate("/admin/purchasing/po", { state: { orderNumber } });
   };
 
 

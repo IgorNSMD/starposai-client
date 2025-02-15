@@ -25,6 +25,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import toast from 'react-hot-toast';
+import { useLocation } from "react-router-dom";
 //import "jspdf-autotable";
 
 import { 
@@ -92,6 +93,7 @@ const formatNumber = (value: number) => {
 
 const PurchaseOrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const { purchaseOrders, successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
@@ -117,6 +119,7 @@ const PurchaseOrderPage: React.FC = () => {
   const [searchDialogOpen, setSearchDialogOpen] = useState(false); // Estado del modal  
   
 
+  const orderNumberFromState = location.state?.orderNumber || "";
   //const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
   useEffect(() => {
@@ -146,6 +149,47 @@ const PurchaseOrderPage: React.FC = () => {
       dispatch(clearMessages());
     }
   }, [successMessage, errorMessage, dispatch]);
+
+
+  useEffect(() => {
+    if (!orderNumberFromState) return;
+  
+    console.log("🔍 Buscando orden:", orderNumberFromState);
+    setSearchOrderNumber(orderNumberFromState);
+  
+    // Buscar la orden directamente dentro del useEffect
+    dispatch(fetchPurchaseOrderByNumber(orderNumberFromState))
+      .unwrap()
+      .then((response) => {
+        const foundProvider = providers.find(p => p._id === response.provider) || response.provider;
+  
+        setFormData({
+          provider: foundProvider,
+          orderNumber: response.orderNumber,
+          createdAt: response.createdAt,
+          status: response.status,
+          products: response.products.map((p) => ({
+            productId: p.productId,
+            name: p.name,
+            sku: p.sku,
+            quantity: p.quantity,
+            unitPrice: p.unitPrice,
+            subtotal: p.subtotal,
+          })),
+          total: response.total,
+          estimatedDeliveryDate: response.estimatedDeliveryDate,
+        });
+  
+        console.log("✅ Orden cargada con éxito:", response);
+        setSearchDialogOpen(false);
+        setSearchOrderNumber("");
+      })
+      .catch((error) => {
+        console.error("❌ Error al buscar la orden:", error);
+        toast.error("Order not found.");
+      });
+  }, [orderNumberFromState, dispatch, providers]); // Ahora `handleSearchOrder` no es necesario en las dependencias
+  
   
 
   const generatePDF = async (): Promise<Blob> => {

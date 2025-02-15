@@ -109,7 +109,7 @@ const PurchaseOrdersList: React.FC = () => {
 
   const filteredOrders = purchaseOrders.filter((po) =>
     (filters.orderNumber ? po.orderNumber?.includes(filters.orderNumber) : true) &&
-  (filters.provider
+    (filters.provider
     ? typeof po.provider === "object" && po.provider !== null
       ? (po.provider as { _id: string })._id === filters.provider
       : po.provider === filters.provider
@@ -263,7 +263,7 @@ const PurchaseOrdersList: React.FC = () => {
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => navigate("/purchase-order")}
+            onClick={() => navigate("/admin/purchasing/po")}
             sx={{ height: "100%" }}
           >
             New PO

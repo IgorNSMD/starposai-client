@@ -83,7 +83,7 @@ export const createPurchaseOrder = createAsyncThunk<
   Partial<PurchaseOrder>
 >("purchaseOrders/create", async (purchaseOrderData, { rejectWithValue }) => {
   try {
-    console.log('createPurchaseOrder..')
+    //console.log('createPurchaseOrder..')
     const response = await axiosInstance.post("/purchase-orders", purchaseOrderData);
     return {
       ...response.data,
@@ -159,7 +159,7 @@ const purchaseOrderSlice = createSlice({
       .addCase(fetchPurchaseOrders.fulfilled, (state, action) => {
         state.isLoading = false;
         state.purchaseOrders = action.payload;
-        console.log("✅ Ordenes de compra en Redux:", action.payload); // <-- Verificar si contienen _id
+        //console.log("✅ Ordenes de compra en Redux:", action.payload); // <-- Verificar si contienen _id
       })
       .addCase(fetchPurchaseOrders.rejected, (state, action) => {
         state.isLoading = false;

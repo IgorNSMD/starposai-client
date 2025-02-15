@@ -54,7 +54,11 @@ const PurchaseOrdersList: React.FC = () => {
 
   const filteredOrders = purchaseOrders.filter((po) =>
     (filters.orderNumber ? po.orderNumber?.includes(filters.orderNumber) : true) &&
-    (filters.provider ? po.provider === filters.provider : true) &&
+  (filters.provider
+    ? typeof po.provider === "object" && po.provider !== null
+      ? (po.provider as { _id: string })._id === filters.provider
+      : po.provider === filters.provider
+    : true)  &&
     (filters.status ? po.status === filters.status : true)
   );
 

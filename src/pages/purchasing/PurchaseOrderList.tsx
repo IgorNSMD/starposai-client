@@ -55,7 +55,15 @@ const PurchaseOrdersList: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (selectedOrderId) {
-      dispatch(changePurchaseOrderStatus({ id: selectedOrderId, status: "inactive" }));
+      dispatch(changePurchaseOrderStatus({ id: selectedOrderId, status: "inactive" }))
+          .unwrap()
+          .then(() => {
+            console.log('Estado cambiado a inactive con éxito');
+            dispatch(fetchPurchaseOrders());
+          })
+          .catch((error) => {
+            console.error('Error al cambiar el estado del producto:', error);
+          });
     }
     handleDeleteDialogClose();
   };

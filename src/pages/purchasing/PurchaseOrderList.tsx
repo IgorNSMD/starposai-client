@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, TextField, Select, MenuItem, Typography, IconButton, FormControl } from "@mui/material";
+import { Box, Button, TextField, Select, MenuItem, Typography, IconButton, FormControl, useMediaQuery } from "@mui/material";
 import { DataGrid, GridColDef, } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Add, Download } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import ExcelJS, { Row, Cell } from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -20,6 +21,9 @@ import CustomDialog from "../../components/Dialog";
 const PurchaseOrdersList: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+
   const { purchaseOrders, successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
 
@@ -225,10 +229,14 @@ const PurchaseOrdersList: React.FC = () => {
   
 
   return (
-    <Box p={4} sx={{ maxWidth: "100%", overflowX: "auto" }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>Purchase Orders</Typography>
+     <Box p={2} sx={{ width: "100%", overflowX: "auto" }}>
+      <Typography 
+        variant="h4" 
+        sx={{ mt: 3, mb: 3, textAlign: isSmallScreen ? "center" : "left" }}
+      >Purchase Orders
+      </Typography>
       
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3, flexWrap: "wrap" }}>
+      <Box sx={{ display: "flex", flexDirection: isSmallScreen ? "column" : "row", gap: 2, mb: 3 }}>
         <TextField
           label="Order Number"
           value={filters.orderNumber}
@@ -269,10 +277,10 @@ const PurchaseOrdersList: React.FC = () => {
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="partial">Partial</MenuItem>
             <MenuItem value="received">Received</MenuItem>
-            <MenuItem value="inactive">Inactive</MenuItem>
+            {/* <MenuItem value="inactive">Inactive</MenuItem> */}
           </Select>
         </FormControl>
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, justifyContent: isSmallScreen ? "center" : "flex-start" }}>
           <Button
             variant="contained"
             color="success"
@@ -294,35 +302,42 @@ const PurchaseOrdersList: React.FC = () => {
         </Box>
       </Box>
 
-      <DataGrid
-        rows={rows} // Debes pasar rows, no filteredOrders
-        columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: { pageSize: 25 },
-          },
-        }}
-        pageSizeOptions={[25, 50, 100]}        
-        sx={{
-            "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
-            "& .status-partial": { color: "#2196F3", fontWeight: "bold" },
-            "& .status-received": { color: "#4CAF50", fontWeight: "bold" },
-            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
-            "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
-            "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
-            "& .MuiButton-root": { borderRadius: "6px" },
-            "& .status-cell": {
-              textAlign: "center",
-            },
-            
-        }}
-        />
-        <CustomDialog
-          isOpen={isDeleteDialogOpen}
-          title="Confirm Delete"
-          message="Are you sure you want to delete this purchase order?"
-          onClose={handleDeleteDialogClose}
-          onConfirm={handleConfirmDelete}
+      <Box sx={{ width: "100%", overflowX: "auto" }}>
+        <Box sx={{ minWidth: "900px" }}> {/* 🔹 Asegura que la tabla tenga un tamaño mínimo */}
+          <DataGrid
+            rows={rows} // Debes pasar rows, no filteredOrders
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 25 },
+              },
+            }}
+            pageSizeOptions={[25, 50, 100]}        
+            sx={{
+                "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
+                "& .status-partial": { color: "#2196F3", fontWeight: "bold" },
+                "& .status-received": { color: "#4CAF50", fontWeight: "bold" },
+                "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
+                "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
+                "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
+                "& .MuiButton-root": { borderRadius: "6px" },
+                "& .status-cell": {
+                  textAlign: "center",
+                  //minWidth: 600,
+                  minWidth: "900px", // 🔹 Asegura un ancho mínimo
+                },
+                
+            }}
+            />  
+        </Box>
+      </Box>
+
+      <CustomDialog
+        isOpen={isDeleteDialogOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this purchase order?"
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
         />
 🔹 🚀 Resul
     </Box>

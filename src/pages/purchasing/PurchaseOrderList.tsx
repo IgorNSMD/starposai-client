@@ -12,7 +12,7 @@ import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 import { fetchPurchaseOrders, changePurchaseOrderStatus } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { useToastMessages } from "../../hooks/useToastMessage";
-
+import CustomDialog from "../../components/Dialog";
 
 
   
@@ -29,6 +29,9 @@ const PurchaseOrdersList: React.FC = () => {
     status: ""
   });
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
   useEffect(() => {
     dispatch(fetchPurchaseOrders());
     dispatch(fetchProviders({ status: "active" }));
@@ -40,11 +43,23 @@ const PurchaseOrdersList: React.FC = () => {
 
   useToastMessages(successMessage, errorMessage);
 
-  const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this PO?")) {
-        dispatch(changePurchaseOrderStatus({ id, status: "inactive" }));
-    }
+  const handleDeleteDialogOpen = (id: string) => {
+    setSelectedOrderId(id);
+    setIsDeleteDialogOpen(true);
   };
+
+  const handleDeleteDialogClose = () => {
+    setSelectedOrderId(null);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedOrderId) {
+      dispatch(changePurchaseOrderStatus({ id: selectedOrderId, status: "inactive" }));
+    }
+    handleDeleteDialogClose();
+  };
+
 
   const handleEdit = (orderNumber: string) => {
     navigate("/admin/purchasing/po", { state: { orderNumber } });
@@ -188,7 +203,7 @@ const PurchaseOrdersList: React.FC = () => {
           <IconButton
             color="error"
             size="small"
-            onClick={() => handleDelete(params.row.id)}
+            onClick={() => handleDeleteDialogOpen(params.row.id)}
           >
             <DeleteIcon />
           </IconButton>
@@ -293,6 +308,13 @@ const PurchaseOrdersList: React.FC = () => {
             },
             
         }}
+        />
+        <CustomDialog
+          isOpen={isDeleteDialogOpen}
+          title="Confirm Delete"
+          message="Are you sure you want to delete this purchase order?"
+          onClose={handleDeleteDialogClose}
+          onConfirm={handleConfirmDelete}
         />
 🔹 🚀 Resul
     </Box>

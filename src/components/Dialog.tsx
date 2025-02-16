@@ -23,10 +23,10 @@ const Dialog: React.FC<DialogProps> = ({ isOpen, title, message, onClose, onConf
         padding: '20px',
         boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
         borderRadius: '8px',
-        textAlign: 'center',
+        textAlign: 'center',        
       }}
     >
-      <Typography variant="h6" sx={{ marginBottom: '16px' }}>
+      <Typography variant="h6" sx={{ marginBottom: '16px', color: "#666" }}>
         {title}
       </Typography>
       <Typography variant="body1" sx={{ marginBottom: '24px' }}>

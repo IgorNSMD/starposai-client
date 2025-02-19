@@ -74,12 +74,16 @@ const Kits: React.FC = () => {
   useToastMessages(successMessage, errorMessage);
 
   const handleProductToggle = (product: SelectedProduct) => {
-    setSelectedProducts((prev) =>
-      prev.some((p) => p.productId === product.productId)
-        ? prev.filter((p) => p.productId !== product.productId)
-        : [...prev, product]
-    );
+    setSelectedProducts((prev) => {
+      const exists = prev.some((p) => p.productId === product.productId);
+      if (exists) {
+        return prev.filter((p) => p.productId !== product.productId);
+      } else {
+        return [...prev, { productId: product.productId, quantity: product.quantity || 1 }];
+      }
+    });
   };
+  
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -181,19 +185,27 @@ const Kits: React.FC = () => {
       field: 'select',
       headerName: 'Sel',
       flex: 0.5,
-      renderCell: (params) => (
-        <Checkbox
-          color="primary"
-          checked={selectedProducts.includes(params.row.id)} // Verifica si está seleccionado
-          onChange={() => handleProductToggle(params.row.id)} // Llama a la función al hacer clic
-          sx={{
-            '&.Mui-checked': {
-              color: '#47b2e4',
-            },
-            color: '#444444',
-          }}
-        />
-      ),
+      renderCell: (params) => {
+        const isSelected = selectedProducts.some((p) => p.productId === params.row.id);
+        return (
+          <Checkbox
+            color="primary"
+            checked={isSelected}
+            onChange={() =>
+              handleProductToggle({
+                productId: params.row.id,
+                quantity: 1, // Puedes manejar la cantidad si lo deseas
+              })
+            }
+            sx={{
+              '&.Mui-checked': {
+                color: '#47b2e4',
+              },
+              color: '#444444',
+            }}
+          />
+        );
+      },
     },
     { field: 'key', headerName: 'Product', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },

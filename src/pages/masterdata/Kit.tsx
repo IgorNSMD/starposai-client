@@ -287,6 +287,18 @@ const Kits: React.FC = () => {
           }}
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
+          sx={{
+            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
+            "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
+            "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
+            "& .MuiButton-root": { borderRadius: "6px" },
+            "& .status-cell": {
+              textAlign: "center",
+              //minWidth: 600,
+              minWidth: "900px", // 🔹 Asegura un ancho mínimo
+            },
+            
+          }}
         />
         <Box display="flex" gap={2} margin ="16px" >
           <Button
@@ -322,6 +334,18 @@ const Kits: React.FC = () => {
           }}
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
+          sx={{
+            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
+            "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
+            "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
+            "& .MuiButton-root": { borderRadius: "6px" },
+            "& .status-cell": {
+              textAlign: "center",
+              //minWidth: 600,
+              minWidth: "900px", // 🔹 Asegura un ancho mínimo
+            },
+            
+          }}
         />        
       </Box>
       {/* Cuadro de diálogo de confirmación */}

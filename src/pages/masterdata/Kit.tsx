@@ -4,12 +4,13 @@ import {
   TextField,
   Button,
   Typography,
-  Paper,
   IconButton,
   Checkbox,
+  useMediaQuery
 } from '@mui/material';
 
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { useTheme } from "@mui/material/styles";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 //import SaveIcon from '@mui/icons-material/Save';
@@ -28,15 +29,6 @@ import {
   fetchProducts
 } from '../../store/slices/productSlice';
 
-import {
-  formContainer,
-  submitButton,
-  inputField,
-  inputContainer,
-  formTitle,
-  datagridStyle,
-  cancelButton,  
-} from '../../styles/AdminStyles';
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 import { useToastMessages } from '../../hooks/useToastMessage';
@@ -60,6 +52,9 @@ interface Kit {
 
 const Kits: React.FC = () => {
   const dispatch = useAppDispatch();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("md"));
+
   const { kits, errorMessage, successMessage } = useAppSelector((state) => state.kits);
   const { products } = useAppSelector((state) => state.products);
   const [formData, setFormData] = useState({ name: '', description: '' });
@@ -249,34 +244,37 @@ const Kits: React.FC = () => {
   }));
 
   return (
-    <Box sx={formContainer}>
-      <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
-        <Typography sx={formTitle}>
-          {editingId ? 'Edit Kit' : 'Add New Kit'}
-        </Typography>
-        <Box sx={inputContainer}>
-          <TextField
-            label="Kit Name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
-                  },
+    <Box p={2} sx={{ width: "100%", overflowX: "auto" }}>
+
+      <Typography 
+        variant="h4" 
+        sx={{ mt: 3, mb: 3, textAlign: isSmallScreen ? "center" : "left" }}
+      >
+        {editingId ? 'Edit Kit' : 'Add New Kit'}
+      </Typography>
+
+      <Box sx={{ display: "flex", flexDirection: isSmallScreen ? "column" : "row", gap: 2, mb: 3 }}>
+        <TextField
+          label="Kit Name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          sx={{ flex: 1, minWidth: 200 }}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+              sx: {
+                color: '#444444',
+                '&.Mui-focused': {
+                  color: '#47b2e4',
                 },
               },
-            }}
-          />
-        </Box>
-      </Paper>
+            },
+          }}
+        />
+      </Box>
 
-      <Paper >
+      <Box sx={{ width: "100%", overflowX: "auto" }}>
         <DataGrid
           rows={rowsProducts}
           columns={columnsProducts}
@@ -289,14 +287,12 @@ const Kits: React.FC = () => {
           }}
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
-          sx={datagridStyle}
         />
         <Box display="flex" gap={2} margin ="16px" >
           <Button
             variant="contained"
             color="primary"
             onClick={handleSubmit}
-            sx={submitButton}
           >
             {editingId ? 'Update' : 'Save'}
           </Button>
@@ -306,14 +302,11 @@ const Kits: React.FC = () => {
               color="secondary" // O el color que prefieras
               onClick={handleCancel}
               startIcon={<CancelIcon />}
-              sx={cancelButton}
             >
               Cancel
             </Button>
           )}
         </Box>
-      </Paper>
-      <Paper >
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Kist List
         </Typography>
@@ -329,10 +322,8 @@ const Kits: React.FC = () => {
           }}
           pageSizeOptions={[5, 10, 20]}
           disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
-      </Paper>
-
+        />        
+      </Box>
       {/* Cuadro de diálogo de confirmación */}
       <Dialog
         isOpen={isDialogOpen}

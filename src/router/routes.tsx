@@ -21,6 +21,7 @@ import Client from "../pages/masterdata/Client";
 import InventoryMovement from "../pages/inventory/InventoryMovement";
 import PurchaseOrder from "../pages/purchasing/PurchaseOrder";
 import PurchaseOrdersList from "../pages/purchasing/PurchaseOrderList";
+import Kit from "../pages/masterdata/Kit";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -65,6 +66,7 @@ const routes = [
         path: 'masterdata',
         children: [
           { path: 'product', element: <Product /> },
+          { path: 'kit', element: <Kit /> },
           { path: 'category', element: <Category /> },
           { path: 'provider', element: <Provider /> },
           { path: 'client', element: <Client /> },

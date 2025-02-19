@@ -7,6 +7,7 @@ import {
   Paper,
   IconButton,
   Checkbox,
+  Divider,
 } from '@mui/material';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,6 +34,8 @@ const Kits: React.FC = () => {
   const [selectedProducts, setSelectedProducts] = useState<{ productId: string; quantity: number }[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [kitName, setKitName] = useState("");
+  const [kitDescription, setKitDescription] = useState("");
 
   useEffect(() => {
     dispatch(fetchProducts({ status: 'active' }));
@@ -52,10 +55,10 @@ const Kits: React.FC = () => {
     });
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-  };
+  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = event.target;
+  //   setFormData({ ...formData, [name]: value });
+  // };
 
   const handleDeleteDialogOpen = (id: string) => {
     setSelectedId(id);
@@ -187,24 +190,64 @@ const Kits: React.FC = () => {
   }));
 
   return (
-    <Box>
-      <Paper sx={{ padding: '20px', marginBottom: '10px' }}>
-        <Typography variant="h6">Add New Kit</Typography>
-        <TextField label="Kit Name" name="name" value={formData.name} onChange={handleChange} fullWidth margin="normal" />
-        <TextField label="Description" name="description" value={formData.description} onChange={handleChange} fullWidth margin="normal" />
+    <Box sx={{ padding: 3 }}>
+       {/* Sección de Crear Kit */}
+       <Paper sx={{ padding: 3, marginBottom: 3, boxShadow: 3 }}>
+       <Typography variant="h5" sx={{ fontWeight: "bold", marginBottom: 2 }}>
+          Crear Nuevo Kit
+        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <TextField
+            label="Nombre del Kit"
+            variant="outlined"
+            fullWidth
+            value={kitName}
+            onChange={(e) => setKitName(e.target.value)}
+            placeholder="Ejemplo: Kit Desayuno"
+          />
+          <TextField
+            label="Descripción"
+            variant="outlined"
+            fullWidth
+            value={kitDescription}
+            onChange={(e) => setKitDescription(e.target.value)}
+            placeholder="Ejemplo: Contiene café, leche y pan"
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            sx={{ alignSelf: "flex-start", marginTop: 1 }}
+          >
+            Guardar Kit
+          </Button>
+        </Box>
       </Paper>
 
-      <Paper sx={{ height: 300, marginBottom: 2 }}>
-        <Typography variant="h6">Select Products</Typography>
-        <DataGrid rows={rowsProducts} columns={columnsProducts} pageSizeOptions={[5, 10, 20]} />
-        <Button variant="contained" color="primary" onClick={handleSubmit} sx={{ margin: 2 }}>
-          {editingId ? 'Update Kit' : 'Save Kit'}
-        </Button>
-        {editingId && (
-          <Button variant="outlined" color="secondary" onClick={handleCancel} sx={{ margin: 2 }}>
-            Cancel
-          </Button>
-        )}
+      {/* Separador */}
+      <Divider sx={{ marginY: 2 }} />
+
+      {/* Tabla de Productos */}
+      <Paper sx={{ padding: 3, boxShadow: 3 }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold", marginBottom: 2 }}>
+          Seleccionar Productos para el Kit
+        </Typography>
+        <DataGrid 
+          rows={rowsProducts} 
+          columns={columnsProducts} 
+          pageSizeOptions={[5, 10, 20]}
+          sx={{
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#304FFE",
+              color: "white",
+              fontWeight: "bold",
+            },
+          }} />
       </Paper>
 
       <Paper sx={{ height: 300 }}>

@@ -183,14 +183,15 @@ const Kits: React.FC = () => {
   };
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // Evita valores negativos o 0
-  
     setSelectedProducts((prev) =>
       prev.map((p) =>
-        p.productId === productId ? { ...p, quantity: newQuantity } : p
+        p.productId === productId
+          ? { ...p, quantity: isNaN(newQuantity) || newQuantity < 1 ? 1 : newQuantity }
+          : p
       )
     );
   };
+  
 
   const columnsProducts: GridColDef[] = [
     {
@@ -206,13 +207,11 @@ const Kits: React.FC = () => {
             onChange={() =>
               handleProductToggle({
                 productId: params.row.id,
-                quantity: 1, // Puedes manejar la cantidad si lo deseas
+                quantity: 1, // 🔹 Valor inicial por defecto
               })
             }
             sx={{
-              '&.Mui-checked': {
-                color: '#47b2e4',
-              },
+              '&.Mui-checked': { color: '#47b2e4' },
               color: '#444444',
             }}
           />
@@ -225,21 +224,37 @@ const Kits: React.FC = () => {
       field: 'quantity',
       headerName: 'Quantity',
       flex: 0.7,
-      editable: true,
+      align: 'right',
+      headerAlign: 'right',
       renderCell: (params) => {
-        const productIndex = selectedProducts.findIndex((p) => p.productId === params.row.id);
+        // 🔹 Buscar el índice del producto en la lista de seleccionados
+        const product = selectedProducts.find((p) => p.productId === params.row.id);
+        const isSelected = !!product; // 🔹 Si el producto está en selectedProducts
+  
         return (
           <TextField
             type="number"
             size="small"
-            value={productIndex !== -1 ? selectedProducts[productIndex].quantity : 1}
-            onChange={(event) => handleQuantityChange(params.row.id, parseInt(event.target.value))}
-            sx={{ width: '80px' }}
+            value={isSelected ? product?.quantity ?? 1 : ''}
+            disabled={!isSelected} // 🔹 Solo permite escribir si está seleccionado
+            onChange={(event) => {
+              const newValue = parseInt(event.target.value);
+              if (!isNaN(newValue) && newValue >= 1) {
+                handleQuantityChange(params.row.id, newValue);
+              }
+            }}
+            sx={{
+              width: '80px',
+              '& input': { textAlign: 'right' }, // 🔹 Alinea el texto dentro del campo a la derecha
+            }}
+            inputProps={{ min: 1 }}
           />
         );
       },
     },
   ];
+ 
+  
 
   const rowsProducts = products.map((products) => ({
     id: products._id,

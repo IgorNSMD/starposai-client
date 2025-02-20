@@ -75,9 +75,9 @@ const Kits: React.FC = () => {
 
   const handleProductToggle = (product: SelectedProduct) => {
     setSelectedProducts((prev) => {
-      const exists = prev.some((p) => p.productId === product.productId);
-      if (exists) {
-        return prev.filter((p) => p.productId !== product.productId);
+      const index = prev.findIndex((p) => p.productId === product.productId);
+      if (index !== -1) {
+        return prev.filter((p) => p.productId !== product.productId); // Si ya está, lo deselecciona
       } else {
         return [...prev, { productId: product.productId, quantity: product.quantity || 1 }];
       }
@@ -141,10 +141,12 @@ const Kits: React.FC = () => {
     const kit = kits.find((kit) => kit._id === id);
     if (kit) {
       setFormData({ name: kit.name, description: kit.description });
-      setSelectedProducts(kit.components.map((prod) => ({
-        productId: prod.productId, 
-        quantity: prod.quantity
-      })));
+      setSelectedProducts(
+        kit.components.map((prod) => ({
+          productId: prod.productId,
+          quantity: prod.quantity || 1, // Asegura que siempre tenga una cantidad
+        }))
+      );
       setEditingId(id);
     }
   };
@@ -180,6 +182,16 @@ const Kits: React.FC = () => {
     } 
   };
 
+  const handleQuantityChange = (productId: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // Evita valores negativos o 0
+  
+    setSelectedProducts((prev) =>
+      prev.map((p) =>
+        p.productId === productId ? { ...p, quantity: newQuantity } : p
+      )
+    );
+  };
+
   const columnsProducts: GridColDef[] = [
     {
       field: 'select',
@@ -209,6 +221,24 @@ const Kits: React.FC = () => {
     },
     { field: 'key', headerName: 'Product', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },
+    {
+      field: 'quantity',
+      headerName: 'Quantity',
+      flex: 0.7,
+      editable: true,
+      renderCell: (params) => {
+        const productIndex = selectedProducts.findIndex((p) => p.productId === params.row.id);
+        return (
+          <TextField
+            type="number"
+            size="small"
+            value={productIndex !== -1 ? selectedProducts[productIndex].quantity : 1}
+            onChange={(event) => handleQuantityChange(params.row.id, parseInt(event.target.value))}
+            sx={{ width: '80px' }}
+          />
+        );
+      },
+    },
   ];
 
   const rowsProducts = products.map((products) => ({

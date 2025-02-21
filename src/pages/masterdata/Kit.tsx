@@ -16,10 +16,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 
-import {
-  cancelButton,
-} from '../../styles/AdminStyles';
-
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 
 import {
@@ -170,13 +166,12 @@ const Kits: React.FC = () => {
     setIsDialogOpen(false);
   };
 
-  const handleConfirmUpdate  = () => {
+  const handleConfirmUpdate = () => {
     const data = {
       name: formData.name,
-
       components: selectedProducts.map((p) => ({
-        product: typeof p === "string" ? p : p.productId,
-        quantity: (typeof p === "object" && "quantity" in p) ? p.quantity : 1,
+        product: p.productId, // ✅ Ahora solo toma el ID del producto
+        quantity: p.quantity ?? 1,
       })),
     };
   
@@ -187,8 +182,10 @@ const Kits: React.FC = () => {
         setFormData({ name: '' });
         setSelectedProducts([]);
       });
-    } 
+    }
   };
+  
+  
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     setSelectedProducts((prev) =>

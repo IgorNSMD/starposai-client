@@ -13,8 +13,12 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useTheme } from "@mui/material/styles";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-//import SaveIcon from '@mui/icons-material/Save';
+import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
+
+import {
+  cancelButton,
+} from '../../styles/AdminStyles';
 
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 
@@ -136,6 +140,7 @@ const Kits: React.FC = () => {
   
 
   const handleEdit = (id: string) => {
+    console.log("Editing kit with ID:", id);
     const kit = kits.find((kit) => kit._id === id);
     if (kit) {
       setFormData({ name: kit.name });
@@ -368,19 +373,33 @@ const Kits: React.FC = () => {
             variant="contained"
             color="primary"
             onClick={handleSubmit}
+            startIcon={<SaveIcon />}
+            sx={{
+              color: '#ffffff',
+              backgroundColor: '#47b2e4',
+              "&:hover": {
+                backgroundColor: "#3699c9",
+              }
+            }}
           >
             {editingId ? 'Update' : 'Save'}
           </Button>
-          {editingId && (
-            <Button
-              variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
-              color="secondary" // O el color que prefieras
-              onClick={handleCancel}
-              startIcon={<CancelIcon />}
-            >
-              Cancel
-            </Button>
-          )}
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleCancel}
+            startIcon={<CancelIcon />}
+            sx={{
+              color: '#ffffff',
+              backgroundColor: "#e57373", // 🔹 Prueba con un color rojo para ver si aparece
+              "&:hover": {
+                backgroundColor: "#d32f2f",
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          
         </Box>
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Kist List

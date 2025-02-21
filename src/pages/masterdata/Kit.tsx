@@ -39,13 +39,12 @@ interface SelectedProduct {
 }
 
 interface KitComponent {
-  product: string;
+  product: string | { _id: string }; // ✅ Permite ambos tipos
   quantity: number;
 }
 interface Kit {
   _id: string;
   name: string;
-  description: string;
   components: KitComponent[];
   status: "active" | "inactive";
 }
@@ -57,7 +56,7 @@ const Kits: React.FC = () => {
 
   const { kits, errorMessage, successMessage } = useAppSelector((state) => state.kits);
   const { products } = useAppSelector((state) => state.products);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '',  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
@@ -113,7 +112,6 @@ const Kits: React.FC = () => {
   const handleSubmit = () => {
     const data = {
       name: formData.name,
-      description: formData.description || "",  // 🛠️ Agregamos description por defecto vacío
       components: selectedProducts.map((p) => ({
         product: typeof p === "string" ? p : p.productId,
         quantity: (typeof p === "object" && "quantity" in p) ? p.quantity : 1,
@@ -124,13 +122,13 @@ const Kits: React.FC = () => {
       dispatch(updateKit({ id: editingId, ...data })).then(() => {
         dispatch(fetchKits());
         setEditingId(null);
-        setFormData({ name: '', description: '' }); // Resetear también description
+        setFormData({ name: '' }); // Resetear también description
         setSelectedProducts([]);
       });
     } else {
       dispatch(createKit(data)).then(() => {
         dispatch(fetchKits());
-        setFormData({ name: '', description: '' });
+        setFormData({ name: '', });
         setSelectedProducts([]);
       });
     }
@@ -140,19 +138,24 @@ const Kits: React.FC = () => {
   const handleEdit = (id: string) => {
     const kit = kits.find((kit) => kit._id === id);
     if (kit) {
-      setFormData({ name: kit.name, description: kit.description });
+      setFormData({ name: kit.name });
+  
+      // 🔹 Convertimos los componentes en el formato correcto
       setSelectedProducts(
-        kit.components.map((prod) => ({
-          productId: prod.product,
-          quantity: prod.quantity || 1, // Asegura que siempre tenga una cantidad
+        kit.components.map((comp) => ({
+          productId: typeof comp.product === "string" ? comp.product : comp.product._id, // ✅ Extraer `_id`
+          quantity: comp.quantity,
         }))
       );
+  
       setEditingId(id);
     }
   };
+  
+  
 
   const handleCancel = () => {
-    setFormData({ name: '', description:'' });
+    setFormData({ name: '' });
     setEditingId(null);
     setSelectedProducts([]);
   };
@@ -165,7 +168,7 @@ const Kits: React.FC = () => {
   const handleConfirmUpdate  = () => {
     const data = {
       name: formData.name,
-      description: formData.description || "",  // 🛠️ Agregamos description por defecto vacío
+
       components: selectedProducts.map((p) => ({
         product: typeof p === "string" ? p : p.productId,
         quantity: (typeof p === "object" && "quantity" in p) ? p.quantity : 1,
@@ -176,7 +179,7 @@ const Kits: React.FC = () => {
       dispatch(updateKit({ id: editingId, ...data })).then(() => {
         dispatch(fetchKits());
         setEditingId(null);
-        setFormData({ name: '', description: '' });
+        setFormData({ name: '' });
         setSelectedProducts([]);
       });
     } 
@@ -207,7 +210,9 @@ const Kits: React.FC = () => {
             onChange={() =>
               handleProductToggle({
                 productId: params.row.id,
-                quantity: 1, // 🔹 Valor inicial por defecto
+                quantity: isSelected
+                  ? 1
+                  : selectedProducts.find((p) => p.productId === params.row.id)?.quantity || 1,
               })
             }
             sx={{
@@ -218,6 +223,7 @@ const Kits: React.FC = () => {
         );
       },
     },
+    
     { field: 'key', headerName: 'Product', flex: 1 },
     { field: 'description', headerName: 'Description', flex: 1 },
     {
@@ -227,16 +233,15 @@ const Kits: React.FC = () => {
       align: 'right',
       headerAlign: 'right',
       renderCell: (params) => {
-        // 🔹 Buscar el índice del producto en la lista de seleccionados
         const product = selectedProducts.find((p) => p.productId === params.row.id);
-        const isSelected = !!product; // 🔹 Si el producto está en selectedProducts
-  
+        const isSelected = !!product; // Solo se edita si está en selectedProducts
+    
         return (
           <TextField
             type="number"
             size="small"
             value={isSelected ? product?.quantity ?? 1 : ''}
-            disabled={!isSelected} // 🔹 Solo permite escribir si está seleccionado
+            disabled={!isSelected} // Solo editable si está seleccionado
             onChange={(event) => {
               const newValue = parseInt(event.target.value);
               if (!isNaN(newValue) && newValue >= 1) {
@@ -245,13 +250,14 @@ const Kits: React.FC = () => {
             }}
             sx={{
               width: '80px',
-              '& input': { textAlign: 'right' }, // 🔹 Alinea el texto dentro del campo a la derecha
+              '& input': { textAlign: 'right' },
             }}
             inputProps={{ min: 1 }}
           />
         );
       },
-    },
+    }
+    
   ];
  
   

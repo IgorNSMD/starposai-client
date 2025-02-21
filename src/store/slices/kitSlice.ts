@@ -3,14 +3,13 @@ import axiosInstance from "../../api/axiosInstance";
 
 // Interfaces
 interface KitComponent {
-  product: string;
+  product: string | { _id: string }; // ✅ Permite ambos tipos
   quantity: number;
 }
 
 interface Kit {
   _id: string;
   name: string;
-  description: string;
   components: KitComponent[];
   status: "active" | "inactive";
 }
@@ -72,11 +71,11 @@ export const createKit = createAsyncThunk<Kit, { name: string; components: KitCo
 );
 
 
-export const updateKit = createAsyncThunk<Kit, { id: string; name: string; description: string; components: KitComponent[] }, { rejectValue: string }>(
+export const updateKit = createAsyncThunk<Kit, { id: string; name: string; components: KitComponent[] }, { rejectValue: string }>(
   "kits/updateKit",
-  async ({ id, name, description, components }, { rejectWithValue }) => {
+  async ({ id, name, components }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/kits/${id}`, { name, description, components });
+      const response = await axiosInstance.put(`/kits/${id}`, { name, components });
       return response.data;
     } catch (error) {
         if (axiosInstance.isAxiosError?.(error)) {

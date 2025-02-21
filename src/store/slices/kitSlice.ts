@@ -3,7 +3,7 @@ import axiosInstance from "../../api/axiosInstance";
 
 // Interfaces
 interface KitComponent {
-  productId: string;
+  product: string;
   quantity: number;
 }
 
@@ -46,20 +46,31 @@ export const fetchKits = createAsyncThunk<Kit[], void, { rejectValue: string }>(
   }
 );
 
-export const createKit = createAsyncThunk<Kit, { name: string; description: string; components: KitComponent[] }, { rejectValue: string }>(
+export const createKit = createAsyncThunk<Kit, { name: string; components: KitComponent[] }, { rejectValue: string }>(
   "kits/createKit",
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post("/kits", data);
+      console.log('data-createKit: ', data);
+
+      // Asegurar que la clave se llama `product` y no `productId`
+      const formattedData = {
+        name: data.name,
+        components: data.components.map(comp => ({
+          product: comp.product, // 🛠️ Corrige `productId` a `product`
+          quantity: comp.quantity,
+        }))
+      };
+
+      const response = await axiosInstance.post("/kits", formattedData);
       return response.data;
     } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || 'Error creating kit');
-        }        
-
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || 'Error creating kit');
+      }        
     }
   }
 );
+
 
 export const updateKit = createAsyncThunk<Kit, { id: string; name: string; description: string; components: KitComponent[] }, { rejectValue: string }>(
   "kits/updateKit",

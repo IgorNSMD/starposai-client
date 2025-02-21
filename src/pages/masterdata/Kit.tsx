@@ -39,7 +39,7 @@ interface SelectedProduct {
 }
 
 interface KitComponent {
-  productId: string;
+  product: string;
   quantity: number;
 }
 interface Kit {
@@ -115,7 +115,7 @@ const Kits: React.FC = () => {
       name: formData.name,
       description: formData.description || "",  // 🛠️ Agregamos description por defecto vacío
       components: selectedProducts.map((p) => ({
-        productId: typeof p === "string" ? p : p.productId,
+        product: typeof p === "string" ? p : p.productId,
         quantity: (typeof p === "object" && "quantity" in p) ? p.quantity : 1,
       })),
     };
@@ -143,7 +143,7 @@ const Kits: React.FC = () => {
       setFormData({ name: kit.name, description: kit.description });
       setSelectedProducts(
         kit.components.map((prod) => ({
-          productId: prod.productId,
+          productId: prod.product,
           quantity: prod.quantity || 1, // Asegura que siempre tenga una cantidad
         }))
       );
@@ -167,7 +167,7 @@ const Kits: React.FC = () => {
       name: formData.name,
       description: formData.description || "",  // 🛠️ Agregamos description por defecto vacío
       components: selectedProducts.map((p) => ({
-        productId: typeof p === "string" ? p : p.productId,
+        product: typeof p === "string" ? p : p.productId,
         quantity: (typeof p === "object" && "quantity" in p) ? p.quantity : 1,
       })),
     };

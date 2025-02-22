@@ -14,10 +14,12 @@ import {
   TableHead,
   TableRow,
   Paper,
+  TextField,
 } from "@mui/material";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
 import { Product, fetchProducts } from "../../store/slices/productSlice";
 import { Kit, fetchKits } from "../../store/slices/kitSlice";
+import { Box } from "@mui/system";
 
 
 interface SelectorModalProps {
@@ -37,6 +39,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
 
   const [tabIndex, setTabIndex] = useState(0);
   const [selectedItem, setSelectedItem] = useState<Product | Kit | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -45,8 +48,14 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
     }
   }, [open, dispatch]);
 
+  // ✅ Filtra productos/kits en función del texto ingresado
+  const filteredItems = (tabIndex === 0 ? products : kits).filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleTabChange = (_: React.SyntheticEvent, newIndex: number) => {
     setTabIndex(newIndex);
+    setSearchTerm(""); // 🔹 Limpia el filtro al cambiar de pestaña
   };
 
   const handleSelectItem = (item: Product | Kit) => {
@@ -63,9 +72,10 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: "bold", textAlign: "center", pb: 0 }}>
-        {tabIndex === 0 ? "PRODUCTS" : "KITS"}
+      <DialogTitle sx={{ fontWeight: "bold", textAlign: "center", color: "#666",pb: 1 }}>
+        {tabIndex === 0 ? "Select Product " : "Select kit"}
       </DialogTitle>
+
       <Tabs 
         value={tabIndex} 
         onChange={handleTabChange} 
@@ -82,12 +92,29 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
           },
           "& .MuiTabs-indicator": {
             backgroundColor: "#007FFF" // Color del indicador debajo del tab seleccionado
-          }
+          },
+          mb: 1, // Agrega margen inferior para separarlo del TextField
         }}
         >
         <Tab label="Products" />
         <Tab label="Kits" />
       </Tabs>
+
+      {/* INPUT DE BÚSQUEDA */}
+      <Box sx={{ display: "flex", gap: 2, mb: 2, px: 3 }}>
+        <TextField
+          label="Enter name"
+          fullWidth
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{
+            "& .MuiOutlinedInput-root": { borderRadius: 2 },
+            "& .MuiInputBase-root": { height: 48 },
+            "& .MuiInputLabel-root": { top: "4px" },
+          }}
+        />
+      </Box>
+
       <DialogContent>
         <TableContainer component={Paper} sx={{ maxHeight: 300, overflowY: "auto" }}>
           <Table size="small">
@@ -101,7 +128,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
               </TableRow>
             </TableHead>
             <TableBody>
-              {(tabIndex === 0 ? products : kits).map((item) => (
+              {filteredItems.map((item) => (
                 <TableRow key={item._id} hover>
                   {/* Si es la pestaña de productos, muestra la columna de SKU */}
                   {tabIndex === 0 && <TableCell>{'sku' in item ? item.sku : "N/A"}</TableCell>}

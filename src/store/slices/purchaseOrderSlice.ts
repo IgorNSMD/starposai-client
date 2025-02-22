@@ -1,20 +1,24 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
 
-// 🔹 Definir la interfaz de un Producto dentro de la PO
-interface POProduct {
-  productId: string; // 🔹 Ahora directamente el ID del producto
-  sku: string;
-  name: string;
-  genericProduct?: string; // Si es un producto genérico
-  quantity: number;
-  unitPrice: number;
-  subtotal: number;
-}
-
 export interface Provider {
   _id: string;
   name: string;
+}
+
+// Definimos un tipo general para los items de la PO
+export interface PurchaseOrderItem {
+  type: "product" | "kit" | "service";
+  referenceId?: string; // ID de producto o kit, si aplica
+  name: string; // Nombre del producto, kit o servicio
+  quantity?: number; // No es obligatorio para servicios
+  unitPrice: number;
+  subtotal: number;
+  kitComponents?: {
+    product: string; // ID del producto
+    productName: string;
+    quantity: number;
+  }[];
 }
 
 // 🔹 Definir la interfaz de una Orden de Compra (PO)
@@ -22,7 +26,7 @@ export interface PurchaseOrder {
   _id: string;
   orderNumber?: string;  // 👈 Agregar orderNumber opcional
   provider: string;  // ✅ Ahora espera solo el `_id`
-  products: POProduct[];
+  items: PurchaseOrderItem[];
   total: number;
   estimatedDeliveryDate: string;
   status: "pending" | "partial" | "received" | "inactive";
@@ -33,6 +37,7 @@ export interface PurchaseOrder {
 // 🔹 Definir el estado inicial
 interface PurchaseOrderState {
   purchaseOrders: PurchaseOrder[];
+  purchaseOrderDetail: PurchaseOrder | null;
   isLoading: boolean;
   errorMessage: string | null;
   successMessage: string | null;
@@ -40,6 +45,7 @@ interface PurchaseOrderState {
 
 const initialState: PurchaseOrderState = {
   purchaseOrders: [],
+  purchaseOrderDetail: null,
   isLoading: false,
   errorMessage: null,
   successMessage: null,
@@ -62,8 +68,8 @@ export const fetchPurchaseOrderByNumber = createAsyncThunk<PurchaseOrder, string
 );
 
 // ✅ AsyncThunk para obtener todas las PO
-export const fetchPurchaseOrders = createAsyncThunk<PurchaseOrder[]>(
-  "purchaseOrders/fetchAll",
+export const fetchPurchaseOrders = createAsyncThunk<PurchaseOrder[], void, { rejectValue: string }>(
+  "purchaseOrders/fetchPurchaseOrders",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get("/purchase-orders");
@@ -80,11 +86,12 @@ export const fetchPurchaseOrders = createAsyncThunk<PurchaseOrder[]>(
 // ✅ AsyncThunk para crear una nueva PO
 export const createPurchaseOrder = createAsyncThunk<
   PurchaseOrder,
-  Partial<PurchaseOrder>
->("purchaseOrders/create", async (purchaseOrderData, { rejectWithValue }) => {
+  { provider: string; items: PurchaseOrderItem[]; estimatedDeliveryDate?: string },
+  { rejectValue: string }
+>("purchaseOrders/createPurchaseOrder", async (data, { rejectWithValue }) => {
   try {
     //console.log('createPurchaseOrder..')
-    const response = await axiosInstance.post("/purchase-orders", purchaseOrderData);
+    const response = await axiosInstance.post("/purchase-orders", data);
     return {
       ...response.data,
       createdAt: response.data.createdAt, // 👈 Asegurar que createdAt se guarde
@@ -101,8 +108,9 @@ export const createPurchaseOrder = createAsyncThunk<
 // ✅ AsyncThunk para actualizar una PO
 export const updatePurchaseOrder = createAsyncThunk<
   PurchaseOrder,
-  { id: string; data: Partial<Omit<PurchaseOrder, "provider">> & { provider: string } }
->("purchaseOrders/update", async ({ id, data }, { rejectWithValue }) => {
+  { id: string; provider: string; items: PurchaseOrderItem[]; estimatedDeliveryDate?: string },
+  { rejectValue: string }
+>("purchaseOrders/updatePurchaseOrder", async ({ id, ...data }, { rejectWithValue }) => {
   try {
     
     console.log("🔍 updatePurchaseOrder -> ID recibido:", id); // <-- Agrega este log

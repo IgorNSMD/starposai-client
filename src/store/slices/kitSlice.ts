@@ -8,7 +8,7 @@ interface KitComponent {
   quantity: number;
 }
 
-interface Kit {
+export interface Kit {
   _id: string;
   name: string;
   cost: number;

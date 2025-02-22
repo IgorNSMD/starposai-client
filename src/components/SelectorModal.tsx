@@ -16,9 +16,9 @@ import {
   Paper,
   TextField,
 } from "@mui/material";
-import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
-import { Product, fetchProducts } from "../../store/slices/productSlice";
-import { Kit, fetchKits } from "../../store/slices/kitSlice";
+import { useAppDispatch, useAppSelector } from "../store/redux/hooks";
+import { Product, fetchProducts } from "../store/slices/productSlice";
+import { Kit, fetchKits } from "../store/slices/kitSlice";
 import { Box } from "@mui/system";
 
 

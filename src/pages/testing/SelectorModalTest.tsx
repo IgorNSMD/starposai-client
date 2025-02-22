@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Box } from "@mui/material";
-import SelectorModal from "../purchasing/SelectorModal"; // Asegúrate de importar la ruta correcta
+import SelectorModal from "../../components/SelectorModal"; // Asegúrate de importar la ruta correcta
 import { Product } from "../../store/slices/productSlice";
 import { Kit } from "../../store/slices/kitSlice";
 

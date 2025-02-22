@@ -10,6 +10,7 @@ export interface Provider {
 export interface PurchaseOrderItem {
   type: "product" | "kit" | "service";
   referenceId?: string; // ID de producto o kit, si aplica
+  sku: string;
   name: string; // Nombre del producto, kit o servicio
   quantity?: number; // No es obligatorio para servicios
   unitPrice: number;
@@ -108,7 +109,7 @@ export const createPurchaseOrder = createAsyncThunk<
 // ✅ AsyncThunk para actualizar una PO
 export const updatePurchaseOrder = createAsyncThunk<
   PurchaseOrder,
-  { id: string; provider: string; items: PurchaseOrderItem[]; estimatedDeliveryDate?: string },
+  { id: string; provider: string; items: PurchaseOrderItem[]; total: number; estimatedDeliveryDate?: string },
   { rejectValue: string }
 >("purchaseOrders/updatePurchaseOrder", async ({ id, ...data }, { rejectWithValue }) => {
   try {

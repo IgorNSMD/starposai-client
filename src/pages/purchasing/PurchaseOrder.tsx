@@ -28,14 +28,19 @@ import toast from 'react-hot-toast';
 import { useLocation } from "react-router-dom";
 //import "jspdf-autotable";
 
-import { 
+import {
+    Provider,
+    PurchaseOrder, 
+    PurchaseOrderItem,
     fetchPurchaseOrders, 
     createPurchaseOrder, 
     updatePurchaseOrder,
     fetchPurchaseOrderByNumber, clearMessages  } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
 import { fetchProducts } from "../../store/slices/productSlice";
+import { Kit } from "../../store/slices/kitSlice";
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
+import SelectorModal from "../../components/SelectorModal";
 
 import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
 import axiosInstance from "../../api/axiosInstance";
@@ -57,30 +62,6 @@ interface SelectedProduct extends Product {
   quantity: number;
 }
 
-interface POProduct {
-  productId: string; // 🔹 Ahora directamente el ID del producto
-  sku: string;
-  name: string;  
-  genericProduct?: string; // Si es un producto genérico
-  quantity: number;
-  unitPrice: number;
-  subtotal: number;
-}
-
-export interface Provider {
-  _id: string;
-  name: string;
-}
-
-interface PurchaseOrderFormData {
-  provider: string | Provider;
-  products: POProduct[];
-  total: number;
-  estimatedDeliveryDate: string;
-  orderNumber?: string;  // Agregamos orderNumber opcionalmente
-  createdAt?: string;  // Agregamos createdAt opcionalmente
-  status?: "pending" | "partial" | "received" | "inactive";
-}
 
 interface jsPDFWithAutoTable extends jsPDF {
   lastAutoTable?: { finalY: number };
@@ -100,14 +81,15 @@ const PurchaseOrderPage: React.FC = () => {
   const { userInfo } = useAppSelector((state) => state.auth);
 
 
-  const [formData, setFormData] = useState<PurchaseOrderFormData>({
-    provider: '',
+  const [formData, setFormData] = useState<PurchaseOrder>({
+    _id: "",  // 🔹 Agregar un campo _id vacío
+    provider: '',  // ✅ Debe ser solo el `_id` del proveedor
     estimatedDeliveryDate: '',
-    products: [] as POProduct[], // <-- Agrega la tipificación explícita
+    items: [] as PurchaseOrderItem[],  // ✅ Cambia `products` por `items`
     total: 0,
-    createdAt: "", // 👈 Agregar createdAt
-    status: "pending",  // ✅ Esto asegura que status siempre tenga un valor válido
- });
+    createdAt: "", 
+    status: "pending",
+  });
 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -117,7 +99,8 @@ const PurchaseOrderPage: React.FC = () => {
   const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
   const [searchOrderNumber, setSearchOrderNumber] = useState(""); // Estado del input
   const [searchDialogOpen, setSearchDialogOpen] = useState(false); // Estado del modal  
-  
+  const [selectorModalOpen, setSelectorModalOpen] = useState(false);
+
 
   const orderNumberFromState = location.state?.orderNumber || "";
   //const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
@@ -164,21 +147,25 @@ const PurchaseOrderPage: React.FC = () => {
         const foundProvider = providers.find(p => p._id === response.provider) || response.provider;
   
         setFormData({
-          provider: foundProvider,
+          _id: response._id,
+          provider: typeof foundProvider === "string" ? foundProvider : foundProvider._id,
           orderNumber: response.orderNumber,
           createdAt: response.createdAt,
           status: response.status,
-          products: response.products.map((p) => ({
-            productId: p.productId,
-            name: p.name,
-            sku: p.sku,
-            quantity: p.quantity,
-            unitPrice: p.unitPrice,
-            subtotal: p.subtotal,
+          items: response.items.map((item) => ({
+            type: item.type, // "product" | "kit" | "service"
+            referenceId: item.referenceId, // ID del producto o kit
+            sku: item.sku,
+            name: item.name,
+            quantity: item.quantity || 1,
+            unitPrice: item.unitPrice,
+            subtotal: item.subtotal,
+            kitComponents: item.kitComponents || [], // Solo si es un kit
           })),
           total: response.total,
           estimatedDeliveryDate: response.estimatedDeliveryDate,
         });
+        
   
         console.log("✅ Orden cargada con éxito:", response);
         setSearchDialogOpen(false);
@@ -195,15 +182,16 @@ const PurchaseOrderPage: React.FC = () => {
   const generatePDF = async (): Promise<Blob> => {
     return new Promise((resolve) => {
       const doc = new jsPDF() as jsPDFWithAutoTable;
-      console.log("generatePDF - Productos en la orden:", formData.products);
+      console.log("generatePDF - Productos en la orden:", formData.items);
       // 📌 Título centrado
       doc.setFontSize(20);
       doc.text("Purchase Order", doc.internal.pageSize.width / 2, 20, { align: "center" });
   
       // 📌 Información de la orden
+      const foundProvider = providers.find(p => p._id === formData.provider);
       doc.setFontSize(12);
       doc.text(`Order Number: ${formData.orderNumber}`, 20, 40);
-      doc.text(`Provider: ${typeof formData.provider === "string" ? formData.provider : formData.provider.name}`, 20, 50);
+      doc.text(`Provider: ${foundProvider ? foundProvider.name : "Unknown"}`, 20, 50);
 
       // 📌 Formatear fecha como MM/DD/YYYY
       const formattedDate = formData.createdAt 
@@ -223,10 +211,10 @@ const PurchaseOrderPage: React.FC = () => {
       ];
   
       // 📌 Filas con los productos
-      const rows = formData.products.map((p) => ({
-        sku:  p.sku,     // 🔹 Asegura que se pase el SKU
+      const rows = formData.items.map((p) => ({
+        sku: p.type === "product" ? (p.referenceId || "N/A") : "N/A",  // 🔹 Si es un producto, usa referenceId (que debería ser el ID del producto)
         name: p.name,
-        quantity: p.quantity.toLocaleString(),
+        quantity: p.quantity ? p.quantity.toLocaleString() : "N/A",
         unitPrice: `$${p.unitPrice.toLocaleString()}`,
         subtotal: `$${p.subtotal.toLocaleString()}`,
       }));
@@ -303,6 +291,43 @@ const PurchaseOrderPage: React.FC = () => {
     }
   };
   
+  const handleSelectItem = (item: Product | Kit) => {
+    setFormData((prevFormData) => {
+      // Buscar si el producto ya está en la lista
+      const existingIndex = prevFormData.items.findIndex((p) => p.referenceId === item._id);
+      let updatedProducts;
+  
+      if (existingIndex !== -1) {
+        // Si el producto ya existe, actualizar cantidad y subtotal
+        updatedProducts = prevFormData.items.map((p, i) =>
+          i === existingIndex
+            ? { ...p, quantity: (p.quantity ?? 0) + 1, subtotal: ((p.quantity ?? 0) + 1) * p.unitPrice }
+            : p
+        );
+      } else {
+        // Si es un producto nuevo, agregarlo a la lista
+        updatedProducts = [
+          ...prevFormData.items,
+          {
+            productId: item._id,
+            sku: "sku" in item ? item.sku : "N/A",
+            name: item.name,
+            quantity: 1,
+            unitPrice: "price" in item ? item.price : 0,
+            subtotal: "price" in item ? item.price : 0,
+          },
+        ];
+      }
+  
+      // Calcular el nuevo total
+      const newTotal = updatedProducts.reduce((sum, p) => sum + p.subtotal, 0);
+  
+      return { ...prevFormData, products: updatedProducts, total: newTotal };
+    });
+  
+    setSelectorModalOpen(false);
+  };
+  
   
 
   // ✅ Función para buscar la orden
@@ -317,17 +342,20 @@ const PurchaseOrderPage: React.FC = () => {
       
       // Si encontramos la orden, actualizamos el formulario
       setFormData({
-        provider: foundProvider,
+        _id: response._id,
+        provider: typeof foundProvider === "string" ? foundProvider : foundProvider._id,
         orderNumber: response.orderNumber,
         createdAt: response.createdAt,
         status: response.status,
-        products: response.products.map((p) => ({
-          productId: p.productId,
-          name: p.name,
-          sku: p.sku,
-          quantity: p.quantity,
-          unitPrice: p.unitPrice,
-          subtotal: p.subtotal,
+        items: response.items.map((item) => ({
+          type: item.type, // "product" | "kit" | "service"
+          referenceId: item.referenceId, // ID del producto o kit
+          sku: item.sku,
+          name: item.name,
+          quantity: item.quantity || 1,
+          unitPrice: item.unitPrice,
+          subtotal: item.subtotal,
+          kitComponents: item.kitComponents || [], // Solo si es un kit
         })),
         total: response.total,
         estimatedDeliveryDate: response.estimatedDeliveryDate,
@@ -357,26 +385,26 @@ const PurchaseOrderPage: React.FC = () => {
   
     setFormData((prevFormData) => {
       // Buscar si el producto ya existe en la lista
-      const existingProductIndex = prevFormData.products.findIndex(
-        (p) => p.productId === selectedProduct._id // 🔹 Ahora compara con `productId`
+      const existingProductIndex = prevFormData.items.findIndex(
+        (p) => p.referenceId === selectedProduct._id // 🔹 Ahora compara con `productId`
       );
   
       let updatedProducts;
       if (existingProductIndex !== -1) {
         // Si el producto ya está en la lista, actualizamos la cantidad
-        updatedProducts = prevFormData.products.map((p, index) =>
+        updatedProducts = prevFormData.items.map((p, index) =>
           index === existingProductIndex
             ? {
                 ...p,
-                quantity: p.quantity + selectedProduct.quantity,
-                subtotal: (p.quantity + selectedProduct.quantity) * p.unitPrice,
+                quantity: (p.quantity ?? 0) + selectedProduct.quantity,
+                subtotal: ((p.quantity ?? 0) + selectedProduct.quantity) * p.unitPrice,
               }
             : p
         );
       } else {
         // Si es un producto nuevo, lo agregamos a la lista
         updatedProducts = [
-          ...prevFormData.products,
+          ...prevFormData.items,
           {
             productId: selectedProduct._id, // ✅ Ahora se envía `productId`
             name: selectedProduct.name,
@@ -390,7 +418,7 @@ const PurchaseOrderPage: React.FC = () => {
   
       // Calcular el total de la orden sumando todos los subtotales
       const newTotal = updatedProducts.reduce(
-        (sum, p) => sum + p.unitPrice * p.quantity,
+        (sum, p) => sum + p.unitPrice * (p.quantity ?? 0),
         0
       );
   
@@ -449,13 +477,11 @@ const PurchaseOrderPage: React.FC = () => {
 
       // Si ya tiene un número de orden, actualizamos
       dispatch(updatePurchaseOrder({
-        id: existingOrder._id,  // 👈 Aquí enviamos el ID correcto desde MongoDB
-        data: {
-          provider: providerObject._id,  // ✅ SOLO EL ID
-          products: formData.products,
-          total: formData.total,
-          estimatedDeliveryDate: formData.estimatedDeliveryDate,
-        }
+        id: existingOrder._id, // ✅ ID correcto
+        provider: providerObject._id, // ✅ SOLO EL ID
+        items: formData.items, // ✅ Cambia `products` por `items`
+        total: formData.total,
+        estimatedDeliveryDate: formData.estimatedDeliveryDate,
       }))
       .unwrap()
       .then((data) => {
@@ -502,12 +528,12 @@ const PurchaseOrderPage: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (selectedProductIndex !== null) {
-      const updatedProducts = formData.products.filter((_, i) => i !== selectedProductIndex);
+      const updatedProducts = formData.items.filter((_, i) => i !== selectedProductIndex);
       const newTotal = updatedProducts.reduce(
-        (sum, p) => sum + p.unitPrice * p.quantity,
+        (sum, p) => sum + p.unitPrice * (p.quantity ?? 0),
         0
       );
-      setFormData({ ...formData, products: updatedProducts, total: newTotal });
+      setFormData({ ...formData, items: updatedProducts, total: newTotal });
     }
     setDeleteDialogOpen(false);
   };
@@ -515,12 +541,12 @@ const PurchaseOrderPage: React.FC = () => {
 
   const handleConfirmCancel = () => {
     setFormData({
-      provider: '',
+      _id: "",  // 🔹 Agregar un campo _id vacío
+      provider: '',  // ✅ Debe ser solo el `_id` del proveedor
       estimatedDeliveryDate: '',
-      products: [],
+      items: [] as PurchaseOrderItem[],  // ✅ Cambia `products` por `items`
       total: 0,
-      orderNumber: undefined,
-      createdAt: "",
+      createdAt: "", 
       status: "pending",
     });
   
@@ -551,7 +577,7 @@ const PurchaseOrderPage: React.FC = () => {
         mb: 3
       }}>
         <Select
-          value={typeof formData.provider === "string" ? formData.provider : formData.provider?._id || ""}
+          value={formData.provider || ""}  // ✅ Aquí no necesitas acceder a _id
           onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
           displayEmpty
           fullWidth
@@ -688,7 +714,7 @@ const PurchaseOrderPage: React.FC = () => {
           }}
         >
           {/* Product List Icon */}
-          <IconButton onClick={() => setSearchModalOpen(true)} sx={{ marginLeft: "-10px" }}>
+          <IconButton onClick={() => setSelectorModalOpen(true)} sx={{ marginLeft: "-10px" }}>
             📋
           </IconButton>
 
@@ -817,14 +843,14 @@ const PurchaseOrderPage: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {formData.products.map((p, index) => (
+            {formData.items.map((p, index) => (
                <TableRow key={index} sx={{ bgcolor: index % 2 ? "#f9f9f9" : "white" }}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{p.sku || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `sku` */}
                 <TableCell>{p.name || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `name` */}
-                <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity)}</TableCell>
+                <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity ?? 0)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.unitPrice)}</TableCell>
-                <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.quantity * p.unitPrice)}</TableCell>
+                <TableCell sx={{ textAlign: "right" }}>${formatNumber((p.quantity ?? 0) * p.unitPrice)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>
                   <IconButton color="error" onClick={() => handleDeleteDialogOpen(index)}>
                     <DeleteIcon />
@@ -1037,6 +1063,12 @@ const PurchaseOrderPage: React.FC = () => {
         message="Are you sure you want to remove this product?"
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <SelectorModal
+        open={selectorModalOpen}
+        onClose={() => setSelectorModalOpen(false)}
+        onSelect={handleSelectItem}
       />
 
     </Box>

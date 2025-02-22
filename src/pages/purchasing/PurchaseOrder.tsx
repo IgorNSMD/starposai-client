@@ -293,40 +293,55 @@ const PurchaseOrderPage: React.FC = () => {
   
   const handleSelectItem = (item: Product | Kit) => {
     setFormData((prevFormData) => {
-      // Buscar si el producto ya está en la lista
+      // Buscar si el producto ya está en la lista de ítems
       const existingIndex = prevFormData.items.findIndex((p) => p.referenceId === item._id);
-      let updatedProducts;
+      let updatedItems;
   
       if (existingIndex !== -1) {
         // Si el producto ya existe, actualizar cantidad y subtotal
-        updatedProducts = prevFormData.items.map((p, i) =>
+        updatedItems = prevFormData.items.map((p, i) =>
           i === existingIndex
-            ? { ...p, quantity: (p.quantity ?? 0) + 1, subtotal: ((p.quantity ?? 0) + 1) * p.unitPrice }
+            ? { 
+                ...p, 
+                quantity: (p.quantity ?? 0) + 1, 
+                subtotal: ((p.quantity ?? 0) + 1) * p.unitPrice 
+              }
             : p
         );
       } else {
         // Si es un producto nuevo, agregarlo a la lista
-        updatedProducts = [
-          ...prevFormData.items,
-          {
-            productId: item._id,
-            sku: "sku" in item ? item.sku : "N/A",
-            name: item.name,
-            quantity: 1,
-            unitPrice: "price" in item ? item.price : 0,
-            subtotal: "price" in item ? item.price : 0,
-          },
-        ];
+        const newItem: PurchaseOrderItem = {
+          type: "product", // Si es un kit, este valor deberá ser "kit"
+          referenceId: item._id,
+          sku: "sku" in item ? item.sku : "N/A", // ✅ Agrega el SKU
+          name: item.name,
+          quantity: 1,
+          unitPrice: "price" in item ? item.price : 0,
+          subtotal: "price" in item ? item.price : 0,
+        };
+  
+        // Si es un kit, agregar los componentes
+        if ("components" in item) {
+          newItem.type = "kit";
+          newItem.kitComponents = item.components.map((component) => ({
+            product: typeof component.product === "string" ? component.product : component.product._id, // 🔹 Asegura que siempre sea un string
+            productName: component.productName, // ✅ Cambiar `name` por `productName`
+            quantity: component.quantity,
+          }));
+        }
+  
+        updatedItems = [...prevFormData.items, newItem];
       }
   
       // Calcular el nuevo total
-      const newTotal = updatedProducts.reduce((sum, p) => sum + p.subtotal, 0);
+      const newTotal = updatedItems.reduce((sum, p) => sum + p.subtotal, 0);
   
-      return { ...prevFormData, products: updatedProducts, total: newTotal };
+      return { ...prevFormData, items: updatedItems, total: newTotal };
     });
   
     setSelectorModalOpen(false);
   };
+  
   
   
 

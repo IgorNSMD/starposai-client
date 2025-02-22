@@ -4,12 +4,14 @@ import axiosInstance from "../../api/axiosInstance";
 // Interfaces
 interface KitComponent {
   product: string | { _id: string }; // ✅ Permite ambos tipos
+  productName: string
   quantity: number;
 }
 
 interface Kit {
   _id: string;
   name: string;
+  cost: number;
   components: KitComponent[];
   status: "active" | "inactive";
 }
@@ -30,6 +32,20 @@ const initialState: KitState = {
   successMessage: null,
 };
 
+export const fetchKitsByStatus = createAsyncThunk<Kit[], void, { rejectValue: string }>(
+  "kits/fetchKits",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get("/kits?status=active"); // 🔥 Solo los activos
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || 'Error fetching kits');
+      }
+    }
+  }
+);
+
 // Thunks
 export const fetchKits = createAsyncThunk<Kit[], void, { rejectValue: string }>(
   "kits/fetchKits",
@@ -45,17 +61,19 @@ export const fetchKits = createAsyncThunk<Kit[], void, { rejectValue: string }>(
   }
 );
 
-export const createKit = createAsyncThunk<Kit, { name: string; components: KitComponent[] }, { rejectValue: string }>(
+export const createKit = createAsyncThunk<Kit, { name: string; cost: number; components: KitComponent[] }, { rejectValue: string }>(
   "kits/createKit",
   async (data, { rejectWithValue }) => {
     try {
-      console.log('data-createKit: ', data);
+      //console.log('data-createKit: ', data);
 
-      // Asegurar que la clave se llama `product` y no `productId`
+      // Asegurar que `productName` se envía correctamente
       const formattedData = {
         name: data.name,
+        cost: data.cost,
         components: data.components.map(comp => ({
-          product: comp.product, // 🛠️ Corrige `productId` a `product`
+          product: comp.product, 
+          productName: comp.productName, // 🔹 Asegurar que `productName` se envía
           quantity: comp.quantity,
         }))
       };
@@ -71,11 +89,12 @@ export const createKit = createAsyncThunk<Kit, { name: string; components: KitCo
 );
 
 
-export const updateKit = createAsyncThunk<Kit, { id: string; name: string; components: KitComponent[] }, { rejectValue: string }>(
+
+export const updateKit = createAsyncThunk<Kit, { id: string; name: string; cost: number; components: KitComponent[] }, { rejectValue: string }>(
   "kits/updateKit",
-  async ({ id, name, components }, { rejectWithValue }) => {
+  async ({ id, name, cost, components }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`/kits/${id}`, { name, components });
+      const response = await axiosInstance.put(`/kits/${id}`, { name, cost, components });
       return response.data;
     } catch (error) {
         if (axiosInstance.isAxiosError?.(error)) {

@@ -35,16 +35,19 @@ import { useToastMessages } from '../../hooks/useToastMessage';
 
 interface SelectedProduct {
   productId: string;
+  name: string;
   quantity: number;
 }
 
 interface KitComponent {
   product: string | { _id: string }; // ✅ Permite ambos tipos
+  productName: string
   quantity: number;
 }
 interface Kit {
   _id: string;
   name: string;
+  cost: number;
   components: KitComponent[];
   status: "active" | "inactive";
 }
@@ -56,7 +59,7 @@ const Kits: React.FC = () => {
 
   const { kits, errorMessage, successMessage } = useAppSelector((state) => state.kits);
   const { products } = useAppSelector((state) => state.products);
-  const [formData, setFormData] = useState({ name: '',  });
+  const [formData, setFormData] = useState({ name: '', cost: 0 });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
@@ -78,10 +81,21 @@ const Kits: React.FC = () => {
       if (index !== -1) {
         return prev.filter((p) => p.productId !== product.productId); // Si ya está, lo deselecciona
       } else {
-        return [...prev, { productId: product.productId, quantity: product.quantity || 1 }];
+        const newProduct = { 
+          productId: product.productId, 
+          name: product.name, // 🔹 Verifica que este campo no esté vacío
+          quantity: product.quantity || 1
+        };
+        
+        //console.log("Producto agregado a selectedProducts:", newProduct); // 🔍 Depuración
+        
+        return [...prev, newProduct];
       }
     });
   };
+  
+  
+  
   
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,41 +124,49 @@ const Kits: React.FC = () => {
   };
 
   const handleSubmit = () => {
+    //console.log("selectedProducts antes de enviar: ", selectedProducts);
+  
     const data = {
       name: formData.name,
+      cost: formData.cost,
       components: selectedProducts.map((p) => ({
-        product: typeof p === "string" ? p : p.productId,
-        quantity: (typeof p === "object" && "quantity" in p) ? p.quantity : 1,
+        product: p.productId,
+        productName: p.name, // 🔹 Asegurando que name se pase correctamente
+        quantity: p.quantity ?? 1,
       })),
     };
+  
+    //console.log("data-handleSubmit:", data);
   
     if (editingId) {
       dispatch(updateKit({ id: editingId, ...data })).then(() => {
         dispatch(fetchKits());
         setEditingId(null);
-        setFormData({ name: '' }); // Resetear también description
+        setFormData({ name: '', cost: 0 });
         setSelectedProducts([]);
       });
     } else {
       dispatch(createKit(data)).then(() => {
         dispatch(fetchKits());
-        setFormData({ name: '', });
+        setFormData({ name: '', cost: 0 });
         setSelectedProducts([]);
       });
     }
   };
   
+  
 
   const handleEdit = (id: string) => {
-    console.log("Editing kit with ID:", id);
+    //console.log("Editing kit with ID:", id);
     const kit = kits.find((kit) => kit._id === id);
     if (kit) {
-      setFormData({ name: kit.name });
+      setFormData({ name: kit.name, cost: kit.cost });
   
       // 🔹 Convertimos los componentes en el formato correcto
       setSelectedProducts(
         kit.components.map((comp) => ({
-          productId: typeof comp.product === "string" ? comp.product : comp.product._id, // ✅ Extraer `_id`
+          productId: typeof comp.product === "string" ? comp.product : (comp.product as { _id: string })._id,
+          name: comp.productName || "Unknown Product", // 🔹 Asegura que el nombre esté presente
           quantity: comp.quantity,
         }))
       );
@@ -152,11 +174,12 @@ const Kits: React.FC = () => {
       setEditingId(id);
     }
   };
+ 
   
   
 
   const handleCancel = () => {
-    setFormData({ name: '' });
+    setFormData({ name: '', cost: 0 });
     setEditingId(null);
     setSelectedProducts([]);
   };
@@ -169,8 +192,10 @@ const Kits: React.FC = () => {
   const handleConfirmUpdate = () => {
     const data = {
       name: formData.name,
+      cost: formData.cost,
       components: selectedProducts.map((p) => ({
         product: p.productId, // ✅ Ahora solo toma el ID del producto
+        productName: p.name,
         quantity: p.quantity ?? 1,
       })),
     };
@@ -179,7 +204,7 @@ const Kits: React.FC = () => {
       dispatch(updateKit({ id: editingId, ...data })).then(() => {
         dispatch(fetchKits());
         setEditingId(null);
-        setFormData({ name: '' });
+        setFormData({ name: '', cost: 0 });
         setSelectedProducts([]);
       });
     }
@@ -212,6 +237,7 @@ const Kits: React.FC = () => {
             onChange={() =>
               handleProductToggle({
                 productId: params.row.id,
+                name: params.row.name,
                 quantity: isSelected
                   ? 1
                   : selectedProducts.find((p) => p.productId === params.row.id)?.quantity || 1,
@@ -264,14 +290,16 @@ const Kits: React.FC = () => {
  
   
 
-  const rowsProducts = products.map((products) => ({
-    id: products._id,
-    key: products.name,
-    description: products.description,
+  const rowsProducts = products.map((product) => ({
+    id: product._id,
+    key: product.name,// 🔹 Asegura que el nombre está presente
+    name: product.name, // ✅ Asegura que el campo `name` esté en la estructura
+    description: product.description,
   }));
 
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1 },
+    { field: 'cost', headerName: 'Cost', flex: 1 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -305,7 +333,8 @@ const Kits: React.FC = () => {
   const rows = kits.filter((kit: Kit) => kit._id && kit.name) 
   .map((kit: Kit) => ({
     id: kit._id, // Usa `_id` como identificador único
-    name: kit.name
+    name: kit.name,
+    cost: kit.cost
   }));
 
   return (
@@ -323,6 +352,24 @@ const Kits: React.FC = () => {
           label="Kit Name"
           name="name"
           value={formData.name}
+          onChange={handleChange}
+          sx={{ flex: 1, minWidth: 200 }}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+              sx: {
+                color: '#444444',
+                '&.Mui-focused': {
+                  color: '#47b2e4',
+                },
+              },
+            },
+          }}
+        />
+        <TextField
+          label="Cost"
+          name="cost"
+          value={formData.cost}
           onChange={handleChange}
           sx={{ flex: 1, minWidth: 200 }}
           slotProps={{

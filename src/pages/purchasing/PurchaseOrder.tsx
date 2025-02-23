@@ -651,188 +651,35 @@ const PurchaseOrderPage: React.FC = () => {
           />
       </Box>
 
-      {/* Búsqueda de Producto */}
-      {/* Sección de búsqueda de producto en dos líneas */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr", // Web: dos columnas para separar filas
-          gap: 2,
-          alignItems: "center",
-          mb: 3,
-          "@media (max-width: 900px)": {
-            gridTemplateColumns: "1fr", // Móvil: una sola columna
-          },
-        }}
-      >
-        {/* Primera línea en web */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "auto 1fr auto 1fr auto", // Web: Distribución normal
-            gap: 2, // Aumenta el espacio entre los elementos
-            alignItems: "center",
-            "@media (max-width: 900px)": {
-              gridTemplateColumns: "40px 1fr", // Móvil: Acomoda en una sola columna
-            },
-          }}
-        >
-          {/* Botón de limpiar */}
-          <IconButton onClick={() => { setSearchTerm(""); setSelectedProduct(null); }} color="secondary">
-            ❌
-          </IconButton>
-
-          {/* Code Input */}
-          <TextField label="Code" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} fullWidth />
-
-          {/* Buscar producto */}
-          <IconButton onClick={handleProductSearch} sx={{ marginLeft: "-10px" }}>
-            <SearchIcon />
-          </IconButton>
-
-          {/* Product Name Input */}
-          <TextField 
-            label="Product Name" 
-            value={selectedProduct?.name || ""} 
-            fullWidth 
-            disabled 
-            variant="outlined" // Asegura que tenga bordes visibles
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: "rgba(0, 0, 0, 0.23)", // Color del borde
-                },
-                "&:hover fieldset": {
-                  borderColor: "primary.main", // Color del borde al pasar el mouse
-                },
-                "&.Mui-disabled fieldset": {
-                  borderColor: "rgba(0, 0, 0, 0.1)", // Color del borde cuando está deshabilitado
-                },
-              },
-            }}
-            />
-
-
-        </Box>
-
-        {/* Segunda línea en web */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "auto auto auto auto auto", // Web: Distribución normal
-            gap: 2,
-            alignItems: "center",
-            "@media (max-width: 900px)": {
-              gridTemplateColumns: "1fr", // Móvil: Apilado
-              gap: 2,
-            },
-          }}
-        >
-          {/* Product List Icon */}
-          <IconButton onClick={() => setSelectorModalOpen(true)} sx={{ marginLeft: "-10px" }}>
-            📋
-          </IconButton>
-
-          {/* Cantidad */}
-          <TextField
-            label="Qty"
-            type="number"
-            value={selectedProduct?.quantity || ""}
-            onChange={(e) =>
-              setSelectedProduct((prev) =>
-                prev ? { ...prev, quantity: Number(e.target.value) } : null
-              )
-            }
-            fullWidth
-          />
-
-          {/* Precio */}
-          <TextField
-            label="Price"
-            type="text" 
-            value={selectedProduct?.price ? new Intl.NumberFormat("es-CL").format(selectedProduct.price) : ""}
-            fullWidth
-            disabled
-            sx={{
-              borderRadius: 1,
-              border: "1px solid #ccc",
-              fontSize: "1.2rem",
-              fontWeight: "bold",
-              color: "#555",
-              textAlign: "right",
-              "& .MuiInputBase-input": {
-                textAlign: "right", // Asegura que el texto dentro del input esté a la derecha
-              },
-              "@media (max-width: 900px)": {
-                textAlign: "center",
-                fontSize: "1rem",
-                fontWeight: "bold",
-                pt: 1,
-              },
-            }}
-          />
-
-          {/* Total */}
-          <TextField
-            label="Total"
-            value={selectedProduct?.quantity && selectedProduct?.price
-              ? new Intl.NumberFormat("es-CL").format(selectedProduct.quantity * selectedProduct.price)
-              : ""}
-            fullWidth
-            disabled
-            sx={{
-              borderRadius: 1,
-              border: "1px solid #ccc",
-              fontSize: "1.2rem",
-              fontWeight: "bold",
-              color: "#555",
-              textAlign: "right",
-              "& .MuiInputBase-input": {
-                textAlign: "right", // Asegura que el texto dentro del input esté a la derecha
-              },
-              "@media (max-width: 900px)": {
-                marginTop: "8px",
-              },
-            }}
-          />
-
-          {/* Botón "+" */}
-          <IconButton
-            color="primary"
-            onClick={handleAddProduct}
-            sx={{
-              fontSize: "2rem",
-              width: "48px",
-              height: "48px",
-              "@media (max-width: 900px)": {
-                fontSize: "3rem", // Aumenta tamaño del ícono en móvil
-                width: "64px", // Aumenta el tamaño del botón en móvil
-                height: "64px",
-                justifySelf: "center", // Centra horizontalmente en la grid
-                alignSelf: "center", // Centra verticalmente en la grid
-              },
-            }}
-          >
-            <AddIcon />
-          </IconButton>
-        </Box>
-      </Box>
-
-
+      {/* Contenedor para el botón Add Product alineado a la derecha */}
       <Box
         sx={{
           display: "flex",
-          flexDirection: "row",
-          gap: 1,
-          width: "100%",
+          justifyContent: "flex-end",
           alignItems: "center",
-          "@media (max-width: 900px)": {
-            flexDirection: "column", // 🔹 Lo apilamos en móviles
-            gap: 2,
-          }
+          mb: 2, // Espaciado debajo del título
         }}
       >
-      </Box>   
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
+          onClick={() => setSelectorModalOpen(true)}
+          sx={{ 
+            borderRadius: "8px",
+            fontWeight: "bold",
+            "@media (max-width: 600px)": {
+              fontSize: "0.8rem",
+              padding: "6px 10px",
+              minWidth: "120px",
+            },
+          }}
+        >
+          Add Item
+        </Button>
+      </Box>
+
+
 
       {/* Tabla de Productos */}
       <TableContainer component={Paper} sx={{ 

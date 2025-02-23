@@ -75,7 +75,7 @@ const formatNumber = (value: number) => {
 const PurchaseOrderPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const location = useLocation();
-  const { purchaseOrders, successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
+  const { purchaseOrders, purchaseOrderDetail , successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
   const { products } = useAppSelector((state) => state.products);
   const { userInfo } = useAppSelector((state) => state.auth);
@@ -121,8 +121,8 @@ const PurchaseOrderPage: React.FC = () => {
 
   // Manejo de mensajes
   useEffect(() => {
-    console.log("📢 Redux errorMessage:", errorMessage);
-    console.log("📢 Redux successMessage:", successMessage);
+    //console.log("📢 Redux errorMessage:", errorMessage);
+    //console.log("📢 Redux successMessage:", successMessage);
     if (successMessage) {
       toast.success(successMessage);
       dispatch(clearMessages()); // ✅ LIMPIA MENSAJES DESPUÉS DE MOSTRAR EL TOAST
@@ -177,7 +177,22 @@ const PurchaseOrderPage: React.FC = () => {
       });
   }, [orderNumberFromState, dispatch, providers]); // Ahora `handleSearchOrder` no es necesario en las dependencias
   
-  
+  useEffect(() => {
+    if (purchaseOrderDetail) {
+       console.log("📢 Actualizando formData con purchaseOrderDetail:", purchaseOrderDetail);
+       setFormData({
+          _id: purchaseOrderDetail._id,
+          provider: purchaseOrderDetail.provider,
+          orderNumber: purchaseOrderDetail.orderNumber,
+          createdAt: purchaseOrderDetail.createdAt,
+          status: purchaseOrderDetail.status,
+          items: purchaseOrderDetail.items,
+          total: purchaseOrderDetail.total,
+          estimatedDeliveryDate: purchaseOrderDetail.estimatedDeliveryDate || "",
+       });
+    }
+ }, [purchaseOrderDetail]);
+ 
 
   const generatePDF = async (): Promise<Blob> => {
     return new Promise((resolve) => {
@@ -452,10 +467,10 @@ const PurchaseOrderPage: React.FC = () => {
   
 
   const handleSubmit = () => {
-    console.log('handleSubmit -> Inicio');
+    //console.log('handleSubmit -> Inicio');
     
     const userId = userInfo?.id || undefined;
-    console.log("handleSubmit -> Usuario autenticado:", userId);
+    //console.log("handleSubmit -> Usuario autenticado:", userId);
 
     const providerObject: Provider | undefined =
       typeof formData.provider === "string"
@@ -468,7 +483,7 @@ const PurchaseOrderPage: React.FC = () => {
       return;
     }
   
-    console.log("handleSubmit -> Proveedor encontrado:", providerObject);
+    //console.log("handleSubmit -> Proveedor encontrado:", providerObject);
   
     // Construir objeto de orden de compra
     const purchaseOrderData = {
@@ -476,7 +491,7 @@ const PurchaseOrderPage: React.FC = () => {
       provider: providerObject._id, // ✅ Solo enviamos el _id
       createdBy: userId,  // Agregar el usuario que creó la orden
     };
-    console.log("handleSubmit -> Datos de la PO:", purchaseOrderData);
+    //console.log("handleSubmit -> Datos de la PO:", purchaseOrderData);
 
     if (formData.orderNumber) {
       // Buscar la orden en la lista de Redux usando el número de orden
@@ -503,7 +518,7 @@ const PurchaseOrderPage: React.FC = () => {
         console.log("Orden actualizada exitosamente", data);
         setFormData((prevForm) => ({
           ...prevForm,
-          orderNumber: data.orderNumber, 
+          orderNumber: data.orderNumber || prevForm.orderNumber, 
           createdBy: userId, 
           createdAt: data.createdAt, 
           status: data.status, 
@@ -520,10 +535,10 @@ const PurchaseOrderPage: React.FC = () => {
           console.log("Orden creada exitosamente", data);
           setFormData((prevForm) => ({
             ...prevForm,
-            orderNumber: data.orderNumber, // Asegurar que se actualiza correctamente
+            orderNumber: data.orderNumber || prevForm.orderNumber, // Asegurar que se actualiza correctamente
             createdBy: userId, // Agregar el usuario
-            createdAt: data.createdAt, // 👈 Guardar createdAt en formData
-            status: data.status, // 👈 Guardar el status en formData
+            createdAt: data.createdAt ?? prevForm.createdAt, // 👈 Guardar createdAt en formData
+            status: data.status ?? prevForm.status, // 👈 Guardar el status en formData
           }));
         })
         .catch((error) => {

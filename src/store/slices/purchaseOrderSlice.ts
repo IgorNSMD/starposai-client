@@ -93,10 +93,11 @@ export const createPurchaseOrder = createAsyncThunk<
   try {
     //console.log('createPurchaseOrder..')
     const response = await axiosInstance.post("/purchase-orders", data);
+    console.log("🔍 Respuesta de la API en Redux:", response.data);
     return {
-      ...response.data,
-      createdAt: response.data.createdAt, // 👈 Asegurar que createdAt se guarde
-      status: response.data.status, // 👈 Asegurar que createdAt se guarde
+      ...response.data.purchaseOrder, // ✅ Extrae solo 
+      createdAt: response.data.purchaseOrder.createdAt,// 👈 Asegurar que createdAt se guarde
+      status: response.data.purchaseOrder.status, // 👈 Asegurar que createdAt se guarde
     };
 } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -176,6 +177,7 @@ const purchaseOrderSlice = createSlice({
       })
       .addCase(createPurchaseOrder.fulfilled, (state, action) => {
         state.purchaseOrders.push(action.payload);
+        state.purchaseOrderDetail = action.payload; // ✅ Actualiza el detalle
         state.successMessage = "Purchase Order created successfully";
         state.errorMessage = null;
       })

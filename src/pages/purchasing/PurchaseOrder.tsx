@@ -291,7 +291,7 @@ const PurchaseOrderPage: React.FC = () => {
     }
   };
   
-  const handleSelectItem = (item: Product | Kit) => {
+  const handleSelectItem = (item: Product | Kit, quantity: number) => {
     setFormData((prevFormData) => {
       // Buscar si el producto ya está en la lista de ítems
       const existingIndex = prevFormData.items.findIndex((p) => p.referenceId === item._id);
@@ -315,7 +315,7 @@ const PurchaseOrderPage: React.FC = () => {
           referenceId: item._id,
           sku: "sku" in item ? item.sku : "N/A", // ✅ Agrega el SKU
           name: item.name,
-          quantity: 1,
+          quantity,
           unitPrice: "price" in item ? item.price : 0,
           subtotal: "price" in item ? item.price : 0,
         };
@@ -710,7 +710,25 @@ const PurchaseOrderPage: React.FC = () => {
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{p.sku || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `sku` */}
                 <TableCell>{p.name || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `name` */}
-                <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity ?? 0)}</TableCell>
+                {/* <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity ?? 0)}</TableCell> */}
+                <TableCell>
+                  <TextField
+                    type="number"
+                    value={p.quantity}
+                    onChange={(e) => {
+                      const newQuantity = Math.max(1, parseInt(e.target.value) || 1);
+                      setFormData((prevFormData) => {
+                        const updatedItems = prevFormData.items.map((item, i) =>
+                          i === index ? { ...item, quantity: newQuantity, subtotal: newQuantity * item.unitPrice } : item
+                        );
+                        const newTotal = updatedItems.reduce((sum, item) => sum + item.subtotal, 0);
+                        return { ...prevFormData, items: updatedItems, total: newTotal };
+                      });
+                    }}
+                    inputProps={{ min: 1 }}
+                    sx={{ width: "80px" }}
+                  />
+                </TableCell>                
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.unitPrice)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber((p.quantity ?? 0) * p.unitPrice)}</TableCell>
                 <TableCell sx={{ textAlign: "right" }}>

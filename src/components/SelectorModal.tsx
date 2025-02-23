@@ -41,12 +41,20 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
   const [selectedItem, setSelectedItem] = useState<Product | Kit | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [quantities, setQuantities] = useState<{ [key: string]: number }>({});
+
   useEffect(() => {
     if (open) {
       dispatch(fetchProducts({ status: "active" }));
       dispatch(fetchKits());
     }
   }, [open, dispatch]);
+
+    // Manejo de cambio de cantidad
+    const handleQuantityChange = (productId: string, value: string) => {
+      const quantity = parseInt(value, 10) || 1;
+      setQuantities((prev) => ({ ...prev, [productId]: quantity }));
+    };
 
   // ✅ Filtra productos/kits en función del texto ingresado
   const filteredItems = (tabIndex === 0 ? products : kits).filter((item) =>
@@ -124,6 +132,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
                 <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
                 {tabIndex === 0 && <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Price</TableCell>}
                 {tabIndex === 0 && <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Stock</TableCell>}
+                <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Quantity</TableCell>                
                 <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -138,7 +147,23 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
 
                   {/* Si es la pestaña de productos, muestra precio y stock */}
                   {tabIndex === 0 && <TableCell sx={{ textAlign: "right" }}>{'price' in item ? `$${formatNumber(item.price)}` : "-"}</TableCell>}
-                  {tabIndex === 0 && <TableCell  sx={{ textAlign: "right" }}>{'stock' in item ? formatNumber(item.stock) : "-"}</TableCell>}
+                  {tabIndex === 0 && <TableCell sx={{ textAlign: "right" }}>{'stock' in item ? formatNumber(item.stock) : "-"}</TableCell>}
+
+                  <TableCell sx={{ textAlign: "right" }}>
+                    <TextField
+                      type="number"
+                      size="small"
+                      value={quantities[item._id] || 1}
+                      onChange={(e) => handleQuantityChange(item._id, e.target.value)}
+                      inputProps={{ min: 1, style: { textAlign: "center" } }}
+                      sx={{
+                        width: "60px",
+                        marginLeft: "auto", // Empuja el campo hacia la derecha
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}
+                    />
+                  </TableCell>                  
                   
                   {/* Botón de acción */}
                   <TableCell sx={{ textAlign: "center" }}>

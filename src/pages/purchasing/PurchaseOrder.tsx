@@ -137,7 +137,7 @@ const PurchaseOrderPage: React.FC = () => {
   useEffect(() => {
     if (!orderNumberFromState) return;
   
-    console.log("🔍 Buscando orden:", orderNumberFromState);
+    //console.log("🔍 Buscando orden:", orderNumberFromState);
     setSearchOrderNumber(orderNumberFromState);
   
     // Buscar la orden directamente dentro del useEffect
@@ -179,7 +179,7 @@ const PurchaseOrderPage: React.FC = () => {
   
   useEffect(() => {
     if (purchaseOrderDetail) {
-       console.log("📢 Actualizando formData con purchaseOrderDetail:", purchaseOrderDetail);
+       //console.log("📢 Actualizando formData con purchaseOrderDetail:", purchaseOrderDetail);
        setFormData({
           _id: purchaseOrderDetail._id,
           provider: purchaseOrderDetail.provider,
@@ -515,7 +515,7 @@ const PurchaseOrderPage: React.FC = () => {
       }))
       .unwrap()
       .then((data) => {
-        console.log("Orden actualizada exitosamente", data);
+        //console.log("Orden actualizada exitosamente", data);
         setFormData((prevForm) => ({
           ...prevForm,
           orderNumber: data.orderNumber || prevForm.orderNumber, 
@@ -532,7 +532,7 @@ const PurchaseOrderPage: React.FC = () => {
       dispatch(createPurchaseOrder(purchaseOrderData))
         .unwrap()
         .then((data) => {
-          console.log("Orden creada exitosamente", data);
+          //console.log("Orden creada exitosamente", data);
           setFormData((prevForm) => ({
             ...prevForm,
             orderNumber: data.orderNumber || prevForm.orderNumber, // Asegurar que se actualiza correctamente

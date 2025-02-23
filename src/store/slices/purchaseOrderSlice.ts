@@ -116,7 +116,7 @@ export const updatePurchaseOrder = createAsyncThunk<
   try {
     
     console.log("🔍 updatePurchaseOrder -> ID recibido:", id); // <-- Agrega este log
-    console.log("🔍 updatePurchaseOrder -> Data enviada:", data); // <-- Agrega este log
+    //console.log("🔍 updatePurchaseOrder -> Data enviada:", data); // <-- Agrega este log
 
     if (!id) {
       console.error("❌ Error: ID no recibido en el thunk.");

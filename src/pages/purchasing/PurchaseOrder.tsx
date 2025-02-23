@@ -698,7 +698,7 @@ const PurchaseOrderPage: React.FC = () => {
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>#</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Code</TableCell>
               <TableCell sx={{ color: "white", fontWeight: "bold" }}>Product</TableCell>
-              <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Quantity</TableCell>
+              <TableCell sx={{ textAlign: "center", color: "white", fontWeight: "bold" }}>Quantity</TableCell>
               <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Price</TableCell>
               <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Subtotal</TableCell>
               <TableCell sx={{ textAlign: "right", color: "white", fontWeight: "bold" }}>Delete</TableCell>
@@ -711,7 +711,7 @@ const PurchaseOrderPage: React.FC = () => {
                 <TableCell>{p.sku || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `sku` */}
                 <TableCell>{p.name || "N/A"}</TableCell>  {/* 🔹 Ahora accede directamente a `name` */}
                 {/* <TableCell sx={{ textAlign: "right" }}>{formatNumber(p.quantity ?? 0)}</TableCell> */}
-                <TableCell>
+                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>
                   <TextField
                     type="number"
                     value={p.quantity}
@@ -725,8 +725,11 @@ const PurchaseOrderPage: React.FC = () => {
                         return { ...prevFormData, items: updatedItems, total: newTotal };
                       });
                     }}
-                    inputProps={{ min: 1 }}
-                    sx={{ width: "80px" }}
+                    inputProps={{ min: 1, style: { textAlign: "center" } }}
+                    sx={{
+                      width: "60px", // 🔹 Tamaño más compacto
+                      "& .MuiOutlinedInput-input": { padding: "6px", textAlign: "center" }, // 🔹 Ajusta padding y alineación
+                    }}
                   />
                 </TableCell>                
                 <TableCell sx={{ textAlign: "right" }}>${formatNumber(p.unitPrice)}</TableCell>

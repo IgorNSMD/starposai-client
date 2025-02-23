@@ -503,7 +503,7 @@ const PurchaseOrderPage: React.FC = () => {
         return;
       }      
 
-      console.log("🔍 handleSubmit -> ID de la orden encontrada:", existingOrder); // <-- Agrega este log
+      //console.log("🔍 handleSubmit -> ID de la orden encontrada:", existingOrder); // <-- Agrega este log
 
       // Si ya tiene un número de orden, actualizamos
       dispatch(updatePurchaseOrder({

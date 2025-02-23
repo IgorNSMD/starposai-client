@@ -91,7 +91,7 @@ export const createPurchaseOrder = createAsyncThunk<
   { rejectValue: string }
 >("purchaseOrders/createPurchaseOrder", async (data, { rejectWithValue }) => {
   try {
-    //console.log('createPurchaseOrder..')
+    console.log('AsyncThunk createPurchaseOrder..', data)
     const response = await axiosInstance.post("/purchase-orders", data);
     console.log("🔍 Respuesta de la API en Redux:", response.data);
     return {

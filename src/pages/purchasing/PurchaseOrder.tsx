@@ -315,7 +315,7 @@ const PurchaseOrderPage: React.FC = () => {
           referenceId: item._id,
           sku: "sku" in item ? item.sku : "N/A", // ✅ Agrega el SKU
           name: item.name,
-          quantity,
+          quantity: quantity, // ✅ Usa la cantidad seleccionada
           unitPrice: "price" in item ? item.price : 0,
           subtotal: "price" in item ? item.price : 0,
         };

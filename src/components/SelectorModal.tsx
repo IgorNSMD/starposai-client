@@ -25,7 +25,7 @@ import { Box } from "@mui/system";
 interface SelectorModalProps {
   open: boolean;
   onClose: () => void;
-  onSelect: (item: Product | Kit) => void;
+  onSelect: (item: Product | Kit, quantity: number) => void; // ✅ Asegura que pase cantidad
 }
 
 const formatNumber = (value: number) => {
@@ -66,13 +66,13 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
     setSearchTerm(""); // 🔹 Limpia el filtro al cambiar de pestaña
   };
 
-  const handleSelectItem = (item: Product | Kit) => {
-    setSelectedItem(item);
-  };
+  // const handleSelectItem = (item: Product | Kit) => {
+  //   setSelectedItem(item);
+  // };
 
   const handleConfirmSelection = () => {
     if (selectedItem) {
-      onSelect(selectedItem);
+      // onSelect(selectedItem);
       setSelectedItem(null);
     }
     onClose();
@@ -171,7 +171,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
                       variant="contained"
                       color="primary"
                       size="small"
-                      onClick={() => onSelect(item)}
+                      onClick={() => onSelect(item, quantities[item._id] || 1)} // ✅ Pasa la cantidad seleccionada
                     >
                       Select
                     </Button>

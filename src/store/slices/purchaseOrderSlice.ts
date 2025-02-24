@@ -115,7 +115,7 @@ export const updatePurchaseOrder = createAsyncThunk<
 >("purchaseOrders/updatePurchaseOrder", async ({ id, ...data }, { rejectWithValue }) => {
   try {
     
-    console.log("🔍 updatePurchaseOrder -> ID recibido:", id); // <-- Agrega este log
+    console.log("🔍 AsyncThunk updatePurchaseOrder -> data:", data); // <-- Agrega este log
     //console.log("🔍 updatePurchaseOrder -> Data enviada:", data); // <-- Agrega este log
 
     if (!id) {

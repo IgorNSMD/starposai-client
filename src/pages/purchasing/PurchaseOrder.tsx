@@ -470,7 +470,8 @@ const PurchaseOrderPage: React.FC = () => {
     //console.log('handleSubmit -> Inicio');
     
     const userId = userInfo?.id || undefined;
-    //console.log("handleSubmit -> Usuario autenticado:", userId);
+
+    console.log("handleSubmit formData -> :", formData);
 
     const providerObject: Provider | undefined =
       typeof formData.provider === "string"
@@ -503,11 +504,11 @@ const PurchaseOrderPage: React.FC = () => {
         return;
       }      
 
-      //console.log("🔍 handleSubmit -> ID de la orden encontrada:", existingOrder); // <-- Agrega este log
+      console.log("🔍 handleSubmit -> formData.items:", formData.items); // <-- Agrega este log
 
       // Si ya tiene un número de orden, actualizamos
       dispatch(updatePurchaseOrder({
-        id: existingOrder._id, // ✅ ID correcto
+        id: formData._id,  // ✅ Usa el ID correcto del estado actualizado
         provider: providerObject._id, // ✅ SOLO EL ID
         items: formData.items, // ✅ Cambia `products` por `items`
         total: formData.total,
@@ -518,6 +519,7 @@ const PurchaseOrderPage: React.FC = () => {
         //console.log("Orden actualizada exitosamente", data);
         setFormData((prevForm) => ({
           ...prevForm,
+          _id: data._id,  // ✅ Asegurar que el ID actualizado se mantenga          
           orderNumber: data.orderNumber || prevForm.orderNumber, 
           createdBy: userId, 
           createdAt: data.createdAt, 
@@ -535,6 +537,7 @@ const PurchaseOrderPage: React.FC = () => {
           //console.log("Orden creada exitosamente", data);
           setFormData((prevForm) => ({
             ...prevForm,
+            _id: data._id,  // ✅ Guarda el nuevo ID correctamente
             orderNumber: data.orderNumber || prevForm.orderNumber, // Asegurar que se actualiza correctamente
             createdBy: userId, // Agregar el usuario
             createdAt: data.createdAt ?? prevForm.createdAt, // 👈 Guardar createdAt en formData
@@ -583,6 +586,9 @@ const PurchaseOrderPage: React.FC = () => {
     setSelectedProduct(null);
     setSearchTerm("");
     setSearchOrderNumber("");
+
+    // ✅ Limpia el detalle en Redux para evitar referencias obsoletas
+    dispatch(clearMessages());
   };
   
 

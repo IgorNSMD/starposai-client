@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Button, TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography, SelectChangeEvent } from '@mui/material';
+import { Button, TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography, SelectChangeEvent, Grid } from '@mui/material';
 
 import { createInventoryMovement } from '../../store/slices/inventoryMovementSlice';
 import { fetchWarehouses } from '../../store/slices/warehouseSlice';
 
 import { RootState } from '../../store/store';
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
+
 
 const InventoryMovementForm = () => {
   const dispatch = useAppDispatch();
@@ -45,6 +46,17 @@ const InventoryMovementForm = () => {
     dispatch(createInventoryMovement(movementData));
   };
 
+  const handleReset = () => {
+    setMovementData({
+      type: "entry", // ✅ Valor inicial válido
+      warehouse: '',
+      referenceId: '',
+      referenceType: 'Product',
+      quantity: 0,
+      reason: '',
+    });
+  };
+
   return (
     <Box sx={{ maxWidth: 600, margin: 'auto', padding: 3, boxShadow: 3, borderRadius: 2, mt: 4  }}>
       <Typography variant="h6" sx={{ marginBottom: 2,fontWeight: "bold", color: "#666", mb: 2  }}>Registrar Movimiento de Inventario</Typography>
@@ -77,9 +89,18 @@ const InventoryMovementForm = () => {
         <TextField fullWidth label="Cantidad" type="number" name="quantity" value={movementData.quantity} onChange={handleChange} margin="normal" />
         <TextField fullWidth label="Razón" name="reason" value={movementData.reason} onChange={handleChange} margin="normal" />
 
-        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading} sx={{ mt: 2 }}>
-          {loading ? 'Registrando...' : 'Registrar Movimiento'}
-        </Button>
+        <Grid container spacing={2} sx={{ mt: 2 }}>
+          <Grid item xs={6}>
+            <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+              {loading ? 'Registrando...' : 'Registrar Movimiento'}
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button type="button" variant="contained" color="secondary" fullWidth onClick={handleReset}>
+              Limpiar
+            </Button>
+          </Grid>
+        </Grid>
 
       </form>
     </Box>

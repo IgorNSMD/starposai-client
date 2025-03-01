@@ -18,6 +18,7 @@ import clientReducer from './slices/clientSlice';
 import inventoryMovementsReducer from './slices/inventoryMovementSlice';
 import purchaseOrderReducer from "./slices/purchaseOrderSlice"; 
 import kitReducer from "./slices/kitSlice"; 
+import warehouseReducer from './slices/warehouseSlice';
 
 // Configuración de persistencia
 const persistConfig = {
@@ -45,7 +46,8 @@ const store = configureStore({
     clients: clientReducer, // Reducer para actions
     inventorymovements: inventoryMovementsReducer, // Reducer para actions
     purchaseorders: purchaseOrderReducer, // Reducer para actions
-    kits: kitReducer
+    kits: kitReducer,
+    warehouses: warehouseReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

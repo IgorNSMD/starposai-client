@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
 
-const API_URL = '/api/inventory/movements';
-
 // Interfaces para tipado
 interface InventoryMovement {
   _id: string;
@@ -36,7 +34,7 @@ export const fetchInventoryMovements = createAsyncThunk<
   { rejectValue: string }
 >('inventory/fetchMovements', async (_, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get(API_URL);
+    const response = await axiosInstance.get("/inventory-movements");
     return response.data.movements;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -53,12 +51,16 @@ export const createInventoryMovement = createAsyncThunk<
   { rejectValue: string }
 >('inventory/createMovement', async (movementData, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post(API_URL, movementData);
+    console.log('createInventoryMovement initial: ', movementData)
+    const response = await axiosInstance.post("/inventory-movements", movementData);
+    console.log('createInventoryMovement response.data.movement: ', response.data.movement)
     return response.data.movement;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
+      console.log('createInventoryMovement axiosInstance.isAxiosError?.(error): ', error)
       return rejectWithValue(error.response?.data?.message || "Error al crear movimiento");
     }
+    console.log("createInventoryMovement Unknown error occurred..")
     return rejectWithValue("Unknown error occurred");    
   }
 });
@@ -70,7 +72,7 @@ export const updateInventoryMovement = createAsyncThunk<
   { rejectValue: string }
 >('inventory/updateMovement', async ({ id, updateData }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(`${API_URL}/${id}`, updateData);
+    const response = await axiosInstance.put(`/purchase-orders/order-number/${id}`, updateData);
     return response.data.movement;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -87,7 +89,7 @@ export const deleteInventoryMovement = createAsyncThunk<
   { rejectValue: string }
 >('inventory/deleteMovement', async (id, { rejectWithValue }) => {
   try {
-    await axiosInstance.delete(`${API_URL}/${id}`);
+    await axiosInstance.delete(`/purchase-orders/order-number/${id}`);
     return id;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

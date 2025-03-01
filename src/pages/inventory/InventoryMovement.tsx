@@ -1,202 +1,70 @@
-import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  Typography,
-  Paper,
-  TextField,
-  Select,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
-} from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import AddIcon from '@mui/icons-material/Add';
-import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
-import {
-  fetchInventoryMovements,
-  createInventoryMovement,
-  clearMessages,
-} from '../../store/slices/inventoryMovementSlice';
+import React, { useState } from 'react';
+import { Button, TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography, SelectChangeEvent } from '@mui/material';
 
-const InventoryMovement: React.FC = () => {
+import { createInventoryMovement } from '../../store/slices/inventoryMovementSlice';
+import { RootState } from '../../store/store';
+import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
+
+const InventoryMovementForm = () => {
   const dispatch = useAppDispatch();
-  const { movements, isLoading, successMessage, errorMessage } = useAppSelector((state) => state.inventorymovements);
+  const { loading, error } = useAppSelector((state: RootState) => state.inventorymovements);
 
-  const [filters, setFilters] = useState<{ productId: string; type: string }>({
-    productId: '',
-    type: '',
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    productId: { _id: '', name: '' }, // Cambiar de string a objeto
-    type: 'entry' as 'entry' | 'exit' | 'adjustment',
-    quantity: 0,
+  const [movementData, setMovementData] = useState<{
+    type: "entry" | "exit" | "transfer" | "adjustment" | "disassembly";
+    warehouse: string;
+    referenceId: string;
+    referenceType: 'Product' | 'Kit'; // ✅ Esto corrige el error
+    quantity: number; // ✅ Aseguramos que quantity sea un número
+    reason: string;
+  }>({
+    type: "entry", // ✅ Valor inicial válido
+    warehouse: '',
+    referenceId: '',
+    referenceType: 'Product', // ✅ Inicializamos con un valor válido
+    quantity: 0, // ✅ Ahora es un número
     reason: '',
   });
 
-  const [localError, setLocalError] = useState<string | null>(null);
-
-  useEffect(() => {
-    dispatch(fetchInventoryMovements(filters));
-  }, [dispatch, filters]);
-
-  const handleSearch = () => {
-    dispatch(fetchInventoryMovements(filters));
-  };
-
-  const handleOpenModal = () => setIsModalOpen(true);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setFormData({ productId: '', type: 'entry', quantity: 0, reason: '' });
-    setLocalError(null);
-    dispatch(clearMessages());
-  };
-
-  const handleSubmit = () => {
-    const payload = {
-      ...formData,
-      productId: formData.productId._id, // Solo pasa el ID al backend
-    };
-    dispatch(createInventoryMovement(payload))
-      .unwrap()
-      .then(() => {
-        // Manejo de éxito
-      })
-      .catch((error) => {
-        // Manejo de error
-      });
-  };
-
-  const handleProductChange = (selectedProduct: { _id: string; name: string }) => {
-    setFormData({ ...formData, productId: selectedProduct });
-  };
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = e.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
+    setMovementData(prevState => ({
+      ...prevState,
+      [name]: name === 'quantity' ? Number(value) : value, // Convierte `quantity` a número
+    }));
   };
 
-  const rows = movements.map((movement) => ({
-    id: movement._id,
-    productId: movement.productId.name,
-    type: movement.type,
-    quantity: movement.quantity,
-    reason: movement.reason,
-    date: new Date(movement.date).toLocaleDateString(),
-  }));
-
-  const columns: GridColDef[] = [
-    { field: 'productId', headerName: 'Product', flex: 1 },
-    { field: 'type', headerName: 'Type', flex: 1 },
-    { field: 'quantity', headerName: 'Quantity', flex: 1 },
-    { field: 'reason', headerName: 'Reason', flex: 1 },
-    { field: 'date', headerName: 'Date', flex: 1 },
-  ];
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    dispatch(createInventoryMovement(movementData));
+  };
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <Typography variant="h4" sx={{ marginBottom: 3 }}>
-        Inventory Movements
-      </Typography>
+    <Box sx={{ maxWidth: 600, margin: 'auto', padding: 3, boxShadow: 3, borderRadius: 2 }}>
+      <Typography variant="h6" mb={2}>Registrar Movimiento de Inventario</Typography>
+      {error && <Typography color="error">{error}</Typography>}
+      <form onSubmit={handleSubmit}>
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Tipo de Movimiento</InputLabel>
+        <Select name="type" value={movementData.type} onChange={handleChange}>
+          <MenuItem value="entry">Entrada</MenuItem>
+          <MenuItem value="exit">Salida</MenuItem>
+          <MenuItem value="transfer">Transferencia</MenuItem>
+          <MenuItem value="adjustment">Ajuste</MenuItem>
+          <MenuItem value="disassembly">Desensamblaje</MenuItem>
+        </Select>
+      </FormControl>
 
-      <Paper sx={{ padding: 2, marginBottom: 3 }}>
-        <Typography variant="h6">Filters</Typography>
-        <Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
-          <TextField
-            label="Product ID"
-            name="productId"
-            value={filters.productId}
-            onChange={handleFilterChange}
-            fullWidth
-          />
-          <Select
-            label="Type"
-            name="type"
-            value={filters.type}
-            onChange={handleFilterChange}
-            fullWidth
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="entry">Entry</MenuItem>
-            <MenuItem value="exit">Exit</MenuItem>
-            <MenuItem value="adjustment">Adjustment</MenuItem>
-          </Select>
-          <Button variant="contained" onClick={handleSearch}>
-            Search
-          </Button>
-        </Box>
-      </Paper>
+        <TextField fullWidth label="Warehouse ID" name="warehouse" value={movementData.warehouse} onChange={handleChange} margin="normal" />
+        <TextField fullWidth label="Referencia ID" name="referenceId" value={movementData.referenceId} onChange={handleChange} margin="normal" />
+        <TextField fullWidth label="Cantidad" type="number" name="quantity" value={movementData.quantity} onChange={handleChange} margin="normal" />
+        <TextField fullWidth label="Razón" name="reason" value={movementData.reason} onChange={handleChange} margin="normal" />
 
-      <Paper sx={{ height: 400, width: '100%' }}>
-        <DataGrid rows={rows} columns={columns} loading={isLoading} />
-      </Paper>
-
-      <Button
-        variant="contained"
-        color="primary"
-        startIcon={<AddIcon />}
-        onClick={handleOpenModal}
-        sx={{ marginTop: 2 }}
-      >
-        New Movement
-      </Button>
-
-      <Dialog open={isModalOpen} onClose={handleCloseModal}>
-        <DialogTitle>New Inventory Movement</DialogTitle>
-        {localError && <Alert severity="error">{localError}</Alert>}
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
-            <TextField
-              label="Product ID"
-              name="productId"
-              value={formData.productId}
-              onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
-              fullWidth
-            />
-            <Select
-              label="Type"
-              name="type"
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as 'entry' | 'exit' | 'adjustment' })}
-              fullWidth
-            >
-              <MenuItem value="entry">Entry</MenuItem>
-              <MenuItem value="exit">Exit</MenuItem>
-              <MenuItem value="adjustment">Adjustment</MenuItem>
-            </Select>
-            <TextField
-              label="Quantity"
-              name="quantity"
-              type="number"
-              value={formData.quantity}
-              onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-              fullWidth
-            />
-            <TextField
-              label="Reason"
-              name="reason"
-              value={formData.reason}
-              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} color="primary">
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading} sx={{ mt: 2 }}>
+          {loading ? 'Registrando...' : 'Registrar Movimiento'}
+        </Button>
+      </form>
     </Box>
   );
 };
 
-export default InventoryMovement;
+export default InventoryMovementForm;

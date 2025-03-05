@@ -24,7 +24,8 @@ interface InventoryMovement {
 interface InventoryState {
   movements: InventoryMovement[];
   loading: boolean;
-  error: string | null;
+  errorMessage: null,
+  successMessage: null,
 }
 
 // Obtener movimientos de inventario
@@ -102,7 +103,8 @@ export const deleteInventoryMovement = createAsyncThunk<
 const initialState: InventoryState = {
   movements: [],
   loading: false,
-  error: null,
+  errorMessage: null,
+  successMessage: null,
 };
 
 const inventorySlice = createSlice({

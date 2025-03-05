@@ -23,6 +23,7 @@ import PurchaseOrder from "../pages/purchasing/PurchaseOrder";
 import PurchaseOrdersList from "../pages/purchasing/PurchaseOrderList";
 import Kit from "../pages/masterdata/Kit";
 import SelectorModalTest from "../pages/testing/SelectorModalTest";
+import InventoryMovementsList from "../pages/inventory/InventoryMovementList";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -44,6 +45,7 @@ const routes = [
         path: 'inventory',
         children: [
           { path: 'movements', element: <InventoryMovement /> },
+          { path: 'view', element: <InventoryMovementsList /> },
         ],
       },
       {

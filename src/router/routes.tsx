@@ -24,6 +24,7 @@ import PurchaseOrdersList from "../pages/purchasing/PurchaseOrderList";
 import Kit from "../pages/masterdata/Kit";
 import SelectorModalTest from "../pages/testing/SelectorModalTest";
 import InventoryMovementsList from "../pages/inventory/InventoryMovementList";
+import Position from "../pages/masterdata/Position";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -74,6 +75,7 @@ const routes = [
           { path: 'category', element: <Category /> },
           { path: 'provider', element: <Provider /> },
           { path: 'client', element: <Client /> },
+          { path: 'position', element: <Position /> },
         ],
       },
     ],

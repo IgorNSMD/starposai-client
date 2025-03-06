@@ -19,6 +19,7 @@ import inventoryMovementsReducer from './slices/inventoryMovementSlice';
 import purchaseOrderReducer from "./slices/purchaseOrderSlice"; 
 import kitReducer from "./slices/kitSlice"; 
 import warehouseReducer from './slices/warehouseSlice';
+import positionReducer from './slices/positionSlice';
 
 // Configuración de persistencia
 const persistConfig = {
@@ -48,6 +49,7 @@ const store = configureStore({
     purchaseorders: purchaseOrderReducer, // Reducer para actions
     kits: kitReducer,
     warehouses: warehouseReducer,
+    positions: positionReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

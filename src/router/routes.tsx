@@ -25,6 +25,7 @@ import Kit from "../pages/masterdata/Kit";
 import SelectorModalTest from "../pages/testing/SelectorModalTest";
 import InventoryMovementsList from "../pages/inventory/InventoryMovementList";
 import Position from "../pages/masterdata/Position";
+import Staff from "../pages/masterdata/Staff";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -76,6 +77,7 @@ const routes = [
           { path: 'provider', element: <Provider /> },
           { path: 'client', element: <Client /> },
           { path: 'position', element: <Position /> },
+          { path: 'staff', element: <Staff /> },
         ],
       },
     ],

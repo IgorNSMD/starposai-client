@@ -10,7 +10,8 @@ interface User {
   _id: string;
   name: string;
   email: string;
-  role: string
+  role: string;
+  position: string
 }
 
 interface UserState {
@@ -74,11 +75,11 @@ export const fetchUsers = createAsyncThunk<
 
 export const updateUser = createAsyncThunk<
   User,
-  { id: string; name: string; email: string; role: string },
+  { id: string; name: string; email: string; role: string; position: string },
   { rejectValue: string }
->("users/updateUser", async ({ id, name, email, role }, { rejectWithValue }) => {
+>("users/updateUser", async ({ id, name, email, role, position }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(`/users/${id}`, { name, email, role });
+    const response = await axiosInstance.put(`/users/${id}`, { name, email, role, position });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

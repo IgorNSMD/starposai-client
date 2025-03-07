@@ -27,6 +27,8 @@ import {
   deleteUser,
 } from '../../store/slices/userSlice';
 
+import { fetchPositions } from '../../store/slices/positionSlice';
+
 import {
   formContainer,
   submitButton,
@@ -46,11 +48,13 @@ interface FormData {
   name: string;
   email: string;
   role: string;
+  position: string;
 }
 
 const Users: React.FC = () => {
   const dispatch = useAppDispatch();
   const { users, roles, errorMessage, successMessage } = useAppSelector((state) => state.users);
+  const { positions } = useAppSelector((state) => state.positions);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Para eliminar
@@ -60,11 +64,13 @@ const Users: React.FC = () => {
     name: "",
     email: "",
     role: "", 
+    position: "", 
   });
 
   // Cargar permisos al montar el componente
   useEffect(() => {
     dispatch(fetchRoles());
+    dispatch(fetchPositions());
     dispatch(fetchUsers());
   }, [dispatch]);
 
@@ -107,7 +113,8 @@ const Users: React.FC = () => {
     const data = {
       name: formData.name,
       email: formData.email,
-      role: formData.role
+      role: formData.role,
+      position: formData.position
     };
   
     if (editingId) {
@@ -118,6 +125,7 @@ const Users: React.FC = () => {
           name: "",
           email: "",
           role: "", // Valor inicial como string
+          position: ""
          });
       });
     } 
@@ -126,7 +134,7 @@ const Users: React.FC = () => {
   const handleEdit = (id: string) => {
     const user = users.find((user) => user._id === id);
     if (user) {
-      setFormData({ name: user.name, email: user.email, role: user.role });
+      setFormData({ name: user.name, email: user.email, role: user.role, position: user.position });
       setEditingId(id);
     }
   };
@@ -136,6 +144,7 @@ const Users: React.FC = () => {
       name: "",
       email: "",
       role: "", // Valor inicial como string
+      position: ""
      });
     setEditingId(null);
   };
@@ -149,7 +158,8 @@ const Users: React.FC = () => {
     const data = {
       name: formData.name,
       email: formData.email,
-      role: formData.role
+      role: formData.role,
+      position: formData.position
     };
   
     if (editingId) {
@@ -160,6 +170,7 @@ const Users: React.FC = () => {
           name: "",
           email: "",
           role: "", // Valor inicial como string
+          position: ""
          });
       });
     } 
@@ -169,10 +180,11 @@ const Users: React.FC = () => {
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'email', headerName: 'email', flex: 1 },
     { field: 'role', headerName: 'role', flex: 1 },
+    { field: 'position', headerName: 'position', flex: 1 },
     {
       field: 'actions',
       headerName: 'Actions',
-      flex: 0.5,
+      flex: 0.7,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <>
@@ -198,11 +210,13 @@ const Users: React.FC = () => {
   .filter((user) => user._id && user.name) // Filtra registros válidos
   .map((user) => {
     const roleName = roles.find((role) => role._id === user.role)?.name || "Unknown Role";
+    const positionName = positions.find((position) => position._id === user.position)?.name || "Unknown Position";
     return {
       id: user._id, // Usa `_id` como identificador único
       name: user.name,
       email: user.email,
       role: roleName, // Mapea el nombre del rol
+      position: positionName
     };
   });
 
@@ -251,7 +265,7 @@ const Users: React.FC = () => {
           />
         </Box>
         <Box sx={inputContainer}>
-          <FormControl sx={{ minWidth: 350 }}>
+          <FormControl sx={{ minWidth: 340 }}>
             <InputLabel
               id="parent-select-label"
               shrink={true} // Esto fuerza que el label permanezca visible
@@ -285,6 +299,35 @@ const Users: React.FC = () => {
               })}
             </Select>
           </FormControl>
+          <FormControl sx={{ minWidth: 340 }}>
+            <InputLabel
+              id="parent-select-label"
+              shrink={true} // Esto fuerza que el label permanezca visible
+              sx={{
+                color: "#444444",
+                "&.Mui-focused": {
+                  color: "#47b2e4",
+                },
+              }}
+            >
+              Position
+            </InputLabel>
+            <Select
+              labelId="parent-select-label"
+              name="position"
+              value={formData.position} // Garantiza un valor seguro
+              onChange={handleInputChange}
+            >
+              {positions.map((r) => {
+                const uniqueKey = r._id;
+                return (
+                  <MenuItem key={uniqueKey} value={uniqueKey}>
+                    {r.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>          
         </Box>
         <Box display="flex" gap={2} margin ="16px" >
           {editingId && (

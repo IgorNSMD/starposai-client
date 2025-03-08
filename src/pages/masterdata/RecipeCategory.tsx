@@ -251,7 +251,7 @@ const RecipeCategory: React.FC = () => {
   const rows = recipeCategories.filter((rC) => rC._id && rC.name)
   .map((rC) => ({
     id: rC._id,
-    label: rC.name,
+    name: rC.name,
     parentId: rC.parentId,
   }))
 
@@ -326,7 +326,7 @@ const RecipeCategory: React.FC = () => {
               {recipeCategoriesRoot.map((rC) => {
                 //const uniqueKey = menuroot.id || `fallback-key-${index}`;
                 const uniqueKey = rC._id;
-                //console.log('uniqueKey->', uniqueKey)
+                console.log('uniqueKey->', uniqueKey)
                 return (
                   <MenuItem key={uniqueKey} value={uniqueKey}>
                     {rC.name}

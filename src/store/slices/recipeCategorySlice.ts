@@ -38,13 +38,13 @@ export const fetchRecipeCategoriesRoot = createAsyncThunk<RecipeCategory[], void
       const response = await axiosInstance.get("/recipecategories/root");
       
       // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
-      const data = response.data.map((menu: RecipeCategory) => ({
-        id: menu._id, // Cambia `_id` a `id`
-        name: menu.name, // Conserva el campo `label`
-        description: menu.description, // Conserva el campo `label`
-        parentId: menu.parentId, // Conserva el campo `label`
+      const data = response.data.map((rC: RecipeCategory) => ({
+        _id: rC._id, // Cambia `_id` a `id`
+        name: rC.name, // Conserva el campo `label`
+        description: rC.description, // Conserva el campo `label`
+        parentId: rC.parentId, // Conserva el campo `label`
       }));
-      //console.log('data::', data)  
+      console.log('data::', data)  
       return data; // Devuelve solo `id` y `label`
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {

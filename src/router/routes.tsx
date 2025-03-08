@@ -26,6 +26,7 @@ import SelectorModalTest from "../pages/testing/SelectorModalTest";
 import InventoryMovementsList from "../pages/inventory/InventoryMovementList";
 import Position from "../pages/masterdata/Position";
 import Staff from "../pages/masterdata/Staff";
+import RecipeCategory from "../pages/masterdata/RecipeCategory";
 
 const routes = [
   { path: '/', element: <HomeLayout /> },
@@ -78,6 +79,7 @@ const routes = [
           { path: 'client', element: <Client /> },
           { path: 'position', element: <Position /> },
           { path: 'staff', element: <Staff /> },
+          { path: 'recipeCategory', element: <RecipeCategory /> },
         ],
       },
     ],

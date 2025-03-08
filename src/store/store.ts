@@ -21,7 +21,7 @@ import kitReducer from "./slices/kitSlice";
 import warehouseReducer from './slices/warehouseSlice';
 import positionReducer from './slices/positionSlice';
 import staffReducer from './slices/staffSlice';
-
+import recipeCategoriesReducer from './slices/recipeCategorySlice';
 // Configuración de persistencia
 const persistConfig = {
   key: 'auth', // Solo persiste el reducer de autenticación
@@ -52,6 +52,7 @@ const store = configureStore({
     warehouses: warehouseReducer,
     positions: positionReducer,
     staffs: staffReducer,
+    recipeCategories: recipeCategoriesReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

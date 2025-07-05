@@ -1,0 +1,101 @@
+{
+    "permissions": [
+      { "key": "READ_PRODUCTS", "description": "Permite leer productos" },
+      { "key": "CREATE_PRODUCTS", "description": "Permite crear productos" },
+      { "key": "UPDATE_PRODUCTS", "description": "Permite actualizar productos" },
+      { "key": "DELETE_PRODUCTS", "description": "Permite eliminar productos" },
+      { "key": "READ_USERS", "description": "Permite ver usuarios" },
+      { "key": "CREATE_USERS", "description": "Permite crear usuarios" },
+      { "key": "UPDATE_USERS", "description": "Permite actualizar usuarios" },
+      { "key": "DELETE_USERS", "description": "Permite eliminar usuarios" },
+      { "key": "READ_ORDERS", "description": "Permite leer órdenes" },
+      { "key": "CREATE_ORDERS", "description": "Permite crear órdenes" },
+      { "key": "UPDATE_ORDERS", "description": "Permite actualizar órdenes" },
+      { "key": "DELETE_ORDERS", "description": "Permite eliminar órdenes" }
+    ],
+    "roles": [
+    {
+      "name": "Vendedor",
+      "permissions": ["READ_PRODUCTS", "READ_ORDERS", "CREATE_ORDERS"]
+    },
+    {
+      "name": "Admin Básico",
+      "permissions": ["READ_PRODUCTS", "CREATE_PRODUCTS", "UPDATE_PRODUCTS", "DELETE_PRODUCTS", "READ_ORDERS", "CREATE_ORDERS", "UPDATE_ORDERS"]
+    },
+    {
+      "name": "Admin",
+      "permissions": ["READ_PRODUCTS", "CREATE_PRODUCTS", "UPDATE_PRODUCTS", "DELETE_PRODUCTS", "READ_USERS", "CREATE_USERS", "READ_ORDERS", "CREATE_ORDERS", "UPDATE_ORDERS"]
+    },
+    {
+      "name": "Gerente",
+      "permissions": ["READ_PRODUCTS", "CREATE_PRODUCTS", "UPDATE_PRODUCTS", "DELETE_PRODUCTS", "READ_USERS", "CREATE_USERS", "UPDATE_USERS", "DELETE_USERS", "READ_ORDERS", "CREATE_ORDERS", "UPDATE_ORDERS", "DELETE_ORDERS"]
+    },
+    {
+      "name": "SuperAdmin",
+      "permissions": ["READ_PRODUCTS", "CREATE_PRODUCTS", "UPDATE_PRODUCTS", "DELETE_PRODUCTS", "READ_USERS", "CREATE_USERS", "UPDATE_USERS", "DELETE_USERS", "READ_ORDERS", "CREATE_ORDERS", "UPDATE_ORDERS", "DELETE_ORDERS"]
+    }
+    ],
+    "menus": [
+    {
+      "label": "Dashboard",
+      "component": "Dashboard",
+      "path": "/dashboard",
+      "icon": "dashboard",
+      "permissions": [],
+      "sequence": 1,
+      "global": true,
+      "parentId": null
+    },
+    {
+      "label": "Administración",
+      "component": "Management",
+      "path": "/admin/management",
+      "icon": "security",
+      "permissions": ["READ_USERS", "CREATE_USERS"],
+      "sequence": 2,
+      "global": true,
+      "parentId": null
+    },
+    {
+      "label": "Acciones",
+      "component": "Actions",
+      "path": "/admin/management/actions",
+      "icon": "bolt",
+      "permissions": ["READ_ORDERS", "CREATE_ORDERS"],
+      "sequence": 1,
+      "global": true,
+      "parentId": "Administración"
+    },
+    {
+      "label": "Configuración",
+      "component": "Settings",
+      "path": "/settings",
+      "icon": "settings",
+      "permissions": ["READ_USERS", "CREATE_USERS", "UPDATE_USERS", "DELETE_USERS"],
+      "sequence": 3,
+      "global": true,
+      "parentId": null
+    },
+    {
+      "label": "Productos",
+      "component": "Products",
+      "path": "/products",
+      "icon": "shopping_bag",
+      "permissions": ["READ_PRODUCTS", "CREATE_PRODUCTS", "UPDATE_PRODUCTS", "DELETE_PRODUCTS"],
+      "sequence": 4,
+      "global": true,
+      "parentId": null
+    },
+    {
+      "label": "Reportes",
+      "component": "Reports",
+      "path": "/reports",
+      "icon": "bar_chart",
+      "permissions": ["READ_ORDERS", "READ_PRODUCTS"],
+      "sequence": 5,
+      "global": true,
+      "parentId": null
+    }
+    ]
+}
+  

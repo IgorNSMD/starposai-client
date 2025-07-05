@@ -21,13 +21,14 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 
 import {
-  fetchRoles,
   fetchUsers,
   updateUser,
   deleteUser,
+  registerUser,
 } from '../../store/slices/userSlice';
 
-import { fetchPositions } from '../../store/slices/positionSlice';
+import { fetchRoles } from '../../store/slices/roleSlice';
+
 
 import {
   formContainer,
@@ -37,8 +38,10 @@ import {
   formTitle,
   datagridStyle,
   cancelButton,
-  usersTable,
+
 } from '../../styles/AdminStyles';
+
+import { selectActiveCompanyVenue } from '../../store/slices/authSlice';
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 import { useToastMessages } from '../../hooks/useToastMessage';
@@ -48,13 +51,18 @@ interface FormData {
   name: string;
   email: string;
   role: string;
-  position: string;
+  password: string;
 }
 
 const Users: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { users, roles, errorMessage, successMessage } = useAppSelector((state) => state.users);
-  const { positions } = useAppSelector((state) => state.positions);
+  const { users, errorMessage, successMessage } = useAppSelector((state) => state.users);
+
+  const { roles } = useAppSelector((state) => state.roles);
+
+
+  const { activeCompanyId, activeVenueId } = useAppSelector(selectActiveCompanyVenue);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Para eliminar
@@ -64,15 +72,17 @@ const Users: React.FC = () => {
     name: "",
     email: "",
     role: "", 
-    position: "", 
+    password: "", 
   });
 
   // Cargar permisos al montar el componente
   useEffect(() => {
-    dispatch(fetchRoles());
-    dispatch(fetchPositions());
-    dispatch(fetchUsers());
-  }, [dispatch]);
+    if (activeCompanyId) {
+      dispatch(fetchRoles({ companyId: activeCompanyId, venueId: activeVenueId || '' }));
+      dispatch(fetchUsers({ companyId: activeCompanyId, venueId: activeVenueId || undefined }));
+    }
+
+  }, [dispatch, activeCompanyId, activeVenueId]);
 
   // Manejo de mensajes
   useToastMessages(successMessage, errorMessage);
@@ -101,40 +111,80 @@ const Users: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
-    if (selectedId) {
-      dispatch(deleteUser(selectedId))
-        .then(() => dispatch(fetchUsers())); // Actualiza la lista después de eliminar
+    if (selectedId && activeCompanyId) {
+      dispatch(deleteUser({
+        id: selectedId,
+        companyId: activeCompanyId,
+        venueId: activeVenueId || undefined
+      }))
+        .then(() => dispatch(fetchUsers({ companyId: activeCompanyId, venueId: activeVenueId || undefined }))); // Actualiza la lista después de eliminar
       setSelectedId(null);
     }
     handleDeleteDialogClose();
   };
 
   const handleSubmit = () => {
-    const data = {
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      position: formData.position
-    };
+    if (!activeCompanyId) return; // Protege todas las ramas
+    // const data = {
+    //   name: formData.name,
+    //   email: formData.email,
+    //   role: formData.role,
+    //   position: formData.position
+    // };
   
-    if (editingId) {
-      dispatch(updateUser({ id: editingId, ...data })).then(() => {
-        dispatch(fetchUsers());
+    if (editingId && activeCompanyId) {
+      dispatch(updateUser({
+        id: editingId,
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        password: formData.password,
+        companyId: activeCompanyId, // 🔹 Agregado
+        venueId: activeVenueId || undefined, // 🔹 Agregado
+      })).then(() => {
+        dispatch(fetchUsers({ companyId: activeCompanyId, venueId: activeVenueId || undefined }));
         setEditingId(null);
-        setFormData({     
+        setFormData({
           name: "",
           email: "",
-          role: "", // Valor inicial como string
-          position: ""
-         });
+          role: "",
+          password: ""
+        });
       });
-    } 
+    } else {
+      dispatch(registerUser({
+        userData: {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password
+        },
+        companyId: activeCompanyId,
+        venueId: activeVenueId || undefined
+      })).then(() => {
+        dispatch(fetchUsers({ companyId: activeCompanyId, venueId: activeVenueId || undefined }));
+        setEditingId(null);
+        setFormData({
+          name: "",
+          email: "",
+          role: "",
+          password: ""
+        });
+      });
+      
+
+    }
+
   };
 
   const handleEdit = (id: string) => {
     const user = users.find((user) => user._id === id);
     if (user) {
-      setFormData({ name: user.name, email: user.email, role: user.role, position: user.position });
+      setFormData({ 
+        name: user.name, 
+        email: user.email, 
+        role: user.role, 
+        password: "" });
       setEditingId(id);
     }
   };
@@ -144,7 +194,7 @@ const Users: React.FC = () => {
       name: "",
       email: "",
       role: "", // Valor inicial como string
-      position: ""
+      password: ""
      });
     setEditingId(null);
   };
@@ -155,22 +205,31 @@ const Users: React.FC = () => {
   };
 
   const handleConfirmUpdate  = () => {
-    const data = {
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      position: formData.position
-    };
+    if (!activeCompanyId) return; // Protege todas las ramas
+    // const data = {
+    //   name: formData.name,
+    //   email: formData.email,
+    //   role: formData.role,
+    //   position: formData.position
+    // };
   
     if (editingId) {
-      dispatch(updateUser({ id: editingId, ...data })).then(() => {
-        dispatch(fetchUsers());
+      dispatch(updateUser({
+          id: editingId,
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password,
+          companyId: activeCompanyId, // 🔹 Agregado
+          venueId: activeVenueId || undefined, // 🔹 Agregado
+        })).then(() => {
+        dispatch(fetchUsers({ companyId: activeCompanyId, venueId: activeVenueId || undefined }));
         setEditingId(null);
         setFormData({     
           name: "",
           email: "",
           role: "", // Valor inicial como string
-          position: ""
+          password: ""
          });
       });
     } 
@@ -180,7 +239,7 @@ const Users: React.FC = () => {
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'email', headerName: 'email', flex: 1 },
     { field: 'role', headerName: 'role', flex: 1 },
-    { field: 'position', headerName: 'position', flex: 1 },
+
     {
       field: 'actions',
       headerName: 'Actions',
@@ -210,13 +269,12 @@ const Users: React.FC = () => {
   .filter((user) => user._id && user.name) // Filtra registros válidos
   .map((user) => {
     const roleName = roles.find((role) => role._id === user.role)?.name || "Unknown Role";
-    const positionName = positions.find((position) => position._id === user.position)?.name || "Unknown Position";
+
     return {
       id: user._id, // Usa `_id` como identificador único
       name: user.name,
       email: user.email,
       role: roleName, // Mapea el nombre del rol
-      position: positionName
     };
   });
 
@@ -224,7 +282,7 @@ const Users: React.FC = () => {
     <Box sx={formContainer}>
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
         <Typography sx={formTitle}>
-          {editingId ? 'Edit User' : ''}
+          {editingId ? 'Edit User' : 'Create User'}
         </Typography>
         <Box sx={inputContainer}>
           <TextField
@@ -264,82 +322,81 @@ const Users: React.FC = () => {
             }}
           />
         </Box>
-        <Box sx={inputContainer}>
-          <FormControl sx={{ minWidth: 340 }}>
-            <InputLabel
-              id="parent-select-label"
-              shrink={true} // Esto fuerza que el label permanezca visible
-              sx={{
-                color: "#444444",
-                "&.Mui-focused": {
-                  color: "#47b2e4",
+
+        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+            <TextField
+              name="password"
+              label="Password"
+              type="password"
+              variant="outlined"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              sx={{ flex: 1 }}
+              slotProps={{
+                input: {
+                  sx: {
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderWidth: '1px',
+                      borderColor: 'rgba(0, 0, 0, 0.23)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#47b2e4',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#47b2e4',
+                    },
+                  },
+                },
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
+                  },
                 },
               }}
-            >
-              Role
-            </InputLabel>
-            <Select
-              labelId="parent-select-label"
-              name="role"
-              value={formData.role} // Garantiza un valor seguro
-              onChange={handleInputChange}
-            >
-              {/* <MenuItem key="-1" value="-1">
-                <em>None</em>
-              </MenuItem> */}
-              {roles.map((r) => {
-                //const uniqueKey = menuroot.id || `fallback-key-${index}`;
-                const uniqueKey = r._id;
-                //console.log('uniqueKey->', uniqueKey)
-                return (
-                  <MenuItem key={uniqueKey} value={uniqueKey}>
+            />
+            <FormControl sx={{ flex: 1 }}>
+              <InputLabel
+                id="parent-select-label"
+                shrink={true}
+                sx={{
+                  color: "#444444",
+                  "&.Mui-focused": {
+                    color: "#47b2e4",
+                  },
+                }}
+              >
+                Role
+              </InputLabel>
+              <Select
+                labelId="parent-select-label"
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+              >
+                {roles.map((r) => (
+                  <MenuItem key={r._id} value={r._id}>
                     {r.name}
                   </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-          <FormControl sx={{ minWidth: 340 }}>
-            <InputLabel
-              id="parent-select-label"
-              shrink={true} // Esto fuerza que el label permanezca visible
-              sx={{
-                color: "#444444",
-                "&.Mui-focused": {
-                  color: "#47b2e4",
-                },
-              }}
-            >
-              Position
-            </InputLabel>
-            <Select
-              labelId="parent-select-label"
-              name="position"
-              value={formData.position} // Garantiza un valor seguro
-              onChange={handleInputChange}
-            >
-              {positions.map((r) => {
-                const uniqueKey = r._id;
-                return (
-                  <MenuItem key={uniqueKey} value={uniqueKey}>
-                    {r.name}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>          
+                ))}
+              </Select>
+            </FormControl>
         </Box>
+
         <Box display="flex" gap={2} margin ="16px" >
-          {editingId && (
             <Button
               variant="contained"
               color="primary"
               onClick={handleSubmit}
               sx={submitButton}
             >
-            Update
+              {editingId ? 'Update' : 'Save'}
             </Button>
-          )}
+
           {editingId && (
             <Button
               variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
@@ -354,24 +411,33 @@ const Users: React.FC = () => {
         </Box>
       </Paper>
 
-      <Paper sx={usersTable}>
-        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
-          Users List
-        </Typography>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+      <Paper 
+        sx={{
+          width: '100%',
+          overflowX: 'auto',
+          marginTop: 2,
+        }}
+        >
+
+        <Box sx={{ minWidth: '600px' }}>
+          <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
+            Users List
+          </Typography>     
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
               },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
+            }}
+            pageSizeOptions={[5, 10, 20]}
+            disableRowSelectionOnClick
+            sx={datagridStyle}
+          />               
+        </Box>
       </Paper>
 
       {/* Cuadro de diálogo de confirmación */}

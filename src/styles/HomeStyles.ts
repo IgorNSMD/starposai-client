@@ -114,18 +114,17 @@ export const btnGetStartedStyle: SxProps<Theme> = (theme: Theme) => ({
 
 // Home Container Style
 export const homeContainer: SxProps<Theme> = (theme: Theme) => ({
-  display: 'flex', // Define el layout principal como flexbox
-  flexDirection: 'column', // Los elementos se apilan verticalmente
-  alignItems: 'center', // Centra los elementos horizontalmente
-  justifyContent: 'center', // Centra los elementos verticalmente
-  minHeight: '100vh', // Ocupa toda la altura de la ventana
+  display: 'flex',
+  flexDirection: 'column', // Se mantiene la disposición en columna
+  alignItems: 'center', // Mantiene centrado el contenido horizontalmente
+  width: '100%', // Se asegura que ocupe todo el ancho
+  minHeight: '100vh', // En vez de forzar un alto fijo, permitirá el crecimiento
   backgroundColor: theme.palette.secondary.main, //'#f5f6f8', // Fondo claro
   color: theme.palette.text.primary, //'#444444', // Texto oscuro
   textAlign: 'center',
-  //padding: '20px', // Espaciado interno
-  overflow: 'hidden', // Oculta ambos scrolls iniciales
-  overflowX: 'hidden', // Previene el desplazamiento horizontal específicamente
+  overflowX: 'hidden', // Se mantiene para evitar scroll horizontal
 });
+
 
 // Container Style
 export const containerStyle: SxProps<Theme> = {
@@ -300,4 +299,15 @@ export const heroImgStyle: SxProps<Theme> = () => ({
   maxWidth: '100%',
   height: 'auto',
   animation: 'fadeIn 2s ease-out',
+});
+
+export const heroStyle: SxProps<Theme> = (theme) => ({
+  minHeight: "100vh",
+  display: "flex",
+  alignItems: "center", 
+  justifyContent: "center",
+  marginBottom: 0,
+  backgroundColor: theme.palette.background.default,
+  paddingTop: { xs: '80px', md: '0' }, // deja espacio para header fijo
+  paddingBottom: { xs: '40px', md: '80px' }, // agrega aire visual
 });

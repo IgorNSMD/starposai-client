@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../store/redux/hooks';
-import { loginUser, clearErrorMessage  } from '../../store/slices/authSlice';
+import { loginUser, clearErrorMessage } from '../../store/slices/authSlice';
 
 const Login: React.FC = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { errorMessage } = useAppSelector((state) => state.auth);
 
@@ -13,7 +13,6 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
 
   useEffect(() => {
-    // Limpia el mensaje de error al cargar el componente
     dispatch(clearErrorMessage());
   }, [dispatch]);
 
@@ -25,134 +24,120 @@ const Login: React.FC = () => {
     }
   };
 
-    return (
-        <Box
-            sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh',
-                backgroundColor: 'transparent', // Mantiene el fondo visible
+  return (
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: `
+          linear-gradient(rgba(55, 81, 126, 0.75), rgba(44, 62, 80, 0.85)),
+          url('/background-login.png')
+        `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontFamily: "'Open Sans', sans-serif",
+        padding: 2, // 👈 mejora márgenes en móviles pequeños
+      }}
+    >
+      <Paper
+        elevation={6}
+        sx={{
+          padding: 4,
+          borderRadius: 4,
+          width: '100%',
+          maxWidth: 400,
+          backgroundColor: '#fff',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+        }}
+      >
+        <Typography variant="h5" fontWeight="bold" align="center" mb={3}>
+          Login
+        </Typography>
+
+        <Box component="form" onSubmit={handleLogin}>
+          <TextField
+            label="Email address"
+            type="email"
+            fullWidth
+            margin="normal"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            variant="outlined"
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
             }}
-        >
-            <Paper
-                elevation={3}
-                sx={{
-                    padding: 4,
-                    borderRadius: '8px',
-                    width: '100%',
-                    maxWidth: 400,
-                    backgroundColor: '#ffffff',
-                }}
-            >
-                <Typography variant="h4" gutterBottom align="center">
-                    Login
-                </Typography>
-                <Box component="form" onSubmit={handleLogin} sx={{ mt: 2 }}>
-                    <TextField
-                      label="Email address"
-                      type="email"
-                      fullWidth
-                      margin="normal"
-                      variant="outlined"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      slotProps={{
-                        input: {
-                          sx: {
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              borderWidth: '1px', // Asegura un borde consistente
-                              borderColor: 'rgba(0, 0, 0, 0.23)', // Color estándar para el borde
-                            },
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#47b2e4', // Color del borde al pasar el mouse
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#47b2e4', // Color del borde al enfocarse
-                            },
-                          },
-                        },
-                        inputLabel: {
-                          shrink: true, // Mantén el comportamiento de la etiqueta siempre visible
-                          sx: {
-                            color: '#444444', // Ajusta el color de la etiqueta inicial
-                            '&.Mui-focused': {
-                              color: '#47b2e4', // Color de la etiqueta al enfocarse
-                            },
-                          },
-                        },
-                      }}
-                    />
-                    <TextField
-                      label="Password"
-                      type="password"
-                      fullWidth
-                      margin="normal"
-                      variant="outlined"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}                      
-                      slotProps={{
-                        input: {
-                          sx: {
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              borderWidth: '1px', // Consistencia del borde
-                              borderColor: 'rgba(0, 0, 0, 0.23)', // Color inicial del borde
-                            },
-                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#47b2e4', // Color al pasar el mouse
-                            },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                              borderColor: '#47b2e4', // Color al enfocar
-                            },
-                          },
-                        },
-                        inputLabel: {
-                          shrink: true, // Mantén la etiqueta visible en todo momento
-                          sx: {
-                            color: '#444444', // Color inicial de la etiqueta
-                            '&.Mui-focused': {
-                              color: '#47b2e4', // Color de la etiqueta al enfocarse
-                            },
-                          },
-                        },
-                      }}
-                    />
-                    {errorMessage && (
-                      <Typography color="error" variant="body2" align="center" sx={{ mt: 2 }}>
-                        {errorMessage}
-                      </Typography>
-                    )}
-                    <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
-                        Sign In
-                    </Button>
-                </Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        mt: 2,
-                    }}
-                >
-                    <Link href="/register" underline="hover" sx={{ fontSize: '0.875rem' }}>
-                        Create an Account
-                    </Link>
-                    <Link href="/forgot-password" underline="hover" sx={{ fontSize: '0.875rem' }}>
-                        Forgot Password?
-                    </Link>
-                </Box>
-                <Button
-                    onClick={() => navigate('/')}
-                    variant="text"
-                    fullWidth
-                    sx={{ mt: 2, textTransform: 'none', color: 'primary.main' }}
-                >
-                    Back to Home
-                </Button>
-            </Paper>
+          />
+          <TextField
+            label="Password"
+            type="password"
+            fullWidth
+            margin="normal"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            variant="outlined"
+            slotProps={{
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  color: '#444444',
+                  '&.Mui-focused': {
+                    color: '#47b2e4',
+                  },
+                },
+              },
+            }}            
+          />
+
+          {errorMessage && (
+            <Typography color="error" variant="body2" align="center" sx={{ mt: 2 }}>
+              {errorMessage}
+            </Typography>
+          )}
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{
+              mt: 3,
+              backgroundColor: '#0ea5e9',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#0284c7',
+              },
+            }}
+          >
+            Sign In
+          </Button>
         </Box>
-    );
+
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            mt: 2,
+            fontSize: '0.875rem',
+          }}
+        >
+          <Link href="/" underline="hover">Back to Home</Link>
+          <Link href="/forgot-password" underline="hover">Forgot Password?</Link>
+        </Box>
+      </Paper>
+    </Box>
+  );
 };
 
 export default Login;

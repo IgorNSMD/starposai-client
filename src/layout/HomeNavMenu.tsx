@@ -1,71 +1,90 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Box,
   List,
   ListItem,
   ListItemButton,
   ListItemText,
-  Menu,
-  MenuItem,
-  Drawer,
-  IconButton,
 } from '@mui/material';
-import { ExpandMore, ExpandLess, Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
+
 import { navMenuStyle } from '../styles/HomeStyles';
-import { useTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+
 
 const HomeNavMenu: React.FC = () => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [subAnchorEl, setSubAnchorEl] = useState<null | HTMLElement>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Detecta si es móvil (menos de 'md')
+  const [activeSection, setActiveSection] = useState<string>("");
 
-  const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const handleScroll = () => {
+    const sections = ["hero", "about", "services", "pricing", "contact"];
+    let foundSection = "";
 
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-    setSubAnchorEl(null); // Cierra también el submenú al cerrar el menú principal
-  };
-
-  const handleOpenSubMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setSubAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseSubMenu = () => {
-    setSubAnchorEl(null);
-  };
-
-  const toggleDrawer = (open: boolean) => () => {
-    if (!open) {
-      handleCloseMenu(); // Cierra el menú principal y el submenú al cerrar el Drawer
+    for (const section of sections) {
+      const element = document.getElementById(section);
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        if (rect.top <= window.innerHeight / 2 && rect.bottom >= window.innerHeight / 2) {
+          foundSection = section;
+          break;
+        }
+      }
     }
-    setIsDrawerOpen(open);
+
+    setActiveSection(foundSection);
   };
-  
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Renderiza el menú completo
   const renderMenu = () => (
     <List sx={navMenuStyle}>
       <ListItem disablePadding>
-        <ListItemButton href="#hero">
+        <ListItemButton 
+           onClick={() => document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })}
+           sx={{
+             color: activeSection === "hero" ? "primary.main" : "white",
+             fontWeight: activeSection === "hero" ? "bold" : "normal",
+           }}
+        >
           <ListItemText primary="Home" />
         </ListItemButton>
       </ListItem>
       <ListItem disablePadding>
-        <ListItemButton href="#about">
+        <ListItemButton
+          onClick={() => {
+            const aboutSection = document.getElementById("about");
+            if (aboutSection) {
+              aboutSection.style.display = "block"; // Mostrar About cuando se hace clic
+              aboutSection.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+          sx={{
+              color: activeSection === "about" ? "primary.main" : "white",
+              fontWeight: activeSection === "about" ? "bold" : "normal",
+          }}
+        >
           <ListItemText primary="About" />
         </ListItemButton>
       </ListItem>
       <ListItem disablePadding>
-        <ListItemButton href="#services">
+      <ListItemButton
+          onClick={() => {
+            const servicesSection = document.getElementById("services");
+            if (servicesSection) {
+              servicesSection.style.display = "block"; // Mostrar Services cuando se hace clic
+              servicesSection.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+          sx={{
+            color: activeSection === "services" ? "primary.main" : "white",
+            fontWeight: activeSection === "services" ? "bold" : "normal",
+          }}
+        >
           <ListItemText primary="Services" />
         </ListItemButton>
       </ListItem>
-      <ListItem disablePadding>
+      {/* <ListItem disablePadding>
         <ListItemButton href="#portfolio">
           <ListItemText primary="Portfolio" />
         </ListItemButton>
@@ -74,15 +93,27 @@ const HomeNavMenu: React.FC = () => {
         <ListItemButton href="#team">
           <ListItemText primary="Team" />
         </ListItemButton>
-      </ListItem>
+      </ListItem> */}
       <ListItem disablePadding>
-        <ListItemButton href="#pricing">
+        <ListItemButton 
+          onClick={() => {
+            const pricingSection = document.getElementById("pricing");
+            if (pricingSection) {
+              pricingSection.style.display = "block"; // Mostrar Services cuando se hace clic
+              pricingSection.scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+          sx={{
+            color: activeSection === "pricing" ? "primary.main" : "white",
+            fontWeight: activeSection === "pricing" ? "bold" : "normal",
+          }}
+          >
           <ListItemText primary="Pricing" />
         </ListItemButton>
       </ListItem>
 
       {/* Dropdown */}
-      <ListItem disablePadding>
+      {/* <ListItem disablePadding>
         <ListItemButton onClick={handleOpenMenu}>
           <ListItemText primary="Dropdown" />
           {anchorEl ? <ExpandLess /> : <ExpandMore />}
@@ -131,40 +162,31 @@ const HomeNavMenu: React.FC = () => {
           <MenuItem onClick={handleCloseMenu}>Dropdown 2</MenuItem>
           <MenuItem onClick={handleCloseMenu}>Dropdown 3</MenuItem>
         </Menu>
-      </ListItem>
+      </ListItem> */}
 
       <ListItem disablePadding>
-        <ListItemButton href="#contact">
+        <ListItemButton 
+          onClick={() => {
+            const contactSection  = document.getElementById("contact");
+            if (contactSection ) {
+              contactSection .style.display = "block"; // Mostrar Services cuando se hace clic
+              contactSection .scrollIntoView({ behavior: "smooth" });
+            }
+          }}
+          sx={{
+            color: activeSection === "contact" ? "primary.main" : "white",
+            fontWeight: activeSection === "contact" ? "bold" : "normal",
+          }}
+          >
           <ListItemText primary="Contact" />
         </ListItemButton>
       </ListItem>
+
     </List>
   );
 
   return (
-    <Box component="nav" id="navmenu" sx={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-      {isMobile ? (
-        <>
-          <IconButton onClick={toggleDrawer(true)} sx={{ color: theme.palette.secondary.main, ml: 'auto' }}>
-            <MenuIcon />
-          </IconButton>
-          <Drawer anchor="right" open={isDrawerOpen} onClose={toggleDrawer(false)}>
-            <Box
-              sx={{ width: 250, p: 2, bgcolor: theme.palette.background.default, height: '100%' }}
-              role="presentation"
-              onClick={toggleDrawer(false)}
-            >
-              <IconButton sx={{ mb: 2 }}>
-                <CloseIcon />
-              </IconButton>
-              {renderMenu()}
-            </Box>
-          </Drawer>
-        </>
-      ) : (
-        renderMenu()
-      )}
-    </Box>
+    renderMenu()
   );
 };
 

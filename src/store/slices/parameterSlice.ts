@@ -13,12 +13,14 @@ export interface Parameter {
 // Define el estado inicial para el slice
 interface ParameterState {
   parameters: Parameter[];
+  parametersByCategory: Record<string, Parameter[]>; // 🔹 cambia a objeto por categoría
   loading: boolean;
   error: string | null;
 }
 
 const initialState: ParameterState = {
   parameters: [],
+  parametersByCategory: {}, // ← antes era [], ahora es {}
   loading: false,
   error: null,
 };
@@ -43,8 +45,10 @@ export const fetchParametersByCategory = createAsyncThunk<Parameter[], string, {
   "parameters/fetchParametersByCategory",
   async (category, { rejectWithValue }) => {
     try {
-      console.log('(fetchParametersByCategory)category->',category)
+      //console.log('(fetchParametersByCategory)category->',category)
       const response = await axiosInstance.get(`/parameters/category/${category}`);
+
+      //console.log('response.data', response.data)
       return response.data; // Devuelve los menús asociados al rol
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
@@ -168,6 +172,21 @@ const parameterSlice = createSlice({
       state.parameters = state.parameters.filter((p) => p._id !== action.payload);
     });
     builder.addCase(deleteParameter.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Fetch parameters by category
+    builder.addCase(fetchParametersByCategory.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(fetchParametersByCategory.fulfilled, (state, action) => {
+      state.loading = false;
+      const category = action.meta.arg; // ← "Currency" o "Language"
+      state.parametersByCategory[category] = action.payload;
+    });
+    builder.addCase(fetchParametersByCategory.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

@@ -25,6 +25,8 @@ import {
   deleteAction,
 } from '../../store/slices/actionSlice';
 
+import { selectActiveCompanyVenue } from '../../store/slices/authSlice';
+
 import {
   formContainer,
   submitButton,
@@ -44,6 +46,8 @@ import { useToastMessages } from '../../hooks/useToastMessage';
 const Actions: React.FC = () => {
   const dispatch = useAppDispatch();
   const { permissions, actions, errorMessage, successMessage } = useAppSelector((state) => state.actions);
+  const { activeCompanyId, activeVenueId } = useAppSelector(selectActiveCompanyVenue);
+
   const [formData, setFormData] = useState({ name: '',  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
@@ -53,9 +57,12 @@ const Actions: React.FC = () => {
 
   // Cargar permisos al montar el componente
   useEffect(() => {
-    dispatch(fetchPermissions());
-    dispatch(fetchActions());
-  }, [dispatch]);
+    if (activeCompanyId) {
+      dispatch(fetchPermissions());
+
+      dispatch(fetchActions());
+    }
+  }, [dispatch, activeCompanyId, activeVenueId]);
 
   // Manejo de mensajes
   console.log('successMessage, errorMessage', successMessage, errorMessage)
@@ -86,7 +93,9 @@ const Actions: React.FC = () => {
   const handleConfirmDelete = () => {
     if (selectedId) {
       dispatch(deleteAction(selectedId))
-        .then(() => dispatch(fetchActions())); // Actualiza la lista después de eliminar
+        .then(() => 
+          dispatch(
+            fetchActions())); // Actualiza la lista después de eliminar
       setSelectedId(null);
     }
     handleDeleteDialogClose();
@@ -95,20 +104,24 @@ const Actions: React.FC = () => {
   const handleSubmit = () => {
 
     const data = {
+      companyId: activeCompanyId!,
+      venueId: activeVenueId || undefined, // Transforma null a undefined
       name: formData.name,
       permissions: selectedPermissions, // Enviar permisos seleccionados
     };
   
     if (editingId) {
       dispatch(updateAction({ id: editingId, ...data })).then(() => {
-        dispatch(fetchActions());
+        dispatch(
+          fetchActions());
         setEditingId(null);
         setFormData({ name: '' });
         setSelectedPermissions([]);
       });
     } else {
       dispatch(createAction(data)).then(() => {
-        dispatch(fetchActions());
+        dispatch(
+          fetchActions());
         setFormData({ name: '' });
         setSelectedPermissions([]);
       });
@@ -143,7 +156,8 @@ const Actions: React.FC = () => {
   
     if (editingId) {
       dispatch(updateAction({ id: editingId, ...data })).then(() => {
-        dispatch(fetchActions());
+        dispatch(
+          fetchActions());
         setEditingId(null);
         setFormData({ name: '' });
         setSelectedPermissions([]);
@@ -181,7 +195,11 @@ const Actions: React.FC = () => {
   }));
 
   const columns = [
-    { field: 'name', headerName: 'Name', flex: 1 },
+    { 
+      field: 'name', 
+      headerName: 'Name', 
+      flex: 1 
+    },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -243,20 +261,24 @@ const Actions: React.FC = () => {
       </Paper>
 
       <Paper sx={permissionsTable}>
-        <DataGrid
-          rows={rowsPermissions}
-          columns={columnsPermissions}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
-              },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
+        <Box sx={{ overflowX: 'auto' }}>
+          <Box sx={{ minWidth: 600 }}>
+            <DataGrid
+              rows={rowsPermissions}
+              columns={columnsPermissions}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+              pageSizeOptions={[5, 10, 20]}
+              disableRowSelectionOnClick
+              sx={datagridStyle}
+            />
+          </Box>
+        </Box>
         <Box display="flex" gap={2} margin ="16px" >
           <Button
             variant="contained"
@@ -279,24 +301,29 @@ const Actions: React.FC = () => {
           )}
         </Box>
       </Paper>
-      <Paper sx={rolesTable}>
+      <Paper sx={permissionsTable}>
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Actions List
         </Typography>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
-              },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
+        <Box sx={{ overflowX: 'auto' }}>
+          <Box sx={{ minWidth: 600 }}>
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+              pageSizeOptions={[5, 10, 20]}
+              disableRowSelectionOnClick
+              sx={rolesTable}
+            />
+          </Box>
+        </Box>
+
       </Paper>
 
       {/* Cuadro de diálogo de confirmación */}

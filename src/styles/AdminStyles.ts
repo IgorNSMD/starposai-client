@@ -6,7 +6,7 @@ export const dashboardContainer: SxProps<Theme> = {
   height: '100vh',
   backgroundColor: '#f9f9f9',
   '@media (max-width: 960px)': {
-    flexDirection: 'column', // Cambia a diseño vertical
+    flexDirection: 'column',
   },
 };
 
@@ -19,38 +19,36 @@ export const sidebarStyle: SxProps<Theme> = {
   position: 'fixed',
   top: '64px',
   height: 'calc(100vh - 64px)',
-  overflowY: 'auto', // Habilita el scroll vertical cuando haya muchos elementos
-  overflowX: 'hidden', // Evita que aparezca un scroll horizontal innecesario
+  overflowY: 'auto',
+  overflowX: 'hidden',
   zIndex: 1200,
-  transition: 'width 0.3s ease-in-out', // Animación suave
-  width: '250px', // Ancho cuando está abierto
-  scrollbarWidth: 'thin', // Hace que el scroll sea más delgado (Firefox)
-  scrollbarColor: '#999 #37517e', // Color del scroll (Firefox)
+  transition: 'width 0.3s ease-in-out',
+  width: '250px',
+  scrollbarWidth: 'thin',
+  scrollbarColor: '#999 #37517e',
+  boxSizing: 'border-box',
   '@media (max-width: 960px)': {
-    width: (theme) => (theme.breakpoints.down('md') ? '0px' : '250px'), // ✅ Esto permite que el sidebar respete su estado
-    //width: '0', // Sidebar completamente contraído en pantallas pequeñas
+    width: '0px',
   },
   '&.open': {
-    width: '250px', // ✅ Cuando está abierto, debe expandirse
+    width: '250px',
   },
   '&::-webkit-scrollbar': {
-    width: '6px', // Ancho del scrollbar (Chrome y Edge)
+    width: '6px',
   },
   '&::-webkit-scrollbar-thumb': {
-    backgroundColor: '#999', // Color del thumb (Chrome y Edge)
+    backgroundColor: '#999',
     borderRadius: '10px',
   },
   '&::-webkit-scrollbar-track': {
-    backgroundColor: '#37517e', // Color de fondo del scrollbar
+    backgroundColor: '#37517e',
   },
-  // 🔹 Aplica el tamaño de fuente a los nombres de los menús principales
   '& .MuiListItemText-primary': {
-    fontSize: '12px', // 🔹 Reduce el tamaño de los menús principales
+    fontSize: '12px',
     fontWeight: '500',
   },
-  // 🔹 Aplica el tamaño de fuente a los submenús
   '& .MuiCollapse-root .MuiListItemText-primary': {
-    fontSize: '11px', // 🔹 Reduce el tamaño de los submenús
+    fontSize: '11px',
     fontWeight: '400',
   },
 };
@@ -66,6 +64,7 @@ export const headerStyle: SxProps<Theme> = {
   position: 'fixed',
   width: '100%',
   zIndex: 1100,
+  boxSizing: 'border-box',
   '@media (max-width: 600px)': {
     height: '56px',
     padding: '0 10px',
@@ -78,9 +77,13 @@ export const mainContentStyle: SxProps<Theme> = {
   overflow: 'auto',
   transition: 'margin-left 0.3s ease-in-out',
   marginLeft: '250px',
+  boxSizing: 'border-box',
   '@media (max-width: 960px)': {
-    marginLeft: (theme) => (theme.breakpoints.down('md') ? '0px' : '250px'), // ✅ Ajusta el margen según el estado del sidebar
-    //marginLeft: '0',
+    marginLeft: '0px',
+    padding: '15px',
+  },
+  '@media (max-width: 600px)': {
+    padding: '10px',
   },
 };
 
@@ -95,9 +98,13 @@ export const formContainer: SxProps<Theme> = {
   backgroundColor: '#f9f9f9',
   borderRadius: '8px',
   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  maxWidth: '800px',
-  margin: '20px auto',
   width: '100%',
+  maxWidth: '100%',
+  margin: '20px auto',
+  boxSizing: 'border-box',
+  '@media (min-width: 960px)': {
+    maxWidth: '800px',
+  },
   '@media (max-width: 600px)': {
     padding: '10px',
   },
@@ -109,15 +116,19 @@ export const formContainer_v2: SxProps<Theme> = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '20px',
+  padding: '20px 30px',
   backgroundColor: '#f9f9f9',
   borderRadius: '8px',
   boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-  maxWidth: '850px',
-  margin: '20px auto',
   width: '100%',
+  maxWidth: 'calc(100% - 60px)', // 🔹 Resta los márgenes laterales para dejar espacio
+  margin: '20px auto',
+  '@media (min-width: 1280px)': {
+    maxWidth: '1100px', // Para pantallas grandes
+  },
   '@media (max-width: 960px)': {
     padding: '15px',
+    maxWidth: '100%',
   },
   '@media (max-width: 600px)': {
     padding: '10px',
@@ -125,6 +136,16 @@ export const formContainer_v2: SxProps<Theme> = {
   },
 };
 
+export const formContainer_v3: SxProps<Theme> = {
+  width: '100%',
+  padding: '8px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  '@media (max-width:600px)': {
+    padding: '4px',
+  },
+};
 
 // Estilo para los campos de texto (inputs y textarea)
 export const inputField: SxProps<Theme> = {
@@ -209,8 +230,9 @@ export const inputContainerForm: SxProps<Theme> = {
   gap: '20px',
   padding: '10px',
   width: '100%',
+  boxSizing: 'border-box',
   '@media (max-width: 960px)': {
-    flexDirection: 'column', // Cambia a diseño vertical
+    gridTemplateColumns: '1fr',
     gap: '10px',
   },
 };
@@ -241,7 +263,7 @@ export const permissionsTable: SxProps<Theme> = {
   },
 };
 
-export const generalTable: SxProps<Theme> = {
+export const warehousesTable: SxProps<Theme> = {
   width: '100%',
   '& .MuiDataGrid-root': {
     backgroundColor: '#ffffff',
@@ -266,30 +288,69 @@ export const generalTable: SxProps<Theme> = {
   },
 };
 
+export const kitsTable: SxProps<Theme> = {
+  width: '100%',
+  '& .MuiDataGrid-root': {
+    backgroundColor: '#ffffff',
+    borderRadius: '8px',
+    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: '#37517e',
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  '@media (max-width: 960px)': { // md breakpoint
+    '& .MuiDataGrid-root': {
+      fontSize: '12px',
+    },
+  },
+  '@media (max-width: 600px)': { // xs breakpoint
+    '& .MuiDataGrid-root': {
+      fontSize: '10px',
+    },
+    overflowX: 'auto',
+  },
+};
+
+export const generalTable: SxProps<Theme> = {
+  mt: 2,
+  p: 2,
+  borderRadius: 2,
+  boxShadow: 2,
+  width: '100%',
+  overflowX: 'auto',
+};
+
+
+
 export const datagridStyle: SxProps<Theme> = {
+  borderRadius: '12px',
+  border: '1px solid #e0e0e0',
   height: 'auto',
+
   '& .MuiDataGrid-columnHeaders': {
     backgroundColor: '#37517e',
     color: '#ffffff',
     fontWeight: 'bold',
+    fontSize: '14px',
   },
   '& .MuiDataGrid-footerContainer': {
     backgroundColor: '#f4f4f4',
   },
-  '@media (max-width: 960px)': {
-    '& .MuiDataGrid-columnHeaders': {
-      fontSize: '14px',
-    },
+  '& .MuiDataGrid-cell': {
+    paddingTop: '8px',
+    paddingBottom: '8px',
+    fontSize: '0.9rem',
+    display: 'flex',
+    alignItems: 'center',
   },
-  '@media (max-width: 600px)': {
-    '& .MuiDataGrid-columnHeaders': {
-      fontSize: '12px',
-    },
-    '& .MuiDataGrid-row': {
-      fontSize: '10px',
-    },
+  '& .MuiDataGrid-row:nth-of-type(odd)': {
+    backgroundColor: '#F4F6F8',
   },
 };
+
+
 
 export const datagridStyle_v2: SxProps<Theme> = {
   height: 'auto',
@@ -304,6 +365,54 @@ export const datagridStyle_v2: SxProps<Theme> = {
   },
   '& .MuiDataGrid-footerContainer': {
     backgroundColor: '#f4f4f4',
+  },
+};
+
+export const datagridStyle_v3: SxProps<Theme> = {
+  borderRadius: '12px',
+  border: '1px solid #e0e0e0',
+  height: 'auto',
+  width: '100%',
+  overflowX: 'auto',
+
+  '& .MuiDataGrid-columnHeaders': {
+    backgroundColor: '#37517e',
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: '14px',
+    whiteSpace: 'nowrap',
+  },
+
+  '& .MuiDataGrid-footerContainer': {
+    backgroundColor: '#f4f4f4',
+  },
+
+  '& .MuiDataGrid-cell': {
+    paddingTop: '8px',
+    paddingBottom: '8px',
+    fontSize: '0.9rem',
+    display: 'flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+  },
+
+  '& .MuiDataGrid-row:nth-of-type(odd)': {
+    backgroundColor: '#F4F6F8',
+  },
+
+  // 🔹 Responsivo para pantallas pequeñas
+  '@media (max-width: 768px)': {
+    '& .MuiDataGrid-columnHeaders, & .MuiDataGrid-cell': {
+      fontSize: '0.75rem',
+      paddingTop: '4px',
+      paddingBottom: '4px',
+    },
+    '& .MuiDataGrid-footerContainer': {
+      fontSize: '0.75rem',
+    },
+    '& .MuiDataGrid-root': {
+      overflowX: 'auto',
+    },
   },
 };
 
@@ -516,6 +625,7 @@ export const modalBackdropStyle: SxProps<Theme> = {
 };
 
 export const modalTitleStyle: SxProps<Theme> = {
+  cursor: 'move',
   fontSize: '20px',
   fontWeight: 'bold',
   color: '#37517e', // Mismo color del tema principal

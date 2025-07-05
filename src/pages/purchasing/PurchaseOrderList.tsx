@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Box, Button, TextField, Select, MenuItem, Typography, IconButton, FormControl, useMediaQuery } from "@mui/material";
-import { DataGrid, GridColDef, } from "@mui/x-data-grid";
+import { DataGrid, GridColDef, GridRenderCellParams  } from "@mui/x-data-grid";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Add, Download } from "@mui/icons-material";
@@ -8,14 +8,29 @@ import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import ExcelJS, { Row, Cell } from 'exceljs';
 import { saveAs } from 'file-saver';
+import toast from "react-hot-toast";
 
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
-import { fetchPurchaseOrders, changePurchaseOrderStatus } from "../../store/slices/purchaseOrderSlice";
+
+import { fetchPurchaseOrders, fetchPurchaseOrderByNumber, changePurchaseOrderStatus, PurchaseOrderItem, updatePurchaseOrder,  } from "../../store/slices/purchaseOrderSlice";
 import { fetchProviders } from "../../store/slices/providerSlice";
+import { fetchWarehouses } from "../../store/slices/warehouseSlice";
+import { createInventoryMovement } from "../../store/slices/inventoryMovementSlice";
+
+import PurchaseOrderEntryModal from "./modals/PurchaseOrderEntryModal"; // ajusta el path si es necesario
 import { useToastMessages } from "../../hooks/useToastMessage";
 import CustomDialog from "../../components/Dialog";
 
 
+
+type PurchaseOrderRow = {
+  id: string;
+  orderNumber: string;
+  provider: string;
+  createdBy: string;
+  createdAt: string;
+  status: string;
+};
   
 
 const PurchaseOrdersList: React.FC = () => {
@@ -27,6 +42,12 @@ const PurchaseOrdersList: React.FC = () => {
   const { purchaseOrders, successMessage, errorMessage } = useAppSelector((state) => state.purchaseorders);
   const { providers } = useAppSelector((state) => state.providers);
 
+  const [isEntryModalOpen, setIsEntryModalOpen] = useState(false);
+  const [entryItems, setEntryItems] = useState<PurchaseOrderItem[]>([]);
+  const [selectedOrderNumber, setSelectedOrderNumber] = useState<string | null>(null);
+  const { warehouses } = useAppSelector((state) => state.warehouses);
+  const { userInfo } = useAppSelector((state) => state.auth);
+
   const [filters, setFilters] = useState({
     orderNumber: "",
     provider: "",
@@ -36,9 +57,15 @@ const PurchaseOrdersList: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
+  const hasFetched = useRef(false);
+
   useEffect(() => {
-    dispatch(fetchPurchaseOrders());
-    dispatch(fetchProviders({ status: "active" }));
+    if (!hasFetched.current) {
+      dispatch(fetchPurchaseOrders());
+      dispatch(fetchProviders());
+      dispatch(fetchWarehouses());
+      hasFetched.current = true;
+    }
   }, [dispatch]);
 
 //   useEffect(() => {
@@ -47,10 +74,10 @@ const PurchaseOrdersList: React.FC = () => {
 
   useToastMessages(successMessage, errorMessage);
 
-  const handleDeleteDialogOpen = (id: string) => {
+  const handleDeleteDialogOpen = useCallback((id: string) => {
     setSelectedOrderId(id);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
   const handleDeleteDialogClose = () => {
     setSelectedOrderId(null);
@@ -72,10 +99,28 @@ const PurchaseOrdersList: React.FC = () => {
     handleDeleteDialogClose();
   };
 
+  const handleEdit = useCallback((orderNumber: string) => {
+    dispatch(fetchPurchaseOrderByNumber({ orderNumber }))
+    .unwrap()
+    .then((order) => {
+      const itemsWithReceived = order.items.map((item) => ({
+        ...item,
+        receivedQuantity: typeof item.receivedQuantity === "number" ? item.receivedQuantity : 0,
+        referenceId: item.referenceId ?? "",
+        referenceType: item.type.toLowerCase(), // 'product' | 'kit'
+        initialWarehouse: item.initialWarehouse || "",
+      }));
+      setEntryItems(itemsWithReceived);
+      setSelectedOrderNumber(orderNumber);
+      setIsEntryModalOpen(true);
+    });
+}, [dispatch]);
 
-  const handleEdit = (orderNumber: string) => {
-    navigate("/admin/purchasing/po", { state: { orderNumber } });
-  };
+  // const handleEdit = useCallback((orderNumber: string) => {
+  //   navigate("/admin/purchasing/po", {
+  //     state: { orderNumber },
+  //   });
+  // }, [navigate]);
 
 
   const handleExportToExcel = async () => {
@@ -161,71 +206,85 @@ const PurchaseOrdersList: React.FC = () => {
     status: po.status,
   }));
 
+  const renderStatusCell = useCallback((params: GridRenderCellParams<PurchaseOrderRow, string>) => (
+    <Typography
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        color:
+          params.value === "pending"
+            ? "orange"
+            : params.value === "partial"
+            ? "blue"
+            : params.value === "received"
+            ? "green"
+            : "gray",
+      }}
+    >
+      {params.value}
+    </Typography>
+  ), []);
+
+  const renderActionsCell = useCallback((params: GridRenderCellParams<PurchaseOrderRow>) => (
+    <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+      {params.row.status !== "received" && (
+        <IconButton color="primary" size="small" onClick={() => handleEdit(params.row.orderNumber)}>
+          <EditIcon />
+        </IconButton>
+      )}
+       {params.row.status === "pending" && (
+        <IconButton color="error" size="small" onClick={() => handleDeleteDialogOpen(params.row.id)}>
+          <DeleteIcon />
+        </IconButton>
+      )}
+    </Box>
+  ), [handleEdit, handleDeleteDialogOpen]);
 
 
-  const columns: GridColDef[] = [
-    { field: "orderNumber", headerName: "Order #", flex: 1 },
-    { field: "provider", headerName: "Provider", flex: 1 }, // 🔹 Ahora contiene solo el nombre
-    { field: "createdBy", headerName: "Created By", flex: 1 }, // 🔹 Ahora contiene solo el nombre
-    { field: "createdAt", headerName: "Created At", flex: 1, 
-      headerAlign: "center",
-      align: "center"  },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => (
-        <Typography
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            color:
-              params.value === "pending"
-                ? "orange"
-                : params.value === "partial"
-                ? "blue"
-                : params.value === "received"
-                ? "green"
-                : "gray",
-          }}
-        >
-          {params.value}
-        </Typography>
-      ),
+  const columns: GridColDef[] = useMemo(() => {
+    //console.log("render columns")
+    return [
+      { field: "orderNumber", headerName: "Order #", flex: 1 },
+      { field: "provider", headerName: "Provider", flex: 1 },
+      { field: "createdBy", headerName: "Created By", flex: 1 },
+      { field: "createdAt", headerName: "Created At", flex: 1, headerAlign: "center", align: "center" },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+        renderCell: renderStatusCell,
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1,
+        headerAlign: "center",
+        align: "center",
+        renderCell: renderActionsCell,
+      },
+    ];
+  }, [renderActionsCell, renderStatusCell]);
+  
+
+  const datagridSx = useMemo(() => ({
+    "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
+    "& .status-partial": { color: "#2196F3", fontWeight: "bold" },
+    "& .status-received": { color: "#4CAF50", fontWeight: "bold" },
+    "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF", fontSize: "1rem" },
+    "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center" },
+    "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
+    "& .MuiButton-root": { borderRadius: "6px" },
+    "& .status-cell": {
+      textAlign: "center",
+      minWidth: "900px",
     },
-    {
-      field: "actions",
-      headerName: "Actions",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          <IconButton
-            color="primary"
-            size="small"
-            onClick={() => handleEdit(params.row.orderNumber)}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            color="error"
-            size="small"
-            onClick={() => handleDeleteDialogOpen(params.row.id)}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
-      ),
-    },
+  }), []);
+  
     
-  ];
-  
-  
   
 
   return (
@@ -236,7 +295,16 @@ const PurchaseOrdersList: React.FC = () => {
       >Purchase Orders
       </Typography>
       
-      <Box sx={{ display: "flex", flexDirection: isSmallScreen ? "column" : "row", gap: 2, mb: 3 }}>
+      <Box 
+        sx={{ 
+          display: "flex", 
+          flexDirection: isSmallScreen ? "column" : "row", 
+          flexWrap: "wrap",
+          gap: 2, 
+          mb: 3,
+          alignItems: isSmallScreen ? "stretch" : "center" 
+        }}
+      >
         <TextField
           label="Order Number"
           value={filters.orderNumber}
@@ -280,7 +348,15 @@ const PurchaseOrdersList: React.FC = () => {
             {/* <MenuItem value="inactive">Inactive</MenuItem> */}
           </Select>
         </FormControl>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, justifyContent: isSmallScreen ? "center" : "flex-start" }}>
+        <Box 
+          sx={{ 
+            display: "flex", 
+            flexWrap: "wrap", 
+            gap: 2, 
+            minWidth: 140, 
+            height: "100%",
+            justifyContent: isSmallScreen ? "center" : "flex-start" }}
+          >
           <Button
             variant="contained"
             color="success"
@@ -302,8 +378,7 @@ const PurchaseOrdersList: React.FC = () => {
         </Box>
       </Box>
 
-      <Box sx={{ width: "100%", overflowX: "auto" }}>
-        <Box sx={{ minWidth: "900px" }}> {/* 🔹 Asegura que la tabla tenga un tamaño mínimo */}
+      <Box sx={{ width: "100%", overflowX: "auto" }}>  {/* <Box sx={{ width: '100%', height: 300 }}> Establece una altura fija */}
           <DataGrid
             rows={rows} // Debes pasar rows, no filteredOrders
             columns={columns}
@@ -314,23 +389,11 @@ const PurchaseOrdersList: React.FC = () => {
             }}
             pageSizeOptions={[25, 50, 100]}        
             sx={{
-                "& .status-pending": { color: "#FF9800", fontWeight: "bold" },
-                "& .status-partial": { color: "#2196F3", fontWeight: "bold" },
-                "& .status-received": { color: "#4CAF50", fontWeight: "bold" },
-                "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
-                "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
-                "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
-                "& .MuiButton-root": { borderRadius: "6px" },
-                "& .status-cell": {
-                  textAlign: "center",
-                  //minWidth: 600,
-                  minWidth: "900px", // 🔹 Asegura un ancho mínimo
-                },
-                
+              ...datagridSx,
+              minWidth: 800,
             }}
             />  
         </Box>
-      </Box>
 
       <CustomDialog
         isOpen={isDeleteDialogOpen}
@@ -338,7 +401,96 @@ const PurchaseOrdersList: React.FC = () => {
         message="Are you sure you want to delete this purchase order?"
         onClose={handleDeleteDialogClose}
         onConfirm={handleConfirmDelete}
-        />
+      />
+      <PurchaseOrderEntryModal
+        open={isEntryModalOpen}
+        onClose={() => setIsEntryModalOpen(false)}
+        items={entryItems}
+        warehouses={warehouses}
+        onConfirm={async (entries) => {
+          const validEntries = entries.filter((entry) => entry.quantityToReceive > 0);
+          if (!selectedOrderNumber) return;
+
+          try {
+            // 1️⃣ Obtener orden actualizada completa desde backend
+            const po = await dispatch(fetchPurchaseOrderByNumber({ orderNumber: selectedOrderNumber })).unwrap();
+
+            const provider = typeof po.provider === "object" ? po.provider._id : po.provider;
+
+            // 2️⃣ Actualizar ítems con nuevo costo y tax
+            const updatedItems = po.items.map((item: PurchaseOrderItem) => {
+              const matchedEntry = validEntries.find(e => e.referenceId === item.referenceId);
+              if (!matchedEntry) return item;
+
+              const newCost = matchedEntry.cost;
+              const quantity = item.quantity ?? 1;
+
+              let taxRateValue = 0;
+              if (typeof item.taxRate === "object" && item.taxRate?.rate) {
+                taxRateValue = item.taxRate.rate;
+              }
+
+              const subtotal = newCost * quantity;
+              const taxAmount = subtotal * (taxRateValue / 100);
+
+              return {
+                ...item,
+                cost: newCost,
+                subtotal,
+                taxAmount,
+              };
+            });
+
+            // 3️⃣ Actualizar orden de compra en backend
+            await dispatch(updatePurchaseOrder({
+              id: po._id,
+              provider,
+              items: updatedItems.map((item: PurchaseOrderItem) => ({
+                ...item,
+                taxRate: typeof item.taxRate === "object" ? item.taxRate._id : item.taxRate,
+              })),
+              total: updatedItems.reduce((sum: number, item: PurchaseOrderItem) => sum + item.subtotal + (item.taxAmount ?? 0), 0),
+              estimatedDeliveryDate: po.estimatedDeliveryDate,
+            })).unwrap();
+
+            // 4️⃣ Crear movimientos de inventario
+            const userId = userInfo?.id || '';
+            const movementPromises = validEntries.map((entry) => {
+              const matchingItem = po.items.find((item: PurchaseOrderItem) => item.referenceId === entry.referenceId);
+              return dispatch(createInventoryMovement({
+                warehouse: entry.warehouseId,
+                referenceId: entry.referenceId!,
+                referenceType: entry.referenceType,
+                sourceType: 'PurchaseOrder',
+                sourceId: po._id,
+                type: 'entry',
+                quantity: entry.quantityToReceive,
+                status: 'validated',
+                date: new Date().toISOString(),
+                createdBy: userId,
+                sourceWarehouse: matchingItem?.initialWarehouse || undefined,
+                destinationWarehouse: entry.warehouseId,
+              }));
+            });
+
+            await Promise.all(movementPromises);
+
+            // 5️⃣ Recargar la PO para asegurar que se ve reflejado
+            await dispatch(fetchPurchaseOrderByNumber({ orderNumber: selectedOrderNumber }));
+
+            toast.success("Movimientos registrados y PO actualizada correctamente.");
+
+            // 🟢 Refrescar la grilla principal
+            await dispatch(fetchPurchaseOrders());
+          } catch (error) {
+            console.error("❌ Error al registrar entradas desde listado:", error);
+            toast.error("Ocurrió un error al registrar los movimientos.");
+          }
+
+          setIsEntryModalOpen(false);
+        }}
+
+      />
 🔹 🚀 Resul
     </Box>
   );

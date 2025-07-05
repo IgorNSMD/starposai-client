@@ -25,25 +25,28 @@ import {
   deleteRole,
 } from '../../store/slices/roleSlice';
 
+import { selectActiveCompanyVenue } from '../../store/slices/authSlice';
+
 import {
   formContainer,
   submitButton,
   inputField,
   inputContainer,
   formTitle,
-  permissionsTable,
   datagridStyle,
   cancelButton,
-  rolesTable,
 } from '../../styles/AdminStyles';
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 import { useToastMessages } from '../../hooks/useToastMessage';
 
 
+
 const Roles: React.FC = () => {
   const dispatch = useAppDispatch();
   const { permissions, roles, errorMessage, successMessage } = useAppSelector((state) => state.roles);
+  const { activeCompanyId, activeVenueId } = useAppSelector(selectActiveCompanyVenue);
+
   const [formData, setFormData] = useState({ name: '',  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
@@ -52,10 +55,12 @@ const Roles: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null); // ID seleccionado para eliminar
 
   // Cargar permisos al montar el componente
-  useEffect(() => {
-    dispatch(fetchPermissions());
-    dispatch(fetchRoles());
-  }, [dispatch]);
+useEffect(() => {
+  if (!activeCompanyId) return; // Protección contra null
+  dispatch(fetchPermissions());
+  dispatch(fetchRoles({ companyId: activeCompanyId, venueId: activeVenueId }));
+
+}, [dispatch, activeCompanyId, activeVenueId]);
 
   // Manejo de mensajes
   useToastMessages(successMessage, errorMessage);
@@ -83,31 +88,35 @@ const Roles: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
-    if (selectedId) {
-      dispatch(deleteRole(selectedId))
-        .then(() => dispatch(fetchRoles())); // Actualiza la lista después de eliminar
-      setSelectedId(null);
+    if (!activeCompanyId) return; // Protección contra null
+
+    if (selectedId ) {
+      dispatch(deleteRole(selectedId)).then(() => {
+        dispatch(fetchRoles({ companyId: activeCompanyId, venueId: activeVenueId }));
+        setSelectedId(null);
+      });
+      handleDeleteDialogClose();
     }
-    handleDeleteDialogClose();
   };
 
   const handleSubmit = () => {
+    if (!activeCompanyId) return; // Protección contra null
 
     const data = {
       name: formData.name,
-      permissions: selectedPermissions, // Enviar permisos seleccionados
+      permissions: selectedPermissions,
     };
-  
+    
     if (editingId) {
       dispatch(updateRole({ id: editingId, ...data })).then(() => {
-        dispatch(fetchRoles());
+        dispatch(fetchRoles({ companyId: activeCompanyId, venueId: activeVenueId }));
         setEditingId(null);
         setFormData({ name: '' });
         setSelectedPermissions([]);
       });
     } else {
       dispatch(createRole(data)).then(() => {
-        dispatch(fetchRoles());
+        dispatch(fetchRoles({ companyId: activeCompanyId, venueId: activeVenueId }));
         setFormData({ name: '' });
         setSelectedPermissions([]);
       });
@@ -135,18 +144,21 @@ const Roles: React.FC = () => {
   };
 
   const handleConfirmUpdate  = () => {
+    if (!activeCompanyId) return; // Protección contra null
+
     const data = {
+      id: editingId!, // Forzamos a TypeScript a confiar que `editingId` no es null
       name: formData.name,
-      permissions: selectedPermissions, // Enviar permisos seleccionados
+      permissions: selectedPermissions,
     };
   
     if (editingId) {
-      dispatch(updateRole({ id: editingId, ...data })).then(() => {
-        dispatch(fetchRoles());
+      dispatch(updateRole(data)).then(() => {
+        dispatch(fetchRoles({ companyId: activeCompanyId, venueId: activeVenueId }));
         setEditingId(null);
         setFormData({ name: '' });
         setSelectedPermissions([]);
-      });
+    });
     } 
   };
 
@@ -245,61 +257,80 @@ const Roles: React.FC = () => {
         </Box>
       </Paper>
 
-      <Paper sx={permissionsTable}>
-        <DataGrid
-          rows={rowsPermissions}
-          columns={columnsPermissions}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
-              },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
-        <Box display="flex" gap={2} margin ="16px" >
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSubmit}
-            sx={submitButton}
-          >
-            {editingId ? 'Update' : 'Save'}
-          </Button>
-          {editingId && (
-            <Button
-              variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
-              color="secondary" // O el color que prefieras
-              onClick={handleCancel}
-              startIcon={<CancelIcon />}
-              sx={cancelButton}
-            >
-              Cancel
-            </Button>
-          )}
+      <Paper   
+        sx={{
+          width: '100%',
+          overflowX: 'auto',
+          marginTop: 2,
+        }}>
+
+        <Box sx={{ minWidth: '600px' }}>
+          <DataGrid
+              rows={rowsPermissions}
+              columns={columnsPermissions}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+              pageSizeOptions={[5, 10, 20]}
+              disableRowSelectionOnClick
+              sx={datagridStyle}
+            /> 
+          <Box display="flex" gap={2} margin ="16px" >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit}
+                sx={submitButton}
+              >
+                {editingId ? 'Update' : 'Save'}
+              </Button>
+              {editingId && (
+                <Button
+                  variant="outlined" // Cambiado a `contained` para igualar el estilo de "Save"
+                  color="secondary" // O el color que prefieras
+                  onClick={handleCancel}
+                  startIcon={<CancelIcon />}
+                  sx={cancelButton}
+                >
+                  Cancel
+                </Button>
+              )}
+          </Box>         
         </Box>
       </Paper>
-      <Paper sx={rolesTable}>
-        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
-          Roles List
-        </Typography>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+
+      <Paper 
+        sx={{
+          width: '100%',
+          overflowX: 'auto',
+          marginTop: 2,
+        }}
+      >
+        <Box sx={{ minWidth: '600px' }}>
+          <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
+            Roles List
+          </Typography>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
               },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
+            }}
+            pageSizeOptions={[5, 10, 20]}
+            disableRowSelectionOnClick
+            sx={datagridStyle}
+          />
+        </Box>
+
+
       </Paper>
 
       {/* Cuadro de diálogo de confirmación */}

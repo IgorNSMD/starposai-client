@@ -27,6 +27,9 @@ import {
   changeClientStatus,
   searchClients,
 } from '../../store/slices/clientSlice';
+
+
+
 import {
   formContainer,
   submitButton,
@@ -57,6 +60,8 @@ const DraggablePaper = (props: PaperProps) => {
 const Client: React.FC = () => {
   const dispatch = useAppDispatch();
   const { clients, successMessage } = useAppSelector((state) => state.clients);
+
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
@@ -103,20 +108,24 @@ const Client: React.FC = () => {
 
   const handleSubmit = () => {
     if (editingId) {
-    dispatch(updateClient({ id: editingId, data: { ...formData } }))
+      dispatch(updateClient({ id: editingId, data: formData }))
         .unwrap()
         .then(() => {
-        setLocalError(null)
-        handleCloseModal(); // Cierra el modal si la operación fue exitosa
+            setLocalError(null)
+            handleCloseModal(); // Cierra el modal si la operación fue exitosa
+            // 🔥 Refresca la lista de clientes
+            dispatch(fetchClients({ status: 'active' }));
         })
         .catch((error) => {
         setLocalError(error); // Muestra el error si falla
         });
     } else {
-    dispatch(createClient(formData))
+      dispatch(createClient( formData ))
         .unwrap()
         .then(() => {
-        handleCloseModal(); // Cierra el modal si la operación fue exitosa
+            handleCloseModal(); // Cierra el modal si la operación fue exitosa
+            // 🔥 Refresca la lista de clientes
+            dispatch(fetchClients({ status: 'active' }));            
         })
         .catch((error) => {
         setLocalError(error); // Muestra el error si falla
@@ -125,7 +134,7 @@ const Client: React.FC = () => {
   };
 
   const handleSearch = () => {
-    dispatch(searchClients(filters));
+    dispatch(searchClients({ ...filters }));
   };
 
   const handleEdit = (id: string) => {
@@ -156,25 +165,29 @@ const Client: React.FC = () => {
 
   const handleConfirmDelete = () => {
     if (selectedClientId) {
-      dispatch(changeClientStatus({ id: selectedClientId, status: 'inactive' }))
-        .unwrap()
-        .then(() => {
-          console.log('Estado cambiado a inactive con éxito');
-          dispatch(fetchClients({ status: 'active' }));
-        })
-        .catch((error) => {
-          console.error('Error al cambiar el estado del producto:', error);
-        });      
+      dispatch(changeClientStatus({
+        id: selectedClientId,
+        status: 'inactive'
+      }))
+      .unwrap()
+      .then(() => {
+        console.log('Cliente desactivado correctamente');
+        handleDeleteDialogClose(); // Cerrar el diálogo correctamente
+      })
+      .catch((error) => {
+        console.error('Error al desactivar el cliente:', error);
+      });
     }
-    handleDeleteDialogClose();
   };
+  
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFilters({ ...filters, [name]: value });
   };
 
-  const rows = clients.map((client) => ({
+  const rows = clients.filter((c) => c._id && c.name && c.email) // Filtra registros válidos
+    .map((client) => ({
     id: client._id,
     name: client.name,
     rut: client.rut,
@@ -183,6 +196,8 @@ const Client: React.FC = () => {
     address: client.address,
     country: client.country,
   }));
+
+  //console.log('rows->', rows)
 
   const columns: GridColDef[] = [
     { field: 'name', headerName: 'Name', flex: 1, minWidth: 150 },

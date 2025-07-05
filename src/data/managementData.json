@@ -1,0 +1,634 @@
+{
+  "permissions": [
+    {
+      "key": "ITEM_MASTER",
+      "description": "Maestro de artículos"
+    },
+    {
+      "key": "CUSTOMER_MASTER",
+      "description": "Maestro de clientes"
+    },
+    {
+      "key": "DASHBOARD",
+      "description": "Panel Estadístico"
+    },
+    {
+      "key": "VENDOR_MASTER",
+      "description": "Maestro de proveedores"
+    },
+    {
+      "key": "UNIT_OF_MEASURE (UOM)",
+      "description": "Inidad de Medida"
+    },
+    {
+      "key": "PRODUCT_CATEGORY",
+      "description": "Categoría de producto"
+    },
+    {
+      "key": "ORDER_MANAGEMENT",
+      "description": "Gestión de pedidos"
+    },
+    {
+      "key": "PURCHASE_MANAGEMENT",
+      "description": "Gestión de compras"
+    },
+    {
+      "key": "INVENTORY_MANAGEMENT",
+      "description": "Gestión Inventario"
+    },
+    {
+      "key": "ORDER_REPORT",
+      "description": "Reporte de Peidos"
+    },
+    {
+      "key": "PURCHASE_REPORT",
+      "description": "Reporte Compra"
+    },
+    {
+      "key": "INVENTORY_REPORT",
+      "description": "Reporte Inventario"
+    },
+    {
+      "key": "PERMISSIONS",
+      "description": "Maestro de permisos"
+    },
+    {
+      "key": "ACTIONS",
+      "description": "Maestro de acciones"
+    },
+    {
+      "key": "ROLES",
+      "description": "Maestro de Roles"
+    },
+    {
+      "key": "MENUS",
+      "description": "Maestro de menus"
+    },
+    {
+      "key": "USERS",
+      "description": "Maestro de Usuarios"
+    },
+    {
+      "key": "SETTINGS",
+      "description": "Maestro de ajustes"
+    },
+    {
+      "key": "KIT_MASTER",
+      "description": "Maestro de kits"
+    },
+    {
+      "key": "TEST_PAGE",
+      "description": "Testear Pagina"
+    },
+    {
+      "key": "POSITION_MASTER",
+      "description": "Maestro de cargos"
+    },
+    {
+      "key": "STAFF_MASTER",
+      "description": "Maestro de Personal"
+    },
+    {
+      "key": "RECIPECATEGORY_MASTER",
+      "description": "Maestro de Categoria Receta"
+    }
+  ],
+  "roles": [
+    {
+      "name": "PLAN_1",
+      "permissions": [
+        "PERMISSIONS",
+        "ACTIONS",
+        "ROLES",
+        "MENUS",
+        "USERS",
+        "ITEM_MASTER",
+        "PRODUCT_CATEGORY",
+        "VENDOR_MASTER",
+        "CUSTOMER_MASTER",
+        "INVENTORY_MANAGEMENT",
+        "PURCHASE_MANAGEMENT",
+        "KIT_MASTER",
+        "TEST_PAGE",
+        "POSITION_MASTER",
+        "RECIPECATEGORY_MASTER",
+        "ORDER_MANAGEMENT",
+        "SETTINGS",
+        "STAFF_MASTER"
+      ]
+    },
+    {
+      "name": "ADMINISTRATOR",
+      "permissions": [
+        "PERMISSIONS",
+        "ACTIONS",
+        "ROLES",
+        "MENUS",
+        "USERS",
+        "ITEM_MASTER",
+        "PRODUCT_CATEGORY",
+        "VENDOR_MASTER",
+        "CUSTOMER_MASTER",
+        "INVENTORY_MANAGEMENT",
+        "PURCHASE_MANAGEMENT",
+        "KIT_MASTER",
+        "TEST_PAGE",
+        "POSITION_MASTER",
+        "RECIPECATEGORY_MASTER"
+      ]
+    },
+    {
+      "name": "DATA_MANAGER",
+      "permissions": [
+        "ITEM_MASTER",
+        "CUSTOMER_MASTER",
+        "VENDOR_MASTER",
+        "PRODUCT_CATEGORY",
+        "UNIT_OF_MEASURE (UOM)"
+      ]
+    },
+    {
+      "name": "ANALYST",
+      "permissions": [
+        "DASHBOARD",
+        "INVENTORY_REPORT",
+        "ORDER_REPORT",
+        "PURCHASE_REPORT"
+      ]
+    },
+    {
+      "name": "SALES",
+      "permissions": [
+        "ORDER_MANAGEMENT",
+        "ORDER_REPORT"
+      ]
+    },
+    {
+      "name": "PURCHASE",
+      "permissions": [
+        "PURCHASE_MANAGEMENT",
+        "PURCHASE_REPORT"
+      ]
+    },
+    {
+      "name": "SUPERVISOR",
+      "permissions": [
+        "ORDER_REPORT",
+        "PURCHASE_REPORT",
+        "INVENTORY_REPORT"
+      ]
+    },
+    {
+      "name": "INVENTORY",
+      "permissions": [
+        "INVENTORY_MANAGEMENT",
+        "INVENTORY_REPORT"
+      ]
+    }
+  ],
+  "menus": [
+    {
+      "label": "DASHBOARD",
+      "component": "DASHBOARD",
+      "parentId": null,
+      "sequence": 1,
+      "path": "/DASHBOARD",
+      "icon": "uploads\\menuicons\\1735869429424-dashboard.png",
+      "divider": false,
+      "permissions": [
+        "DASHBOARD"
+      ],
+      "global": false
+    },
+    {
+      "label": "MANAGEMENT",
+      "component": "MANAGEMENT",
+      "parentId": null,
+      "sequence": 2,
+      "path": "/admin/management",
+      "icon": "uploads\\menuicons\\1735781461690-security.png",
+      "divider": false,
+      "permissions": [
+        "ACTIONS",
+        "MENUS",
+        "PERMISSIONS",
+        "ROLES",
+        "USERS"
+      ],
+      "global": false
+    },
+    {
+      "label": "PERMISSIONS",
+      "component": "PERMISSIONS",
+      "parentId": "MANAGEMENT",
+      "sequence": 2,
+      "path": "/admin/management/permissions",
+      "icon": "uploads\\menuicons\\1735781534126-security.png",
+      "divider": false,
+      "permissions": [
+        "PERMISSIONS"
+      ],
+      "global": false
+    },
+    {
+      "label": "ACTIONS",
+      "component": "ACTIONS",
+      "parentId": "MANAGEMENT",
+      "sequence": 2,
+      "path": "/admin/management/actions",
+      "icon": "uploads\\menuicons\\1735781643035-bolt.png",
+      "divider": false,
+      "permissions": [
+        "ACTIONS"
+      ],
+      "global": false
+    },
+    {
+      "label": "ROLES",
+      "component": "ROLES",
+      "parentId": "MANAGEMENT",
+      "sequence": 2,
+      "path": "/admin/management/roles",
+      "icon": "uploads\\menuicons\\1735781972676-group.png",
+      "divider": false,
+      "permissions": [
+        "ROLES"
+      ],
+      "global": false
+    },
+    {
+      "label": "USERS",
+      "component": "USERS",
+      "parentId": "MANAGEMENT",
+      "sequence": 2,
+      "path": "/admin/management/users",
+      "icon": "uploads\\menuicons\\1735782230468-person.png",
+      "divider": false,
+      "permissions": [
+        "USERS"
+      ],
+      "global": false
+    },
+    {
+      "label": "MENUS",
+      "component": "MENUS",
+      "parentId": "MANAGEMENT",
+      "sequence": 2,
+      "path": "/admin/management/menus",
+      "icon": "uploads\\menuicons\\1735782135950-menu.png",
+      "divider": false,
+      "permissions": [],
+      "global": false
+    },
+    {
+      "label": "SETTING",
+      "component": "SETTING",
+      "parentId": null,
+      "sequence": 3,
+      "path": "/admin/setting",
+      "icon": "uploads\\menuicons\\1745589614776-settings.png",
+      "divider": false,
+      "permissions": [
+        "SETTINGS"
+      ],
+      "global": false
+    },
+    {
+      "label": "GENERAL",
+      "component": "GENERAL",
+      "parentId": "SETTING",
+      "sequence": 3,
+      "path": "/admin/setting/general",
+      "icon": "uploads\\menuicons\\1745590890590-settings.png",
+      "divider": false,
+      "permissions": [
+        "SETTINGS"
+      ],
+      "global": false
+    },
+    {
+      "label": "WAREHOUSE",
+      "component": "WAREHOUSE",
+      "parentId": "SETTING",
+      "sequence": 3,
+      "path": "/admin/setting/warehouse",
+      "icon": "uploads\\menuicons\\1745591634382-warehouse.png",
+      "divider": false,
+      "permissions": [
+        "SETTINGS"
+      ],
+      "global": false
+    },
+    {
+      "label": "ROOMS",
+      "component": "ROOMS",
+      "parentId": "SETTING",
+      "sequence": 3,
+      "path": "/admin/setting/rooms",
+      "icon": "uploads\\menuicons\\1745591890125-room.png",
+      "divider": false,
+      "permissions": [
+        "SETTINGS"
+      ],
+      "global": false
+    },
+    {
+      "label": "TABLES",
+      "component": "TABLES",
+      "parentId": "SETTING",
+      "sequence": 3,
+      "path": "/admin/setting/tables",
+      "icon": "uploads\\menuicons\\1745592083301-table.png",
+      "divider": false,
+      "permissions": [
+        "SETTINGS"
+      ],
+      "global": false
+    },
+    {
+      "label": "CANVAS",
+      "component": "CANVAS",
+      "parentId": "SETTING",
+      "sequence": 3,
+      "path": "/admin/setting/tablescanvas",
+      "icon": "uploads\\menuicons\\1745592348453-tablecanvas.png",
+      "divider": false,
+      "permissions": [
+        "SETTINGS"
+      ],
+      "global": false
+    },
+    {
+      "label": "MASTER DATA",
+      "component": "MASTERDATA",
+      "parentId": null,
+      "sequence": 4,
+      "path": "/admin/masterdata",
+      "icon": "uploads\\menuicons\\1736731181408-masterdata.png",
+      "divider": false,
+      "permissions": [
+        "ITEM_MASTER",
+        "KIT_MASTER"
+      ],
+      "global": false
+    },
+    {
+      "label": "PRODUCT",
+      "component": "PRODUCT",
+      "parentId": "MASTER DATA",
+      "sequence": 4,
+      "path": "/admin/masterdata/product",
+      "icon": "uploads\\menuicons\\1736732202842-place_item.png",
+      "divider": false,
+      "permissions": [],
+      "global": false
+    },
+    {
+      "label": "CATEGORY",
+      "component": "CATEGORY",
+      "parentId": "MASTER DATA",
+      "sequence": 4,
+      "path": "/admin/masterdata/category",
+      "icon": "uploads\\menuicons\\1737590697119-category.png",
+      "divider": false,
+      "permissions": [
+        "PRODUCT_CATEGORY"
+      ],
+      "global": false
+    },
+    {
+      "label": "PROVIDER",
+      "component": "PROVIDER",
+      "parentId": "MASTER DATA",
+      "sequence": 4,
+      "path": "/admin/masterdata/provider",
+      "icon": "uploads\\menuicons\\1737596184591-storefront.png",
+      "divider": false,
+      "permissions": [
+        "VENDOR_MASTER"
+      ],
+      "global": false
+    },
+    {
+      "label": "INVENTORY",
+      "component": "INVENTORY",
+      "parentId": null,
+      "sequence": 5,
+      "path": "/admin/inventory",
+      "icon": "uploads\\menuicons\\1737930202416-inventory.png",
+      "divider": false,
+      "permissions": [
+        "INVENTORY_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "MOVEMENTS",
+      "component": "MOVEMENTS",
+      "parentId": "INVENTORY",
+      "sequence": 5,
+      "path": "/admin/inventory/movements",
+      "icon": "uploads\\menuicons\\1737930523654-inventory.png",
+      "divider": false,
+      "permissions": [
+        "INVENTORY_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "VIEW-IN",
+      "component": "VIEW-IN",
+      "parentId": "INVENTORY",
+      "sequence": 5,
+      "path": "/admin/inventory/view",
+      "icon": "uploads\\menuicons\\1745592790455-view.png",
+      "divider": false,
+      "permissions": [
+        "INVENTORY_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "TRANSFER",
+      "component": "TRANSFER",
+      "parentId": "INVENTORY",
+      "sequence": 5,
+      "path": "/admin/inventory/transfer",
+      "icon": "uploads\\menuicons\\1746811820838-Transfer.png",
+      "divider": false,
+      "permissions": [
+        "INVENTORY_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "DISASSEMBLY",
+      "component": "DISASSEMBLY",
+      "parentId": "INVENTORY",
+      "sequence": 5,
+      "path": "/admin/inventory/disassembly",
+      "icon": "uploads\\menuicons\\1746984781185-Disassembly.png",
+      "divider": false,
+      "permissions": [
+        "INVENTORY_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "REVIEW",
+      "component": "REVIEW",
+      "parentId": "INVENTORY",
+      "sequence": 5,
+      "path": "/admin/inventory/review",
+      "icon": "uploads\\menuicons\\1748631604408-Review.png",
+      "divider": false,
+      "permissions": [
+        "INVENTORY_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "PURCHASING",
+      "component": "PURCHASING",
+      "parentId": null,
+      "sequence": 6,
+      "path": "/admin/purchasing",
+      "icon": "uploads\\menuicons\\1738435342496-purchesing.png",
+      "divider": false,
+      "permissions": [
+        "PURCHASE_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "PO",
+      "component": "PO",
+      "parentId": "PURCHASING",
+      "sequence": 6,
+      "path": "/admin/purchasing/po",
+      "icon": "uploads\\menuicons\\1738435457457-purchesing.png",
+      "divider": false,
+      "permissions": [
+        "PURCHASE_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "VIEW-PO",
+      "component": "VIEW-PO",
+      "parentId": "PURCHASING",
+      "sequence": 6,
+      "path": "/admin/purchasing/view",
+      "icon": "uploads\\menuicons\\1739566972624-view.png",
+      "divider": false,
+      "permissions": [
+        "PURCHASE_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "SALES",
+      "component": "SALES",
+      "parentId": null,
+      "sequence": 7,
+      "path": "/admin/sales",
+      "icon": "uploads\\menuicons\\1745542872977-point_of_sale.png",
+      "divider": false,
+      "permissions": [
+        "ORDER_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "RESERVATION",
+      "component": "RESERVATION",
+      "parentId": "SALES",
+      "sequence": 7,
+      "path": "/admin/sales/reservation",
+      "icon": "uploads\\menuicons\\1748796216785-Reservation.png",
+      "divider": false,
+      "permissions": [
+        "ORDER_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "SALESPOS",
+      "component": "SALESPOS",
+      "parentId": "SALES",
+      "sequence": 7,
+      "path": "/admin/sales/salespos",
+      "icon": "uploads\\menuicons\\1748875776010-point_of_sale.png",
+      "divider": false,
+      "permissions": [
+        "ORDER_MANAGEMENT"
+      ],
+      "global": false
+    },
+    {
+      "label": "STAFF",
+      "component": "STAFF",
+      "parentId": null,
+      "sequence": 8,
+      "path": "/admin/staff",
+      "icon": "uploads\\menuicons\\1751743822658-person_2.png",
+      "divider": false,
+      "permissions": [
+        "STAFF_MASTER"
+      ],
+      "global": false
+    },
+    {
+      "label": "PERSONNEL",
+      "component": "PERSONNEL",
+      "parentId": "STAFF",
+      "sequence": 8,
+      "path": "/admin/staff/staff",
+      "icon": "uploads\\menuicons\\1751743935433-person.png",
+      "divider": false,
+      "permissions": [
+        "STAFF_MASTER"
+      ],
+      "global": false
+    },
+    {
+      "label": "POSITION",
+      "component": "POSITION",
+      "parentId": "STAFF",
+      "sequence": 8,
+      "path": "/admin/staff/position",
+      "icon": "uploads\\menuicons\\1751744246409-position.png",
+      "divider": false,
+      "permissions": [
+        "STAFF_MASTER"
+      ],
+      "global": false
+    },
+    {
+      "label": "SHIFT",
+      "component": "SHIFT",
+      "parentId": "STAFF",
+      "sequence": 8,
+      "path": "/admin/staff/shift",
+      "icon": "uploads\\menuicons\\1751744338960-shift.png",
+      "divider": false,
+      "permissions": [
+        "STAFF_MASTER"
+      ],
+      "global": false
+    },
+    {
+      "label": "TASK",
+      "component": "TASK",
+      "parentId": "STAFF",
+      "sequence": 8,
+      "path": "/admin/staff/task",
+      "icon": "uploads\\menuicons\\1751744540718-task.png",
+      "divider": false,
+      "permissions": [
+        "STAFF_MASTER"
+      ],
+      "global": false
+    }
+  ]
+}

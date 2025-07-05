@@ -8,6 +8,8 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { sidebarStyle } from '../styles/AdminStyles';
 import { useAppDispatch, useAppSelector } from '../store/redux/hooks';
 import { fetchMenus, fetchMenuByRole, fetchMenuTree } from '../store/slices/menuSlice'; // Asegúrate de que este thunk exista
+import { selectActiveCompanyVenue, selectCurrentRole } from '../store/slices/authSlice';
+
 import { baseURL_MENUICONS } from '../utils/Parameters'; // Importa tu baseURL exportable
 
 //import { menuAdmin } from './AdminMenu';
@@ -87,7 +89,10 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) =>
 
   const dispatch = useAppDispatch();
   const {menusRoles, menusTrees, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded } = useAppSelector((state) => state.menus);
-  const role = useAppSelector((state) => state.auth.userInfo?.role); // Obtén el rol del usuario
+  const { activeCompanyId, activeVenueId } = useAppSelector(selectActiveCompanyVenue);
+
+  const role = useAppSelector(selectCurrentRole);
+
   const location = useLocation();
 
   const [openMenus, setOpenMenus] = React.useState<{ [key: string]: boolean }>({});
@@ -95,10 +100,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) =>
 
   // Cargar los menús al montar el componente
   useEffect(() => {
-    if (!isMenuLoaded) dispatch(fetchMenus());
-    if (!isMenuByRoleLoaded && role) dispatch(fetchMenuByRole(role));
-    if (!isMenuTreeLoaded) dispatch(fetchMenuTree());
-  }, [dispatch, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded, role]);
+    if (activeCompanyId) {
+      if (!isMenuLoaded) dispatch(fetchMenus({ companyId: activeCompanyId, venueId: activeVenueId || undefined }));
+      if (!isMenuByRoleLoaded && role) dispatch(fetchMenuByRole({ role, companyId: activeCompanyId, venueId: activeVenueId || undefined }));
+      if (!isMenuTreeLoaded) dispatch(fetchMenuTree({ companyId: activeCompanyId, venueId: activeVenueId || undefined }));
+    }
+  }, [dispatch, isMenuLoaded, isMenuByRoleLoaded, isMenuTreeLoaded, role, activeCompanyId, activeVenueId]);
 
   const toggleSubMenu = (name: string | undefined) => {
     if (name) {
@@ -304,7 +311,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar }) =>
                               '&:hover': { backgroundColor: '#314e8a' },
                             }}
                             onClick={() => {
-                              console.log('Clic en submenú:', subItem.component);
+                              //console.log('Clic en submenú:', subItem.component);
                               if (isMobile) toggleSidebar(); // ✅ Cierra el Sidebar en móviles al hacer clic en un submenú
                             }}
                           >

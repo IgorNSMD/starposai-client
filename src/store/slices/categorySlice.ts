@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
-
+import { getActiveContext } from "../../utils/getActiveContext";
+import { RootState } from "../store";
 
 // Define la interfaz para un parámetro
 export interface Category {
@@ -8,85 +9,155 @@ export interface Category {
     name: string;
     description: string;
     prefix: string;
+    companyId: string;
+    venueId?: string;
+    parentId?: string;
 }
 
 interface CategoryState {
   categories: Category[]; // Agregamos las categorias
+  categoriesRoot: Category[];
+  subcategories: Category[]; // 👈 nuevo estado
   isLoading: boolean;
   errorMessage: string | null;
   successMessage: string | null;
 }
 
+
 const initialState: CategoryState = {
     categories: [], // Agregamos los categorias aquí
+    categoriesRoot: [],
+    subcategories: [], // 👈 nuevo estado
     isLoading: false,
     errorMessage: null,
     successMessage: null,
 };
 
-export const fetchCategories = createAsyncThunk<
+export const fetchSubcategories = createAsyncThunk<
   Category[],
-  void,
-  { rejectValue: string }
->("categories/fetchCategories", async (_, { rejectWithValue }) => {
+  string, // parentId
+  { rejectValue: string; state: RootState }
+>("categories/fetchSubcategories", async (parentId, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.get("/categories");
-    // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
-    //console.log('response.data-> ', response.data)  
+    const { activeCompanyId } = getActiveContext(getState());
+    const response = await axiosInstance.get("/categories/by-parent", {
+      params: { companyId: activeCompanyId, parentId },
+    });
     return response.data;
-    
-
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error fetching categories");
+      return rejectWithValue(error.response?.data?.message || "Error al cargar subcategorías.");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
 
+export const fetchCategoriesRoot = createAsyncThunk<
+  Category[],
+  void,
+  { rejectValue: string; state: RootState }
+>("categories/fetchCategoriesRoot", async (_, { rejectWithValue, getState }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    if (!activeCompanyId) return rejectWithValue("Company ID no disponible");
 
+    const response = await axiosInstance.get("/categories/root", {
+      params: { companyId: activeCompanyId, venueId: activeVenueId }
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error fetching recipe categories root");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
+// 🔹 GET
+export const fetchCategories = createAsyncThunk<
+  Category[],
+  void,
+  { rejectValue: string; state: RootState }
+>('categories/fetchCategories', async (_, { rejectWithValue, getState }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.get('/categories', {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error fetching categories');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+
+// 🔹 POST
 export const createCategory = createAsyncThunk<
   Category,
-  { name: string; description: string; prefix: string },
-  { rejectValue: string }
->("categories/createCategory ", async (data, { rejectWithValue }) => {
+  { name: string; description: string; prefix: string; parentId?: string },
+  { rejectValue: string; state: RootState }
+>('categories/createCategory', async (data, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.post("/categories", data);
+    //console.log("Creating category with data:", data);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const payload = {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    };
+
+    const response = await axiosInstance.post("/categories", payload);
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (categories/createCategory)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error creating category');
     }
+    return rejectWithValue("Unknown error occurred");
   }
 });
 
+// 🔹 PUT
 export const updateCategory = createAsyncThunk<
   Category,
-  { id: string; name: string; description: string; prefix: string },
-  { rejectValue: string }
->("categories/updateCategory", async ({ id, name, description, prefix }, { rejectWithValue }) => {
+  { id: string; name: string; description: string; prefix: string; parentId?: string },
+  { rejectValue: string; state: RootState }
+>('categories/updateCategory', async ({ id, ...data }, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.put(`/categories/${id}`, { name, description, prefix });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const payload = {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    };
+
+    const response = await axiosInstance.put(`/categories/${id}`, payload);
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (categories/updateCategory)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error updating category');
     }
+    return rejectWithValue("Unknown error occurred");
   }
 });
 
+// 🔹 DELETE
 export const deleteCategory = createAsyncThunk<
   string,
   string,
   { rejectValue: string }
->("categories/deleteCategory", async (id, { rejectWithValue }) => {
+>('categories/deleteCategory', async (id, { rejectWithValue }) => {
   try {
     await axiosInstance.delete(`/categories/${id}`);
-    return id; // Devuelve el ID eliminado en caso de éxito
+    return id;
   } catch (error) {
-    // Manejo del error con `isAxiosError` desde la instancia extendida
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting category..");
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error deleting category');
     }
     return rejectWithValue("Unknown error occurred");
   }
@@ -133,7 +204,21 @@ const categorySlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(deleteCategory.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error deleting Category";
+        state.errorMessage = action.payload || "Error deleting category";
+      })
+      .addCase(fetchCategoriesRoot.fulfilled, (state, action: PayloadAction<Category[]>) => {
+        state.categoriesRoot = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchCategoriesRoot.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error loading menus..";
+      })
+      .addCase(fetchSubcategories.fulfilled, (state, action: PayloadAction<Category[]>) => {
+        state.subcategories = action.payload;
+        state.errorMessage = null;
+      })
+      .addCase(fetchSubcategories.rejected, (state, action: PayloadAction<string | undefined>) => {
+        state.errorMessage = action.payload || "Error cargando subcategorías.";
       });
   },
 });

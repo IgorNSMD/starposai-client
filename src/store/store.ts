@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
-import userReducer from './slices/userSlice';
+import userReducer from './backup/userSlice';
 import authReducer from './slices/authSlice'; // authReducer persistido
 import permissionReducer from './slices/permissionSlice'; // Importa el nuevo reducer de permisos
 import roleReducer from './slices/roleSlice'; // Importa el nuevo reducer de permisos
@@ -22,6 +22,19 @@ import warehouseReducer from './slices/warehouseSlice';
 import positionReducer from './slices/positionSlice';
 import staffReducer from './slices/staffSlice';
 import recipeCategoriesReducer from './slices/recipeCategorySlice';
+import companyReducer from "./slices/companySlice";
+import registrationReducer from "./slices/registrationSlice";
+import shiftReducer from "./slices/shiftSlice";
+import taskReducer from "./slices/taskSlice";
+import roomReducer from "./slices/roomSlice";
+import tableReducer from "./slices/tableSlice";
+import reservationReducer from "./slices/reservationSlice";
+import menuCatalogReducer from "./slices/menuCatalogSlice";
+import settingReducer from "./slices/settingSlice";
+import venueReducer from "./slices/venueSlice";
+import taxRateReducer from "./slices/taxRateSlice";
+import saleReducer from "./slices/saleSlice"; // Importa el nuevo reducer de ventas|
+
 // Configuración de persistencia
 const persistConfig = {
   key: 'auth', // Solo persiste el reducer de autenticación
@@ -52,13 +65,27 @@ const store = configureStore({
     warehouses: warehouseReducer,
     positions: positionReducer,
     staffs: staffReducer,
-    recipeCategories: recipeCategoriesReducer
+    recipeCategories: recipeCategoriesReducer,
+    company: companyReducer,
+    registration: registrationReducer,
+    shifts: shiftReducer,
+    tasks: taskReducer,
+    rooms: roomReducer,
+    tables: tableReducer,
+    reservations: reservationReducer,
+    menuCatalogs: menuCatalogReducer,
+    settings: settingReducer,
+    venues: venueReducer, // Reducer para actions
+    taxRates: taxRateReducer, 
+    sales: saleReducer, // Reducer para acciones de ventas
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false, // Ignora el chequeo de serialización para redux-persist
     }),
 });
+
+//console.log("🎬 Store inicializado con estado:", JSON.stringify(store.getState()));
 
 // Configuración del persistor
 export const persistor = persistStore(store);

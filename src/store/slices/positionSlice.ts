@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
-
+import { RootState } from '../store';
+import { getActiveContext } from '../../utils/getActiveContext';
 
 // Define la interfaz para un parámetro
 export interface Position {
@@ -22,77 +23,104 @@ const initialState: PositionState = {
     successMessage: null,
 };
 
+// Thunks
 export const fetchPositions = createAsyncThunk<
   Position[],
   void,
-  { rejectValue: string }
->("positions/fetchPositions", async (_, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>('positions/fetchPositions', async (_, { getState, rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/positions");
-    // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
-    //console.log('response.data-> ', response.data)  
-    return response.data;
-    
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
 
+    const response = await axiosInstance.get('/positions', {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
+
+    return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error fetching positions");
+      return rejectWithValue(error.response?.data?.message || 'Error fetching positions');
     }
-    return rejectWithValue("Unknown error occurred");
+    return rejectWithValue('Unknown error occurred');
   }
 });
+
 
 
 export const createPosition = createAsyncThunk<
   Position,
-  { name: string; },
-  { rejectValue: string }
->("positions/createPosition ", async (data, { rejectWithValue }) => {
+  { name: string },
+  { rejectValue: string; state: RootState }
+>('positions/createPosition', async ({ name }, { getState, rejectWithValue }) => {
   try {
-    const response = await axiosInstance.post("/positions", data);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.post('/positions', {
+      name,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (positions/createPosition)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error creating position');
     }
+    return rejectWithValue('Unknown error');
   }
 });
 
+
 export const updatePosition = createAsyncThunk<
   Position,
-  { id: string; name: string; },
-  { rejectValue: string }
->("positions/updatePosition", async ({ id, name, }, { rejectWithValue }) => {
+  { id: string; name: string },
+  { rejectValue: string; state: RootState }
+>('positions/updatePosition', async ({ id, name }, { getState, rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(`/positions/${id}`, { name, });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.put(`/positions/${id}`, {
+      name,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (positions/updatePosition)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error updating position');
     }
+    return rejectWithValue('Unknown error');
   }
 });
+
 
 export const deletePosition = createAsyncThunk<
   string,
   string,
-  { rejectValue: string }
->("positions/deletePosition", async (id, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>('positions/deletePosition', async (id, { getState, rejectWithValue }) => {
   try {
-    await axiosInstance.delete(`/positions/${id}`);
-    return id; // Devuelve el ID eliminado en caso de éxito
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    await axiosInstance.delete(`/positions/${id}`, {
+      data: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
+
+    return id;
   } catch (error) {
-    // Manejo del error con `isAxiosError` desde la instancia extendida
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting Position..");
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error deleting position');
     }
-    return rejectWithValue("Unknown error occurred");
+    return rejectWithValue('Unknown error');
   }
 });
 
+
+
 // Slice
-const PositionSlice = createSlice({
-  name: "positions",
+const positionSlice = createSlice({
+  name: 'positions',
   initialState,
   reducers: {
     clearMessages(state) {
@@ -102,39 +130,42 @@ const PositionSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchPositions.fulfilled, (state, action: PayloadAction<Position[]>) => {
+      .addCase(fetchPositions.pending, (state) => {
         state.isLoading = true;
+      })
+      .addCase(fetchPositions.fulfilled, (state, action: PayloadAction<Position[]>) => {
+        state.isLoading = false;
         state.positions = action.payload;
-        state.errorMessage = null;
+      })
+      .addCase(fetchPositions.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errorMessage = action.payload || 'Error fetching positions';
       })
       .addCase(createPosition.fulfilled, (state, action: PayloadAction<Position>) => {
         state.positions.push(action.payload);
-        state.successMessage = "Position created successfully";
-        state.errorMessage = null;
+        state.successMessage = 'Position created successfully';
       })
-      .addCase(createPosition.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error creating Position";
+      .addCase(createPosition.rejected, (state, action) => {
+        state.errorMessage = action.payload || 'Error creating position';
       })
       .addCase(updatePosition.fulfilled, (state, action: PayloadAction<Position>) => {
-        state.positions = state.positions.map((cat) =>
-          cat._id === action.payload._id ? action.payload : cat
+        state.positions = state.positions.map((pos) =>
+          pos._id === action.payload._id ? action.payload : pos
         );
-        state.successMessage = "Position updated successfully";
-        state.errorMessage = null;
+        state.successMessage = 'Position updated successfully';
       })
-      .addCase(updatePosition.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error updating Position";
+      .addCase(updatePosition.rejected, (state, action) => {
+        state.errorMessage = action.payload || 'Error updating position';
       })
       .addCase(deletePosition.fulfilled, (state, action: PayloadAction<string>) => {
-        state.positions = state.positions.filter((cat) => cat._id !== action.payload);
-        state.successMessage = "Position deleted successfully";
-        state.errorMessage = null;
+        state.positions = state.positions.filter((pos) => pos._id !== action.payload);
+        state.successMessage = 'Position deleted successfully';
       })
-      .addCase(deletePosition.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error deleting Position";
+      .addCase(deletePosition.rejected, (state, action) => {
+        state.errorMessage = action.payload || 'Error deleting position';
       });
   },
 });
 
-export const { clearMessages } = PositionSlice.actions;
-export default PositionSlice.reducer;
+export const { clearMessages } = positionSlice.actions;
+export default positionSlice.reducer;

@@ -12,6 +12,7 @@ import {
   InputLabel,
   SelectChangeEvent,
   MenuItem,
+  Grid,
 } from '@mui/material';
 
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
@@ -30,9 +31,9 @@ import {
   updateMenu,
   deleteMenu,
 } from '../../store/slices/menuSlice';
+import { selectActiveCompanyVenue } from '../../store/slices/authSlice';
 
 import {
-  formContainer,
   submitButton,
   inputField,
   inputContainer,
@@ -41,6 +42,7 @@ import {
   datagridStyle,
   cancelButton,
   rolesTable,
+  formContainer,
 } from '../../styles/AdminStyles';
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
@@ -66,6 +68,8 @@ interface Row { // Define la interfaz Row (o usa la que ya tengas)
 const Menus: React.FC = () => {
   const dispatch = useAppDispatch();
   const { permissions, menus, menusRoot, errorMessage, successMessage } = useAppSelector((state) => state.menus);
+  const { activeCompanyId, activeVenueId } = useAppSelector(selectActiveCompanyVenue);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
@@ -84,11 +88,12 @@ const Menus: React.FC = () => {
 
   // Cargar permisos al montar el componente
   useEffect(() => {
-    dispatch(fetchPermissions());
-    dispatch(fetchMenus());
-    dispatch(fetchMenusRoot());
-
-  }, [dispatch]);
+    if (activeCompanyId) {
+      dispatch(fetchPermissions({ companyId: activeCompanyId, venueId: activeVenueId || '' }));
+      dispatch(fetchMenus({ companyId: activeCompanyId, venueId: activeVenueId || '' }));
+      dispatch(fetchMenusRoot({ companyId: activeCompanyId, venueId: activeVenueId || '' }));
+    }
+  }, [dispatch, activeCompanyId, activeVenueId]);
 
   // Manejo de mensajes
   //console.log('successMessage, errorMessage', successMessage, errorMessage)
@@ -136,60 +141,86 @@ const Menus: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
+    if (!activeCompanyId || !selectedId) return;
+    
     if (selectedId) {
-      dispatch(deleteMenu(selectedId))
-        .then(() => dispatch(fetchMenus())); // Actualiza la lista después de eliminar
+      dispatch(deleteMenu({
+        id: selectedId,
+        companyId: activeCompanyId,
+        venueId: activeVenueId || ''
+      }))
+      .then(() => dispatch(fetchMenus({ 
+        companyId: activeCompanyId, 
+        venueId: activeVenueId || ''
+      })));
+      
       handleCancel();
     }
+    
     handleDeleteDialogClose();
   };
 
   const handleSubmit = () => {
-    //console.log('handleSubmit...')
-    const data = {
-      label: formData.label,
-      component: formData.component,
-      parentId: formData.parentId,
-      sequence: formData.sequence,
-      path: formData.path,
-      icon: formData.icon,
-      divider: formData.divider,
-      permissions: selectedPermissions, // Enviar permisos seleccionados
-    };
+    if (!activeCompanyId) return;
+  
+    const data = new FormData();
+    data.append("companyId", activeCompanyId);
+    if (activeVenueId) data.append("venueId", activeVenueId);
+    data.append("label", formData.label);
+    data.append("component", formData.component);
+    data.append("parentId", formData.parentId);
+    data.append("sequence", formData.sequence.toString());
+    data.append("path", formData.path);
+    data.append("divider", JSON.stringify(formData.divider));
+    
+    if (formData.icon instanceof File) {
+      data.append("icon", formData.icon);
+    } else if (typeof formData.icon === 'string') {
+      data.append("icon", formData.icon);
+    }
+    
+    selectedPermissions.forEach((perm, index) => data.append(`permissions[${index}]`, perm));
   
     if (editingId) {
-      //console.log('createMenu...')
-      dispatch(updateMenu({ id: editingId, ...data})).then(() => {
-        dispatch(fetchMenus());
-        setEditingId(null);
-        setFormData({     
-          label: "",
-          component: "",
-          parentId: "-1",
-          sequence: 0, // Valor inicial como string
-          path: "", // Valor inicial como string
-          icon: "",
-          divider: false,
-         });
-        setSelectedPermissions([]);
-      });
+      dispatch(updateMenu({
+        id: editingId,
+        companyId: activeCompanyId,
+        venueId: activeVenueId || '',
+        label: formData.label,
+        component: formData.component,
+        parentId: formData.parentId,
+        sequence: formData.sequence,
+        path: formData.path,
+        icon: formData.icon,
+        divider: formData.divider,
+        permissions: selectedPermissions
+      }))
+        .then(() => {
+          dispatch(fetchMenus({ companyId: activeCompanyId, venueId: activeVenueId || ''}));
+          handleCancel();
+        });
     } else {
-      console.log('createMenu...2')
-      dispatch(createMenu(data)).then(() => {
-        dispatch(fetchMenus());
-        setFormData({     
-          label: "",
-          component: "",
-          parentId: "",
-          sequence: 0, // Valor inicial como string
-          path: "", // Valor inicial como string
-          icon: "",
-          divider: false
-         });
-        setSelectedPermissions([]);
+
+      const payload = {
+        companyId: activeCompanyId,
+        venueId: activeVenueId || '',
+        label: formData.label,
+        component: formData.component,
+        parentId: formData.parentId,
+        sequence: formData.sequence,
+        path: formData.path,
+        icon: formData.icon,
+        divider: formData.divider,
+        permissions: selectedPermissions,
+      };
+
+      dispatch(createMenu(payload)).then(() => {
+        dispatch(fetchMenus({ companyId: activeCompanyId, venueId: activeVenueId || ''}));
+        handleCancel();
       });
     }
   };
+  
 
   const handleEdit = (id: string) => {
     const menu = menus.find((act) => act._id === id);
@@ -231,7 +262,12 @@ const Menus: React.FC = () => {
   };
 
   const handleConfirmUpdate  = () => {
+    if (!activeCompanyId) return;
+  
     const data = {
+      id: editingId!,  // Incluye el ID que se está editando
+      companyId: activeCompanyId,
+      venueId: activeVenueId || '', // Puede ser undefined, pero aseguramos que al menos sea un string vacío
       label: formData.label,
       component: formData.component,
       parentId: formData.parentId,
@@ -243,22 +279,23 @@ const Menus: React.FC = () => {
     };
   
     if (editingId) {
-      dispatch(updateMenu({ id: editingId, ...data })).then(() => {
-        dispatch(fetchMenus());
+      dispatch(updateMenu(data)).then(() => {
+        dispatch(fetchMenus({ companyId: activeCompanyId, venueId: activeVenueId || '' }));
         setEditingId(null);
         setFormData({     
           label: "",
           component: "",
           parentId: "",
-          sequence: 0, // Valor inicial como string
-          path: "", // Valor inicial como string
+          sequence: 0,
+          path: "",
           icon: "",
           divider: false,
-         });
+        });
         setSelectedPermissions([]);
       });
-    } 
+    }
   };
+  
 
   const columnsPermissions: GridColDef[] = [
     {
@@ -365,63 +402,69 @@ const Menus: React.FC = () => {
         <Typography sx={formTitle}>
           {editingId ? 'Edit Menu' : 'Add New Menu'}
         </Typography>
-        <Box sx={inputContainer}>
-          <TextField
-            label="Label"
-            name="label"
-            value={formData.label}
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Label"
+              name="label"
+              value={formData.label}
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
                   },
                 },
-              },
-            }}
-          />
-          <TextField
-            label="Component"
-            name="component"
-            value={formData.component || ""} // Asegura que nunca sea null o undefined
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
+              }}
+            />            
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Component"
+              name="component"
+              value={formData.component || ""} // Asegura que nunca sea null o undefined
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
                   },
                 },
-              },
-            }}
-          />
-        </Box>
-        <Box sx={inputContainer}>
-          <TextField
-            label="Path"
-            name="path"
-            value={formData.path || ""} // Asegura que nunca sea null o undefined
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              label="Path"
+              name="path"
+              value={formData.path || ""} // Asegura que nunca sea null o undefined
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: '#444444',
+                    '&.Mui-focused': {
+                      color: '#47b2e4',
+                    },
                   },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
           <TextField
             label="Sequence"
             name="sequence"
@@ -440,59 +483,63 @@ const Menus: React.FC = () => {
               },
             }}
           />
-        </Box>
-        <Box sx={inputContainer}>
-          <FormControl sx={{ minWidth: 350 }}>
-            <InputLabel
-              id="parent-select-label"
-              shrink={true} // Esto fuerza que el label permanezca visible
-              sx={{
-                color: "#444444",
-                "&.Mui-focused": {
-                  color: "#47b2e4",
-                },
-              }}
-            >
-              Parent
-            </InputLabel>
-            <Select
-              labelId="parent-select-label"
-              name="parentId"
-              value={formData.parentId} // Garantiza un valor seguro
-              onChange={handleInputChange}
-            >
-              {/* <MenuItem key="-1" value="-1">
-                <em>None</em>
-              </MenuItem> */}
-              {menusRoot.map((menuroot) => {
-                //const uniqueKey = menuroot.id || `fallback-key-${index}`;
-                const uniqueKey = menuroot.id;
-                //console.log('uniqueKey->', uniqueKey)
-                return (
-                  <MenuItem key={uniqueKey} value={uniqueKey}>
-                    {menuroot.label}
-                  </MenuItem>
-                );
-              })}
-            </Select>
-          </FormControl>
-          {/* Checkbox para Divider */}
-          <Box display="flex" alignItems="center">
-            <Checkbox
-              name="divider"
-              checked={formData.divider}
-              onChange={handleCheckboxChange}
-              sx={{
-                color: "#444444",
-                "&.Mui-checked": {
-                  color: "#47b2e4",
-                },
-              }}
-            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+             <FormControl fullWidth>
+              <InputLabel
+                id="parent-select-label"
+                shrink={true}
+                sx={{
+                  color: "#444444",
+                  "&.Mui-focused": {
+                    color: "#47b2e4",
+                  },
+                }}
+              >
+                Parent
+              </InputLabel>
+              <Select
+                labelId="parent-select-label"
+                name="parentId"
+                value={formData.parentId} // Garantiza un valor seguro
+                onChange={handleInputChange}
+              >
+                {/* <MenuItem key="-1" value="-1">
+                  <em>None</em>
+                </MenuItem> */}
+                {menusRoot.map((menuroot) => {
+                  //const uniqueKey = menuroot.id || `fallback-key-${index}`;
+                  const uniqueKey = menuroot.id;
+                  //console.log('uniqueKey->', uniqueKey)
+                  return (
+                    <MenuItem key={uniqueKey} value={uniqueKey}>
+                      {menuroot.label}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Checkbox
+                name="divider"
+                checked={formData.divider}
+                onChange={handleCheckboxChange}
+                sx={{
+                  color: "#444444",
+                  "&.Mui-checked": {
+                    color: "#47b2e4",
+                  },
+                }}
+              />
+            </Box>
+
             <Typography sx={{ color: "#444444" }}>Divider</Typography>
-          </Box>
-        </Box>
+          </Grid>
+        </Grid>
       </Paper>
+
       <Paper sx={{ padding: '20px', marginBottom: '1px', width: '100%' }}>
         <Box sx={inputContainer}>
           <Button
@@ -532,21 +579,30 @@ const Menus: React.FC = () => {
         </Box>
       </Paper>
 
-      <Paper sx={permissionsTable}>
-        <DataGrid
-          rows={rowsPermissions}
-          columns={columnsPermissions}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+      <Paper 
+        sx={permissionsTable}
+        >
+        <Box sx={{ width: '100%', overflowX: 'auto' }}>
+          <DataGrid
+            rows={rowsPermissions}
+            columns={columnsPermissions}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
               },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={datagridStyle}
-        />
+            }}
+            pageSizeOptions={[5, 10, 20, 100]}
+            disableRowSelectionOnClick
+            sx={{
+              ...datagridStyle,
+              overflowX: 'auto', // 🔄 Permite scroll horizontal
+              minWidth: '600px', // 🔒 Asegura que en móviles se genere el scroll
+            }}
+          />
+        </Box>
+
         <Box display="flex" gap={2} margin ="16px" >
           <Button
             variant="contained"
@@ -583,9 +639,13 @@ const Menus: React.FC = () => {
               },
             },
           }}
-          pageSizeOptions={[5, 10, 20]}
+          pageSizeOptions={[5, 10, 20, 100]}
           disableRowSelectionOnClick
-          sx={datagridStyle}
+          sx={{
+            ...datagridStyle,
+            overflowX: 'auto', // 🔄 Permite scroll horizontal
+            minWidth: '600px', // 🔒 Asegura que en móviles se genere el scroll
+          }}
         />
       </Paper>
 

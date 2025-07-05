@@ -1,5 +1,7 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
+import { RootState } from '../store';
+import { getActiveContext } from '../../utils/getActiveContext';
 
 // Modelo de Proveedor
 export interface Provider {
@@ -11,6 +13,7 @@ export interface Provider {
   address: string;
   country: string;
   status: 'active' | 'inactive';
+  isTaxIncluded?: boolean; // ✅ Nuevo campo opcional
 }
 
 // Estado inicial
@@ -28,90 +31,105 @@ const initialState: ProviderState = {
   successMessage: null,
 };
 
-export const searchProviders = createAsyncThunk<
+// Thunks
+export const fetchProviders = createAsyncThunk<
   Provider[],
-  { name?: string; rut?: string },
-  { rejectValue: string }
->('providers/search', async (filters, thunkAPI) => {
+  void,
+  { state: RootState; rejectValue: string }
+>('providers/fetchProviders', async (_, { getState, rejectWithValue }) => {
   try {
-    //console.log('(searchProviders) ->', filters)
-    const response = await axiosInstance.get('/providers/search', {
-      params: { ...filters, status: 'active' }, // Asegúrate de incluir el estado 'active'
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.get('/providers', {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
     });
-
-    //console.log('response.data', response.data)
-
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Error al buscar providers'
-      );
+      return rejectWithValue(error.response?.data?.message || 'Error fetching providers');
     }
+    return rejectWithValue('Unknown error occurred');
   }
 });
 
-// Thunks
-export const fetchProviders = createAsyncThunk<Provider[], { status?: string }>(
-  'providers/fetchProviders',
-  async ({ status } = {}, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get('/providers', {
-        params: { status }, // Pasar los parámetros de consulta
-      });
-      return response.data;
-    } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error fetching providers");
-         }
-        return rejectWithValue("Unknown error occurred");
-    }
-  }
-);
-
-export const createProvider = createAsyncThunk<Provider, Partial<Provider>>(
-  'providers/create',
-  async (providerData, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.post('/providers', providerData);
-      return response.data;
-    } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            //console.log('error.response?.data?.message ->', error.response?.data?.message)
-            return rejectWithValue(error.response?.data?.message || " Error create provider");
-         }
-        return rejectWithValue("Unknown error occurred");
-    }
-  }
-);
-
-export const updateProvider = createAsyncThunk<Provider, { id: string; data: Partial<Provider> }>(
-  'providers/update',
-  async ({ id, data }, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.put(`/providers/${id}`, data);
-      return response.data;
-    } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error update provider");
-         }
-        return rejectWithValue("Unknown error occurred");
-    }
-  }
-);
-
-export const changeProviderStatus = createAsyncThunk<
+export const createProvider = createAsyncThunk<
   Provider,
-  { id: string; status: 'active' | 'inactive' }
->('providers/changeStatus', async ({ id, status }, { rejectWithValue }) => {
+  Partial<Provider>,
+  { state: RootState; rejectValue: string }
+>('providers/create', async (data, { getState, rejectWithValue }) => {
   try {
-    const response = await axiosInstance.patch(`/providers/${id}/status`, { status });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.post('/providers', {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error change provider");
-     }
-    return rejectWithValue("Unknown error occurred");
+      return rejectWithValue(error.response?.data?.message || 'Error creating provider');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+export const updateProvider = createAsyncThunk<
+  Provider,
+  { id: string; data: Partial<Provider> },
+  { state: RootState; rejectValue: string }
+>('providers/update', async ({ id, data }, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.put(`/providers/${id}`, {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error updating provider');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+export const changeProviderStatus = createAsyncThunk<
+  Provider,
+  { id: string; status: 'active' | 'inactive' },
+  { state: RootState; rejectValue: string }
+>('providers/changeStatus', async ({ id, status }, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.patch(`/providers/${id}/status`, {
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+      status,
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error changing provider status');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+export const searchProviders = createAsyncThunk<
+  Provider[],
+  { name?: string; rut?: string },
+  { rejectValue: string; state: RootState }
+>('providers/search', async (filters, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.get('/providers/search', {
+      params: { ...filters, companyId: activeCompanyId, venueId: activeVenueId, status: 'active' },
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error searching providers');
+    }
+    return rejectWithValue('Unknown error occurred');
   }
 });
 
@@ -129,71 +147,46 @@ const providerSlice = createSlice({
     builder
       .addCase(fetchProviders.pending, (state) => {
         state.isLoading = true;
-        state.errorMessage = null;
       })
-      .addCase(fetchProviders.fulfilled, (state, action) => {
+      .addCase(fetchProviders.fulfilled, (state, action: PayloadAction<Provider[]>) => {
         state.isLoading = false;
         state.providers = action.payload;
       })
       .addCase(fetchProviders.rejected, (state, action) => {
         state.isLoading = false;
-        state.errorMessage = action.payload as string;
+        state.errorMessage = action.payload || 'Error fetching providers';
       })
-      .addCase(createProvider.pending, (state) => {
-        state.isLoading = true;
-        state.errorMessage = null;
-      })
-      .addCase(createProvider.fulfilled, (state, action) => {
+      .addCase(createProvider.fulfilled, (state, action: PayloadAction<Provider>) => {
         state.providers.push(action.payload);
         state.successMessage = 'Proveedor creado con éxito';
-        state.errorMessage = null;
       })
       .addCase(createProvider.rejected, (state, action) => {
-        state.isLoading = false;
-        state.errorMessage = action.payload as string;
+        state.errorMessage = action.payload || 'Error creating provider';
       })
-      .addCase(updateProvider.pending, (state) => {
-        state.isLoading = true;
-        state.errorMessage = null;
-      })
-      .addCase(updateProvider.fulfilled, (state, action) => {
+      .addCase(updateProvider.fulfilled, (state, action: PayloadAction<Provider>) => {
         const index = state.providers.findIndex((p) => p._id === action.payload._id);
         if (index !== -1) {
           state.providers[index] = action.payload;
         }
         state.successMessage = 'Proveedor actualizado con éxito';
-        state.errorMessage = null;
       })
       .addCase(updateProvider.rejected, (state, action) => {
-        state.isLoading = false;
-        state.errorMessage = action.payload as string;
+        state.errorMessage = action.payload || 'Error updating provider';
       })
-      // Change Provider Status
-      .addCase(changeProviderStatus.pending, (state) => {
-        state.isLoading = true;
-        state.errorMessage = null;
-      })      
-      .addCase(changeProviderStatus.fulfilled, (state, action) => {
+      .addCase(changeProviderStatus.fulfilled, (state, action: PayloadAction<Provider>) => {
         const index = state.providers.findIndex((p) => p._id === action.payload._id);
         if (index !== -1) {
           state.providers[index].status = action.payload.status;
         }
       })
       .addCase(changeProviderStatus.rejected, (state, action) => {
-        state.isLoading = false;
-        state.errorMessage = action.payload as string;
+        state.errorMessage = action.payload || 'Error changing status';
       })
-      .addCase(searchProviders.pending, (state) => {
-        state.isLoading = true;
-        state.errorMessage = null;
-      })
-      .addCase(searchProviders.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.providers = action.payload; // Actualiza los productos con el resultado de la búsqueda
+      .addCase(searchProviders.fulfilled, (state, action: PayloadAction<Provider[]>) => {
+        state.providers = action.payload;
       })
       .addCase(searchProviders.rejected, (state, action) => {
-        state.isLoading = false;
-        state.errorMessage = action.payload as string;
+        state.errorMessage = action.payload || 'Error searching providers';
       });
   },
 });

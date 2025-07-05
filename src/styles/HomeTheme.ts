@@ -82,6 +82,29 @@ const homeTheme = createTheme({
         },
       },
     },
+    MuiRadio: {
+      styleOverrides: {
+        root: {
+          color: '#1976d2',
+          '&.Mui-checked': {
+            color: '#1565c0',
+          },
+        },
+      },
+    },
+    MuiCheckbox: {
+      styleOverrides: {
+        root: {
+          color: '#1976d2',
+          '&.Mui-checked': {
+            color: '#1565c0',
+          },
+          '&:hover': {
+            backgroundColor: 'rgba(21, 101, 192, 0.04)',
+          },
+        },
+      },
+    },    
   },
 });
 

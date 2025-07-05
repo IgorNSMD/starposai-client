@@ -6,7 +6,11 @@ import {
   Typography,
   IconButton,
   Checkbox,
-  useMediaQuery
+  useMediaQuery,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -25,10 +29,18 @@ import {
   deleteKit,
 } from '../../store/slices/kitSlice';
 
-import {
-  fetchProducts
-} from '../../store/slices/productSlice';
+import { fetchProducts } from '../../store/slices/productSlice';
+import { fetchTaxRates } from '../../store/slices/taxRateSlice';
+import { fetchWarehouses } from '../../store/slices/warehouseSlice';
+import { fetchSettingByContext } from '../../store/slices/settingSlice';
+import { TaxRate } from '../../store/slices/taxRateSlice'; 
+import { fetchProviders } from '../../store/slices/providerSlice';
 
+import {
+  formContainer_v2,
+  inputContainer,
+  inputField,
+} from '../../styles/AdminStyles';
 
 import Dialog from '../../components/Dialog'; // Asegúrate de ajustar la ruta según tu estructura
 import { useToastMessages } from '../../hooks/useToastMessage';
@@ -48,6 +60,9 @@ interface Kit {
   _id: string;
   name: string;
   cost: number;
+  stock: number;
+  initialWarehouse?: string; // ✅ NUEVO
+  taxRate?: string | TaxRate;
   components: KitComponent[];
   status: "active" | "inactive";
 }
@@ -59,7 +74,19 @@ const Kits: React.FC = () => {
 
   const { kits, errorMessage, successMessage } = useAppSelector((state) => state.kits);
   const { products } = useAppSelector((state) => state.products);
-  const [formData, setFormData] = useState({ name: '', cost: 0 });
+  const { taxRates } = useAppSelector((state) => state.taxRates);
+  const { currentSetting } = useAppSelector((state) => state.settings);
+  const { warehouses } = useAppSelector((state) => state.warehouses);
+  const { providers } = useAppSelector((state) => state.providers);
+
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    cost: 0, 
+    stock: 0,
+    provider: '', // ✅ NUEVO
+    initialWarehouse: '',
+    taxRate: '', // ✅ NUEVO
+  });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Nuevo estado para el cuadro de diálogo
@@ -68,9 +95,13 @@ const Kits: React.FC = () => {
 
   // Cargar permisos al montar el componente
   useEffect(() => {
-    dispatch(fetchProducts({ status: 'active' }));
-    dispatch(fetchKits());
-  }, [dispatch]);
+      dispatch(fetchSettingByContext()); // ✅ Configuración del local actual
+      dispatch(fetchProducts({ status: "active" }));
+      dispatch(fetchKits());
+      dispatch(fetchWarehouses()); 
+      dispatch(fetchTaxRates()); // ✅
+      dispatch(fetchProviders());
+    }, [dispatch, ]);
 
   // Manejo de mensajes
   useToastMessages(successMessage, errorMessage);
@@ -124,34 +155,63 @@ const Kits: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    //console.log("selectedProducts antes de enviar: ", selectedProducts);
-  
-    const data = {
-      name: formData.name,
-      cost: formData.cost,
-      components: selectedProducts.map((p) => ({
-        product: p.productId,
-        productName: p.name, // 🔹 Asegurando que name se pase correctamente
-        quantity: p.quantity ?? 1,
-      })),
-    };
-  
-    //console.log("data-handleSubmit:", data);
+
   
     if (editingId) {
-      dispatch(updateKit({ id: editingId, ...data })).then(() => {
+      dispatch(updateKit({ 
+        id: editingId, 
+        name: formData.name, 
+        cost: Number(formData.cost), 
+        stock: Number(formData.stock), 
+        provider: formData.provider || '', // ✅ AGREGAR AQUÍ
+        initialWarehouse: formData.initialWarehouse || '', // ✅ NUEVO
+        taxRate: formData.taxRate,
+        components: selectedProducts.map(p => ({
+          product: p.productId,
+          productName: p.name,
+          quantity: p.quantity
+        }))
+      }))
+      .then(() => {
         dispatch(fetchKits());
         setEditingId(null);
-        setFormData({ name: '', cost: 0 });
+        setFormData({ 
+          name: '', 
+          cost: 0, 
+          stock: 0,
+          provider: '', // ✅ NUEVO
+          initialWarehouse: '',
+          taxRate: '', // ✅ NUEVO 
+        });
         setSelectedProducts([]);
       });
     } else {
-      dispatch(createKit(data)).then(() => {
+      dispatch(createKit({ 
+        name: formData.name, 
+        cost: Number(formData.cost), 
+        stock: Number(formData.stock), 
+        provider: formData.provider || '', 
+        initialWarehouse: formData.initialWarehouse || '', 
+        taxRate: formData.taxRate,
+        components: selectedProducts.map(p => ({
+          product: p.productId,
+          productName: p.name,
+          quantity: p.quantity
+        }))
+      }))
+      .then(() => {
         dispatch(fetchKits());
-        setFormData({ name: '', cost: 0 });
+        setFormData({ 
+          name: '', 
+          cost: 0, 
+          stock: 0,
+          provider: '', // ✅ NUEVO
+          initialWarehouse: '',
+          taxRate: '',  });
         setSelectedProducts([]);
       });
     }
+    
   };
   
   
@@ -160,7 +220,14 @@ const Kits: React.FC = () => {
     //console.log("Editing kit with ID:", id);
     const kit = kits.find((kit) => kit._id === id);
     if (kit) {
-      setFormData({ name: kit.name, cost: kit.cost });
+      setFormData({ 
+        name: kit.name, 
+        cost: kit.cost, 
+        stock: kit.stock,
+        provider: kit.provider || '', // ✅ NUEVO
+        initialWarehouse: kit.initialWarehouse || '',
+        taxRate: kit.taxRate || '',  
+      });
   
       // 🔹 Convertimos los componentes en el formato correcto
       setSelectedProducts(
@@ -179,7 +246,14 @@ const Kits: React.FC = () => {
   
 
   const handleCancel = () => {
-    setFormData({ name: '', cost: 0 });
+    setFormData({ 
+      name: '', 
+      cost: 0, 
+      stock: 0, 
+      provider: '', // ✅ NUEVO
+      initialWarehouse: '',
+      taxRate: '', 
+    });
     setEditingId(null);
     setSelectedProducts([]);
   };
@@ -190,21 +264,33 @@ const Kits: React.FC = () => {
   };
 
   const handleConfirmUpdate = () => {
+
     const data = {
       name: formData.name,
-      cost: formData.cost,
-      components: selectedProducts.map((p) => ({
-        product: p.productId, // ✅ Ahora solo toma el ID del producto
+      cost: Number(formData.cost),
+      stock: Number(formData.stock),
+      provider: formData.provider || '',
+      initialWarehouse: formData.initialWarehouse || '', // ✅ NUEVO
+      taxRate: formData.taxRate || '', // ✅ CORRECTO
+      components: selectedProducts.map(p => ({
+        product: p.productId,
         productName: p.name,
-        quantity: p.quantity ?? 1,
-      })),
+        quantity: p.quantity
+      }))
     };
   
     if (editingId) {
       dispatch(updateKit({ id: editingId, ...data })).then(() => {
         dispatch(fetchKits());
         setEditingId(null);
-        setFormData({ name: '', cost: 0 });
+        setFormData({ 
+          name: '', 
+          cost: 0, 
+          stock: 0, 
+          provider: '', // ✅ NUEVO
+          initialWarehouse: '',
+          taxRate: '', 
+        });
         setSelectedProducts([]);
       });
     }
@@ -253,7 +339,7 @@ const Kits: React.FC = () => {
     },
     
     { field: 'key', headerName: 'Product', flex: 1 },
-    { field: 'description', headerName: 'Description', flex: 1 },
+    { field: 'stock', headerName: 'Stock', flex: 1 },
     {
       field: 'quantity',
       headerName: 'Quantity',
@@ -284,7 +370,7 @@ const Kits: React.FC = () => {
           />
         );
       },
-    }
+    },
     
   ];
  
@@ -294,12 +380,15 @@ const Kits: React.FC = () => {
     id: product._id,
     key: product.name,// 🔹 Asegura que el nombre está presente
     name: product.name, // ✅ Asegura que el campo `name` esté en la estructura
-    description: product.description,
+    stock: product.stock,
   }));
 
   const columns = [
     { field: 'name', headerName: 'Name', flex: 1 },
     { field: 'cost', headerName: 'Cost', flex: 1 },
+    { field: 'stock', headerName: 'Stock', flex: 1 },
+    { field: 'initialWarehouse', headerName: 'Warehouse', flex: 1 },
+    { field: 'taxRate', headerName: 'Tax Rate', flex: 1 }, // ✅ nuevo
     {
       field: 'actions',
       headerName: 'Actions',
@@ -331,14 +420,23 @@ const Kits: React.FC = () => {
   // }));
 
   const rows = kits.filter((kit: Kit) => kit._id && kit.name) 
-  .map((kit: Kit) => ({
-    id: kit._id, // Usa `_id` como identificador único
-    name: kit.name,
-    cost: kit.cost
-  }));
+  .map((kit: Kit) => {
+    const warehouseName = warehouses.find(w => w._id === kit.initialWarehouse)?.name || '-';
+    const taxRateInfo = taxRates.find(rate => rate._id === kit.taxRate);
+    const taxRateLabel = taxRateInfo ? `${taxRateInfo.name}` : '-';
+
+    return {
+      id: kit._id,
+      name: kit.name,
+      cost: kit.cost,
+      stock: kit.stock || 0,
+      initialWarehouse: warehouseName, // ✅ nombre en lugar de ID
+      taxRate: taxRateLabel, // ✅ agregado
+    };
+  });
 
   return (
-    <Box p={2} sx={{ width: "100%", overflowX: "auto" }}>
+    <Box p={2} sx={formContainer_v2}>
 
       <Typography 
         variant="h4" 
@@ -347,13 +445,13 @@ const Kits: React.FC = () => {
         {editingId ? 'Edit Kit' : 'Add New Kit'}
       </Typography>
 
-      <Box sx={{ display: "flex", flexDirection: isSmallScreen ? "column" : "row", gap: 2, mb: 3 }}>
+      <Box sx={inputContainer}>
         <TextField
           label="Kit Name"
           name="name"
           value={formData.name}
           onChange={handleChange}
-          sx={{ flex: 1, minWidth: 200 }}
+          sx={inputField}
           slotProps={{
             inputLabel: {
               shrink: true,
@@ -371,7 +469,11 @@ const Kits: React.FC = () => {
           name="cost"
           value={formData.cost}
           onChange={handleChange}
-          sx={{ flex: 1, minWidth: 200 }}
+          sx={{
+            ...inputField,
+            backgroundColor: '#f5f5f5', // Fondo gris claro para indicar que está deshabilitado
+            pointerEvents: 'none', // No permite interacción
+          }}
           slotProps={{
             inputLabel: {
               shrink: true,
@@ -384,34 +486,110 @@ const Kits: React.FC = () => {
             },
           }}
         />
-      </Box>
-
-      <Box sx={{ width: "100%", overflowX: "auto" }}>
-        <DataGrid
-          rows={rowsProducts}
-          columns={columnsProducts}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5,
+        <TextField
+          label="Stock"
+          name="stock"
+          type="number"
+          value={formData.stock}
+          onChange={handleChange}
+          sx={{
+            ...inputField,
+            backgroundColor: '#f5f5f5', // Fondo gris claro para indicar que está deshabilitado
+            pointerEvents: 'none', // No permite interacción
+          }}
+          slotProps={{
+            inputLabel: {
+              shrink: true,
+              sx: {
+                color: '#444444',
+                '&.Mui-focused': {
+                  color: '#47b2e4',
+                },
               },
             },
           }}
-          pageSizeOptions={[5, 10, 20]}
-          disableRowSelectionOnClick
-          sx={{
-            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
-            "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
-            "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
-            "& .MuiButton-root": { borderRadius: "6px" },
-            "& .status-cell": {
-              textAlign: "center",
-              //minWidth: 600,
-              minWidth: "900px", // 🔹 Asegura un ancho mínimo
-            },
-            
-          }}
         />
+        <FormControl sx={{ ...inputField }}>
+          <InputLabel
+            shrink={true}
+            sx={{
+              color: '#444444',
+              '&.Mui-focused': { color: '#47b2e4' },
+            }}
+          >
+            Provider
+          </InputLabel>
+          <Select
+            name="provider"
+            value={formData.provider}
+            onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+          >
+            {providers.map((prov) => (
+              <MenuItem key={prov._id} value={prov._id}>
+                {prov.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl sx={{ ...inputField }}>
+          <InputLabel
+            shrink={true}
+            sx={{
+              color: '#444444',
+              '&.Mui-focused': { color: '#47b2e4' },
+            }}
+          >
+            Initial Warehouse
+          </InputLabel>
+          <Select
+            name="initialWarehouse"
+            value={formData.initialWarehouse}
+            onChange={(e) =>
+              setFormData({ ...formData, initialWarehouse: e.target.value })
+            }
+          >
+            {warehouses.map((w) => (
+              <MenuItem key={w._id} value={w._id}>
+                {w.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl sx={{ ...inputField }}>
+          <InputLabel
+            shrink={true}
+            sx={{
+              color: '#444444',
+              '&.Mui-focused': { color: '#47b2e4' },
+            }}
+          >
+            Tax Rate
+          </InputLabel>
+          <Select
+            name="taxRate"
+            value={formData.taxRate}
+            onChange={(e) => setFormData({ ...formData, taxRate: e.target.value })}
+          >
+            {taxRates
+              .filter(rate =>
+                rate.isActive &&
+                rate.appliesTo.includes('PurchaseOrder') &&
+                rate.country?.toLowerCase() === (currentSetting?.country || '').toLowerCase()
+              )
+              .map(rate => (
+                <MenuItem key={rate._id} value={rate._id}>
+                  {rate.name} 
+                </MenuItem>
+              ))}
+          </Select>
+        </FormControl>
+
+
+      </Box>
+
+      <Box sx={{ width: "100%", overflowX: "auto" }}>
         <Box display="flex" gap={2} margin ="16px" >
           <Button
             variant="contained"
@@ -445,6 +623,33 @@ const Kits: React.FC = () => {
           </Button>
           
         </Box>
+
+        <DataGrid
+          rows={rowsProducts}
+          columns={columnsProducts}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
+              },
+            },
+          }}
+          pageSizeOptions={[5, 10, 20]}
+          disableRowSelectionOnClick
+          sx={{
+            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#304FFE", color: "#FFF",  fontSize: "1rem", },
+            "& .MuiDataGrid-cell": { padding: "12px", fontSize: "0.9rem", display: "flex", alignItems: "center", },
+            "& .MuiDataGrid-row:nth-of-type(odd)": { backgroundColor: "#F4F6F8" },
+            "& .MuiButton-root": { borderRadius: "6px" },
+            "& .status-cell": {
+              textAlign: "center",
+              //minWidth: 600,
+              minWidth: "900px", // 🔹 Asegura un ancho mínimo
+            },
+            
+          }}
+        />
+
         <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
           Kist List
         </Typography>

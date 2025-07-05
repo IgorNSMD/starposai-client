@@ -1,0 +1,100 @@
+{
+    "about": {
+      "title": "About Us",
+      "description1": "En STARPOSAI, creemos en la innovación y la eficiencia. Nuestra plataforma de punto de venta inteligente está diseñada para ayudar a negocios de todos los tamaños a optimizar sus operaciones, mejorar la experiencia del cliente y tomar decisiones estratégicas basadas en datos.",
+      "description2": "Con tecnología de vanguardia y un enfoque centrado en el usuario, facilitamos la gestión de ventas, inventario y análisis de negocios en un solo lugar. ",
+      "list": [
+        "Soluciones inteligentes para la administración de ventas.",
+        "Gestión eficiente de inventario con análisis en tiempo real.",
+        "Herramientas diseñadas para impulsar el crecimiento de tu negocio."
+      ],
+      "buttonText": "Leer mas"
+    },
+    "services": {
+      "title": "Services",
+      "description": "Impulsa tu negocio con nuestras soluciones avanzadas para la gestión de ventas, inventario y pagos digitales.",
+      "items": [
+        {
+          "title": "Gestión Ventas",
+          "description": "Optimiza tu proceso de ventas con una plataforma rápida, intuitiva y segura."
+        },
+        {
+          "title": "Control Inventario",
+          "description": "Monitorea tus existencias en tiempo real y evita pérdidas por falta de stock."
+        },
+        {
+          "title": "Reportes",
+          "description": "Estadísticas para tomar decisiones estratégicas basadas en datos."
+        },
+        {
+          "title": "Pagos Digitales",
+          "description": "Integra múltiples métodos de pago para ofrecer más comodidad a tus clientes."
+        }
+      ]
+    },
+    "pricing": {
+      "title": "Planes de Precios Flexibles",
+      "description": "Elige el plan que mejor se adapte a las necesidades de tu negocio.",
+      "plans": [
+        {
+          "name": "Plan Gratuito",
+          "price": "0",
+          "features": ["Acceso a funciones esenciales", "Soporte estándar incluido", "Almacenamiento de datos limitado"],
+          "excludedFeatures": ["Análisis y reportes avanzados", "Soporte prioritario al cliente"],
+          "buttonText": "Comenzar Gratis",
+          "buttonCode": "1",
+          "allowedRole": "PLAN_1"
+        },
+        {
+          "name": "Plan Empresarial",
+          "price": "29",
+          "features": ["Funciones del Plan Gratuito", "Almacenamiento de datos ilimitado", "Herramientas avanzadas de reportes", "Soporte prioritario al cliente"],
+          "highlight": true,
+          "buttonText": "Elegir Plan Empresarial",
+          "buttonCode": "2",
+          "allowedRole": "PLAN_2"
+        },
+        {
+          "name": "Plan Premium",
+          "price": "49",
+          "features": ["Todas las funciones del Plan Empresarial", "Gestor de cuenta dedicado", "Seguridad y cumplimiento mejorados", "Soporte premium 24/7"],
+          "buttonText": "Elegir Plan Premium",
+          "buttonCode": "3",
+          "allowedRole": "PLAN_3"
+        }
+      ]
+    },
+    "contact": {
+      "title": "Contactenos",
+      "description": "No dude en comunicarse con nosotros para cualquier consulta o pregunta.",
+      "fields": [
+        {
+          "label": "Nombre",
+          "type": "text",
+          "name": "name",
+          "placeholder": "Ingrese su nombre"
+        },
+        {
+          "label": "Email",
+          "type": "email",
+          "name": "email",
+          "placeholder": "Ingrese su email"
+        },
+        {
+          "label": "Asunto",
+          "type": "text",
+          "name": "subject",
+          "placeholder": "ingrese Asunto"
+        },
+        {
+          "label": "Mensaje",
+          "type": "textarea",
+          "name": "mensaje",
+          "placeholder": "Ingrese su mensaje"
+        }
+      ],
+      "buttonText": "Enviar Mensaje"
+    }
+
+  }
+  

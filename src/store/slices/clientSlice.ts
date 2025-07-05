@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk  } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosInstance';
+import { getActiveContext } from '../../utils/getActiveContext';
+import { RootState } from '../store';
 
 export interface Client {
   _id: string;
@@ -10,6 +12,7 @@ export interface Client {
   address: string;
   country: string;
   status: 'active' | 'inactive';
+
 }
 
 interface ClientState {
@@ -26,92 +29,127 @@ const initialState: ClientState = {
   successMessage: null,
 };
 
+// 🔹 Buscar clientes
 export const searchClients = createAsyncThunk<
   Client[],
   { name?: string; rut?: string },
-  { rejectValue: string }
->('clients/search', async (filters, thunkAPI) => {
+  { rejectValue: string; state: RootState }
+>('clients/search', async (filters, { getState, rejectWithValue }) => {
   try {
-    console.log('(searchClients) ->', filters)
-    const response = await axiosInstance.get('/clients/search', {
-      params: { ...filters, status: 'active' }, // Asegúrate de incluir el estado 'active'
-    });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
 
-    console.log('response.data', response.data)
+    const response = await axiosInstance.get('/clients/search', {
+      params: { ...filters, companyId: activeCompanyId, venueId: activeVenueId, status: 'active' },
+    });
 
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data?.message || 'Error al buscar clients'
-      );
+      return rejectWithValue(error.response?.data?.message || 'Error al buscar clientes');
     }
+    return rejectWithValue('Unknown error occurred');
   }
 });
 
-// ** Fetch all clients
-export const fetchClients = createAsyncThunk<Client[], { status?: string }>(
-  'clients/fetchClients',
-  async ({ status } = {}, thunkAPI) => {
-    try {
-      const response = await axiosInstance.get('/clients', {
-        params: { status }, // Pasar los parámetros de consulta
-      });
-      return response.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError?.(error)) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al obtener los clientes');
-      }
-    }
-  }
-);
 
-// ** Create a client
-export const createClient = createAsyncThunk<Client, Partial<Client>>(
-  'clients/create',
-  async (clientData, thunkAPI) => {
-    try {
-      const response = await axiosInstance.post('/clients', clientData);
-      return response.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError?.(error)) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al crear el cliente');
-      }
-    }
-  }
-);
+// 🔹 Obtener clientes
+export const fetchClients = createAsyncThunk<
+  Client[],
+  { status?: string },
+  { rejectValue: string; state: RootState }
+>('clients/fetchClients', async ({ status }, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
 
-// ** Update a client
-export const updateClient = createAsyncThunk<Client, { id: string; data: Partial<Client> }>(
-  'clients/update',
-  async ({ id, data }, thunkAPI) => {
-    try {
-      const response = await axiosInstance.put(`/clients/${id}`, data);
-      return response.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError?.(error)) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al actualizar el cliente');
-      }
-    }
-  }
-);
+    const response = await axiosInstance.get('/clients', {
+      params: { companyId: activeCompanyId, venueId: activeVenueId, status },
+    });
 
-// ** Delete a client (logical delete)
-export const changeClientStatus = createAsyncThunk<Client, { id: string; status: 'active' | 'inactive' }>(
-  'clients/changeStatus',
-  async ({ id, status }, thunkAPI) => {
-    try {
-      const response = await axiosInstance.patch(`/clients/${id}/status`, { status });
-      return response.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError?.(error)) {
-        return thunkAPI.rejectWithValue(error.response?.data?.message || 'Error al cambiar el estado del cliente');
-      }
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error al obtener los clientes');
     }
+    return rejectWithValue('Unknown error occurred');
   }
-);
+});
 
-// Slice de clientes
+// 🔹 Crear cliente
+export const createClient = createAsyncThunk<
+  Client,
+  Partial<Client>,
+  { rejectValue: string; state: RootState }
+>('clients/create', async (data, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.post('/clients', {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error al crear el cliente');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+
+// 🔹 Actualizar cliente
+export const updateClient = createAsyncThunk<
+  Client,
+  { id: string; data: Partial<Client> },
+  { rejectValue: string; state: RootState }
+>('clients/update', async ({ id, data }, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.put(`/clients/${id}`, {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+
+    return response.data.client;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error al actualizar el cliente');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+
+// 🔹 Cambiar estado
+export const changeClientStatus = createAsyncThunk<
+  Client,
+  { id: string; status: 'active' | 'inactive' },
+  { rejectValue: string; state: RootState }
+>('clients/changeStatus', async ({ id, status }, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.patch(`/clients/${id}/status`, {
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+      status,
+    });
+
+    return response.data.client;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error al cambiar el estado del cliente');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
+
+// Slice
 const clientSlice = createSlice({
   name: 'clients',
   initialState,
@@ -138,7 +176,6 @@ const clientSlice = createSlice({
       .addCase(createClient.fulfilled, (state, action) => {
         state.clients.push(action.payload);
         state.successMessage = 'Cliente creado exitosamente';
-        state.errorMessage = null;
       })
       .addCase(updateClient.fulfilled, (state, action) => {
         const index = state.clients.findIndex((c) => c._id === action.payload._id);
@@ -146,26 +183,16 @@ const clientSlice = createSlice({
           state.clients[index] = action.payload;
         }
         state.successMessage = 'Cliente actualizado exitosamente';
-        state.errorMessage = null;
       })
       .addCase(changeClientStatus.fulfilled, (state, action) => {
-        const index = state.clients.findIndex((c) => c._id === action.payload._id);
-        if (index !== -1) {
-          state.clients[index].status = action.payload.status;
-        }
-      })
-      .addCase(searchClients.pending, (state) => {
-        state.isLoading = true;
-        state.errorMessage = null;
+        const updatedClient = action.payload;
+        state.clients = state.clients.filter(client => client._id !== updatedClient._id);
+        state.successMessage = 'Cliente desactivado exitosamente';
       })
       .addCase(searchClients.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.clients = action.payload; // Actualiza los clientes con el resultado de la búsqueda
+        state.clients = action.payload;
       })
-      .addCase(searchClients.rejected, (state, action) => {
-        state.isLoading = false;
-        state.errorMessage = action.payload as string;
-      })      
       .addMatcher(
         (action): action is { type: string; payload: string } => action.type.endsWith('/rejected'),
         (state, action) => {

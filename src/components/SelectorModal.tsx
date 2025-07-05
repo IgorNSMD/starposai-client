@@ -130,7 +130,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
               <TableRow>
                 {tabIndex === 0 && <TableCell sx={{ fontWeight: "bold" }}>Code</TableCell>}
                 <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-                {tabIndex === 0 && <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Price</TableCell>}
+                {tabIndex === 0 && <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Cost</TableCell>}
                 {tabIndex === 0 && <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Stock</TableCell>}
                 <TableCell sx={{ fontWeight: "bold", textAlign: "right" }}>Quantity</TableCell>                
                 <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Action</TableCell>
@@ -146,7 +146,7 @@ const SelectorModal: React.FC<SelectorModalProps> = ({ open, onClose, onSelect }
                   <TableCell>{item.name}</TableCell>
 
                   {/* Si es la pestaña de productos, muestra precio y stock */}
-                  {tabIndex === 0 && <TableCell sx={{ textAlign: "right" }}>{'price' in item ? `$${formatNumber(item.price)}` : "-"}</TableCell>}
+                  {tabIndex === 0 && <TableCell sx={{ textAlign: "right" }}>{'price' in item ? `$${formatNumber(item.cost)}` : "-"}</TableCell>}
                   {tabIndex === 0 && <TableCell sx={{ textAlign: "right" }}>{'stock' in item ? formatNumber(item.stock) : "-"}</TableCell>}
 
                   <TableCell sx={{ textAlign: "right" }}>

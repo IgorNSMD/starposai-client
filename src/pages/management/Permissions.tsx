@@ -6,6 +6,7 @@ import {
   Typography,
   Paper,
   IconButton,
+  Grid,
 } from '@mui/material';
 import { DataGrid, GridRenderCellParams } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -24,9 +25,7 @@ import {
   formContainer,
   submitButton,
   inputField,
-  inputContainer,
   formTitle,
-  permissionsTable,
   datagridStyle,
   cancelButton,
 } from '../../styles/AdminStyles';
@@ -179,45 +178,52 @@ const Permissions: React.FC = () => {
         <Typography sx={formTitle}>
           {editingId ? 'Edit Permission' : 'Add New Permission'}
         </Typography>
-        <Box sx={inputContainer}>
-          <TextField
-            label="Permission Name"
-            name="key"
-            value={formData.key}
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
+
+        <Grid container spacing={2}>
+           <Grid item xs={12} md={6}>
+              <TextField
+                label="Permission Name"
+                name="key"
+                value={formData.key}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
                   },
-                },
-              },
-            }}
-          />
-          <TextField
-            label="Description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            sx={inputField}
-            slotProps={{
-              inputLabel: {
-                shrink: true,
-                sx: {
-                  color: '#444444',
-                  '&.Mui-focused': {
-                    color: '#47b2e4',
+                }}
+              />
+           </Grid>
+           <Grid item xs={12} md={6}>
+              <TextField
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                sx={inputField}
+                slotProps={{
+                  inputLabel: {
+                    shrink: true,
+                    sx: {
+                      color: '#444444',
+                      '&.Mui-focused': {
+                        color: '#47b2e4',
+                      },
+                    },
                   },
-                },
-              },
-            }}
-          />
-        </Box>
-        <Box display="flex" gap={2} marginTop="16px">
+                }}
+              />
+           </Grid>
+        </Grid>
+
+
+        <Grid item xs={12} display="flex" gap={2}>
           <Button
             variant="contained"
             color="primary"
@@ -239,28 +245,38 @@ const Permissions: React.FC = () => {
               Cancel
             </Button>
           )}
-        </Box>
+        </Grid>
       </Paper>
 
       {/* Tabla de permisos */}
-      <Paper sx={permissionsTable}>
-        <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
-          Permissions List
-        </Typography>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 5, // Configura el tamaño de página inicial
+      <Paper 
+        sx={{
+          width: '100%',
+          overflowX: 'auto', // Permite scroll horizontal si es necesario
+          marginTop: 2,
+        }}
+      >
+         <Box sx={{ minWidth: '600px' }}> {/* Ancho mínimo para evitar colapso de columnas */}
+          <Typography variant="h6" sx={{ padding: '10px', color: '#333333', fontWeight: 'bold' }}>
+            Permissions List
+          </Typography>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5, // Configura el tamaño de página inicial
+                },
               },
-            },
-          }}
-          pageSizeOptions={[5, 10, 20]} // Opciones para cambiar el tamaño de página
-          disableRowSelectionOnClick 
-          sx={datagridStyle}
-        />
+            }}
+            pageSizeOptions={[5, 10, 20]} // Opciones para cambiar el tamaño de página
+            disableRowSelectionOnClick 
+            sx={datagridStyle}
+          />
+        </Box>
+
+
       </Paper>
 
 

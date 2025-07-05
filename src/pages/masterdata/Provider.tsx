@@ -9,13 +9,16 @@ import {
   TextField,
   IconButton,
   Alert,
+  Checkbox, FormControlLabel
 } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { GridColDef } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import { Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { SxProps, Theme } from '@mui/system';
+
 import { useAppSelector, useAppDispatch } from '../../store/redux/hooks';
 import {
   fetchProviders,
@@ -24,6 +27,8 @@ import {
   changeProviderStatus,
   searchProviders,
 } from '../../store/slices/providerSlice';
+
+
 import {
   formContainer,
   submitButton,
@@ -40,6 +45,8 @@ import {
 import CustomDialog from '../../components/Dialog'; // Dale un alias como 'CustomDialog'
 import { useToastSuccessMessage } from '../../hooks/useToastMessage';
 
+import ResponsiveDataGrid from '../../components/shared/ResponsiveDataGrid';
+
 const DraggablePaper = (props: PaperProps) => {
   const nodeRef = useRef(null);
   return (
@@ -54,6 +61,8 @@ const DraggablePaper = (props: PaperProps) => {
 const Provider: React.FC = () => {
   const dispatch = useAppDispatch();
   const { providers, successMessage } = useAppSelector((state) => state.providers);
+
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false); // Estado para el diálogo de confirmación
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null); // Producto seleccionado
 
@@ -64,6 +73,7 @@ const Provider: React.FC = () => {
     phone: '',
     address: '',
     country: '',
+    isTaxIncluded: false, // ✅ nuevo campo
   });
   const [filters, setFilters] = useState({
     name: '',
@@ -74,13 +84,28 @@ const Provider: React.FC = () => {
   const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
-    dispatch(fetchProviders({ status: 'active' }));
-  }, [dispatch]);
+    dispatch(fetchProviders());
+}, [dispatch, ]);
+
 
   // Manejo de mensajes
   useToastSuccessMessage(successMessage);
 
-  const handleOpenModal = () => setIsModalOpen(true);
+  const handleOpenModal = () => {
+    setLocalError(null); // ✅ limpia error anterior
+    setFormData({
+      name: '',
+      rut: '',
+      email: '',
+      phone: '',
+      address: '',
+      country: '',
+      isTaxIncluded: false,
+    });
+    setEditingId(null);
+    setIsModalOpen(true);
+  };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setFormData({
@@ -90,32 +115,41 @@ const Provider: React.FC = () => {
       phone: '',
       address: '',
       country: '',
+      isTaxIncluded: false, // ✅ nuevo campo
     });
     setEditingId(null);
   };
 
   const handleSubmit = () => {
     if (editingId) {
-      dispatch(updateProvider({ id: editingId, data: { ...formData } }))
+      dispatch(updateProvider({ 
+        id: editingId, 
+        data: { ...formData } 
+      }))
         .unwrap()
         .then(() => {
-          setLocalError(null)
-          handleCloseModal(); // Cierra el modal si la operación fue exitosa
+          setLocalError(null);
+          handleCloseModal();
+          // Refrescar la lista después de editar
+          dispatch(fetchProviders());
         })
         .catch((error) => {
-          setLocalError(error); // Muestra el error si falla
+          setLocalError(error);
         });
     } else {
       dispatch(createProvider(formData))
         .unwrap()
         .then(() => {
-          handleCloseModal(); // Cierra el modal si la operación fue exitosa
+          handleCloseModal();
+          // Refrescar la lista después de crear
+          dispatch(fetchProviders());
         })
         .catch((error) => {
-          setLocalError(error); // Muestra el error si falla
+          setLocalError(error);
         });
     }
   };
+  
   
   const handleSearch = () => {
     dispatch(searchProviders(filters));
@@ -131,6 +165,7 @@ const Provider: React.FC = () => {
         phone: provider.phone,
         address: provider.address,
         country: provider.country,
+        isTaxIncluded: provider.isTaxIncluded ?? false, // ✅ nuevo campo
       });
       setEditingId(id);
       setIsModalOpen(true);
@@ -148,26 +183,30 @@ const Provider: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
-        if (selectedProviderId) {
-          dispatch(changeProviderStatus({ id: selectedProviderId, status: 'inactive' }))
-            .unwrap()
-            .then(() => {
-              console.log('Estado cambiado a inactive con éxito');
-              dispatch(fetchProviders({ status: 'active' }));
-            })
-            .catch((error) => {
-              console.error('Error al cambiar el estado del producto:', error);
-            });
-        }
-        handleDeleteDialogClose();
+    if (selectedProviderId) {
+      dispatch(changeProviderStatus({ 
+        id: selectedProviderId, 
+        status: 'inactive' 
+      }))
+        .unwrap()
+        .then(() => {
+          dispatch(fetchProviders());
+          handleDeleteDialogClose();
+        })
+        .catch((error) => {
+          console.error('Error al cambiar el estado del provider:', error);
+        });
+    }
   };
+  
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setFilters({ ...filters, [name]: value });
   };
 
-  const rows = providers.map((provider) => ({
+  const rows = providers.filter((provider) => provider._id && provider.name) // Filtra registros válidos
+  .map((provider) => ({
     id: provider._id,
     name: provider.name,
     rut: provider.rut,
@@ -178,16 +217,47 @@ const Provider: React.FC = () => {
   }));
 
   const columns: GridColDef[] = [
-    { field: 'name', headerName: 'Name', flex: 1, minWidth: 150 },
-    { field: 'rut', headerName: 'RUT', flex: 1, minWidth: 120 },
-    { field: 'email', headerName: 'Email', flex: 1.5, minWidth: 180 },
-    { field: 'phone', headerName: 'Phone', flex: 1, minWidth: 120 },
-    { field: 'address', headerName: 'Address', flex: 1.5, minWidth: 200 },
-    { field: 'country', headerName: 'Country', flex: 1, minWidth: 120 },
+    { 
+      field: 'name', 
+      headerName: 'Name', 
+      flex: 0.5, 
+      //minWidth: 150 
+    },
+    // { 
+    //   field: 'rut', 
+    //   headerName: 'RUT', 
+    //   flex: 1, 
+    //   minWidth: 120 
+    // },
+    { 
+      field: 'email', 
+      headerName: 'Email', 
+      flex: 0.5, 
+      //minWidth: 180 
+    },
+    // { 
+    //   field: 'phone', 
+    //   headerName: 'Phone', 
+    //   flex: 1, 
+    //   minWidth: 120 
+    // },
+    // { 
+    //   field: 'address', 
+    //   headerName: 'Address', 
+    //   flex: 1.5, 
+    //   minWidth: 200 
+    // },
+    // { 
+    //   field: 'country', 
+    //   headerName: 'Country', 
+    //   flex: 1, 
+    //   minWidth: 120 
+    // },
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 150,
+      flex: 0.5, 
+      //width: 150,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
           <IconButton
@@ -275,17 +345,11 @@ const Provider: React.FC = () => {
       </Paper>
 
       <Paper sx={permissionsTable}>
-        <DataGrid
+        <ResponsiveDataGrid
           rows={rows}
           columns={columns}
-          pageSizeOptions={[5, 10, 20]}
-          initialState={{
-            pagination: {
-              paginationModel: { pageSize: 5 },
-            },
-          }}
-          disableRowSelectionOnClick
-          sx={datagridStyle_v2}
+          sxPaper={permissionsTable as SxProps<Theme>}
+          sxGrid={datagridStyle_v2 as SxProps<Theme>}
         />
       </Paper>
 
@@ -305,6 +369,19 @@ const Provider: React.FC = () => {
             </Box>
           )}
           <DialogContent>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.isTaxIncluded}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, isTaxIncluded: e.target.checked }))
+                  }
+                />
+              }
+              label="Prices from this provider include tax (IVA)"
+              sx={{ mb: 2 }}
+            />
+
             <Box sx={inputContainerForm}>
               <TextField
                 label="Name"

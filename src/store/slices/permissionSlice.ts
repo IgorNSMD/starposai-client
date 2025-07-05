@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { RootState } from "../store";
+import { getActiveContext } from "../../utils/getActiveContext";
 
 // Interfaces
 interface Permission {
@@ -29,17 +31,26 @@ const initialState: PermissionState = {
 export const fetchPermissions = createAsyncThunk<
   Permission[],
   void,
-  { rejectValue: string }
->("permissions/fetchPermissions", async (_, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("permissions/fetchPermissions", async (_, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.get("/permissions");
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const response = await axiosInstance.get(`/permissions`, {
+      params: {
+        companyId: activeCompanyId,
+        venueId: activeVenueId,
+      },
+    });
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (permissions/fetchPermissions)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "(permissions/fetchPermissions)");
     }
+    return rejectWithValue("Error desconocido");
   }
 });
+
 
 export const fetchPermissionById = createAsyncThunk<
   Permission,
@@ -59,49 +70,76 @@ export const fetchPermissionById = createAsyncThunk<
 export const createPermission = createAsyncThunk<
   Permission,
   { key: string; description: string },
-  { rejectValue: string }
->("permissions/createPermission", async (data, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("permissions/createPermission", async (data, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.post("/permissions", data);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const payload = {
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+      ...data,
+    };
+
+    const response = await axiosInstance.post("/permissions", payload);
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (permissions/createPermission)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "(permissions/createPermission)");
     }
+    return rejectWithValue("Error desconocido al crear el permiso.");
   }
 });
 
+
 export const updatePermission = createAsyncThunk<
   Permission,
-  { id: string; key: string; description: string },
-  { rejectValue: string }
->("permissions/updatePermission", async ({ id, key, description }, { rejectWithValue }) => {
+  { id: string; key: string; description: string; global?: boolean },
+  { rejectValue: string; state: RootState }
+>("permissions/updatePermission", async ({ id, key, description, global = false }, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.put(`/permissions/${id}`, { key, description });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    const payload = {
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+      key,
+      description,
+      global,
+    };
+
+    const response = await axiosInstance.put(`/permissions/${id}`, payload);
     return response.data;
   } catch (error) {
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
-      return rejectWithValue(error.response?.data?.message || ' (permissions/updatePermission)');
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "(permissions/updatePermission)");
     }
+    return rejectWithValue("Error desconocido al actualizar el permiso.");
   }
 });
+
 
 export const deletePermission = createAsyncThunk<
   string,
   string,
-  { rejectValue: string }
->("permissions/deletePermission", async (id, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("permissions/deletePermission", async (id, { rejectWithValue, getState }) => {
   try {
-    await axiosInstance.delete(`/permissions/${id}`);
-    return id; // Devuelve el ID eliminado en caso de éxito
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    await axiosInstance.delete(`/permissions/${id}`, {
+      data: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
+
+    return id;
   } catch (error) {
-    // Manejo del error con `isAxiosError` desde la instancia extendida
-    if (axiosInstance.isAxiosError && axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting permission");
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error al eliminar el permiso.");
     }
-    return rejectWithValue("Unknown error occurred");
+    return rejectWithValue("Error desconocido al eliminar el permiso.");
   }
 });
+
 
 // Slice
 const permissionSlice = createSlice({
@@ -142,7 +180,7 @@ const permissionSlice = createSlice({
         state.errorMessage = action.payload || "Error updating permission";
       })
       .addCase(deletePermission.fulfilled, (state, action: PayloadAction<string>) => {
-        state.permissions = state.permissions.filter((perm) => perm.id !== action.payload);
+        state.permissions = state.permissions.filter((perm) => perm._id !== action.payload);
         state.successMessage = "Permission deleted successfully";
         state.errorMessage = null;
       })

@@ -1,9 +1,13 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axiosInstance from "../../api/axiosInstance";
+// 📂 src/redux/slices/userSlice.ts
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from '../../api/axiosInstance';
 
-interface Role {
-  _id: string;
+
+export interface NewUser {
   name: string;
+  email: string;
+  role: string;
+  password: string;
 }
 
 interface User {
@@ -11,63 +15,72 @@ interface User {
   name: string;
   email: string;
   role: string;
-  position: string
+  password?: string
 }
 
+// 🔹 Estado inicial
 interface UserState {
-  isLoaded: boolean;
-  users: User[];
-  userInfo: Role | null;
-  roles: Role[]; // Agregamos los permisos aquí
-  errorMessage: string | null;
-  successMessage: string | null;
+  user: User | null;
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: UserState = {
-  isLoaded: false,
-  users: [],
-  userInfo: null,
-  roles: [],
-  errorMessage: null,
-  successMessage: null,
+  user: null,
+  loading: false,
+  error: null,
 };
 
-// Thunks
-export const fetchRoles = createAsyncThunk<
-  Role[],
-  void,
-  { rejectValue: string }
->("users/fetchRoles", async (_, { rejectWithValue }) => {
+// Thunk multiempresa
+export const fetchUsers = createAsyncThunk<
+  User[], // Tipo de retorno
+  { companyId: string; venueId?: string }, // Parámetros que recibe
+  { rejectValue: string } // Error personalizado
+>("users/fetchUsers", async ({ companyId, venueId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/roles");
-    // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
-    const data = response.data.map((role: Role) => ({
-      _id: role._id, // Cambia `_id` a `id`
-      name: role.name, // Conserva el campo `label`
-    }));
-    //console.log('data::', data)  
-    return data; // Devuelve solo `id` y `label`
+    const response = await axiosInstance.get("/users", {
+      params: {
+        companyId,
+        venueId,
+      },
+    });
 
+    return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error fetching roles");
+      return rejectWithValue(error.response?.data?.message || "Error fetching users");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
 
-// Thunks
-export const fetchUsers = createAsyncThunk<
-  User[],
-  void,
-  { rejectValue: string }
->("users/fetchUsers", async (_, { rejectWithValue }) => {
+
+export const registerUser = createAsyncThunk<
+  User, // Tipo de retorno
+  { userData: NewUser; companyId: string; venueId?: string }, // Parámetros
+  { rejectValue: string } // Tipo de error
+>("user/registerUser", async ({ userData, companyId, venueId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/users");
+    // 🔹 Construimos el payload con estructura multiempresa
+    const payload = {
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      companyVenues: [
+        {
+          companyId,
+          venueId,
+          role: userData.role,
+        }
+      ]
+    };
+
+    const response = await axiosInstance.post("/users/register", payload);
+    
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error fetching users");
+      return rejectWithValue(error.response?.data?.message || "Error al registrar usuario");
     }
     return rejectWithValue("Unknown error occurred");
   }
@@ -75,11 +88,23 @@ export const fetchUsers = createAsyncThunk<
 
 export const updateUser = createAsyncThunk<
   User,
-  { id: string; name: string; email: string; role: string; position: string },
+  {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    password: string;
+    companyId: string;
+    venueId?: string;
+  },
   { rejectValue: string }
->("users/updateUser", async ({ id, name, email, role, position }, { rejectWithValue }) => {
+>("users/updateUser", async ({ id, companyId, venueId, ...data }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.put(`/users/${id}`, { name, email, role, position });
+    const response = await axiosInstance.put(`/users/${id}`, {
+      ...data,
+      companyId,
+      venueId,
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -91,13 +116,13 @@ export const updateUser = createAsyncThunk<
 
 export const deleteUser = createAsyncThunk<
   string,
-  string,
+  { id: string; companyId: string; venueId?: string },
   { rejectValue: string }
->("users/deleteUser", async (id, { rejectWithValue }) => {
+>("users/deleteUser", async ({ id, companyId, venueId }, { rejectWithValue }) => {
   try {
-    console.log('users/deleteUser->',id)
-    await axiosInstance.delete(`/users/${id}`);
-    console.log('registro eliminado ->',id)
+    await axiosInstance.delete(`/users/${id}`, {
+      params: { companyId, venueId }
+    });
     return id;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -107,53 +132,33 @@ export const deleteUser = createAsyncThunk<
   }
 });
 
+// 🔹 Slice de usuario
 const userSlice = createSlice({
-  name: 'users',
+  name: "user",
   initialState,
   reducers: {
-    clearMessages(state) {
-      state.errorMessage = null;
-      state.successMessage = null;
+    resetUserState: (state) => {
+      state.user = null;
+      state.loading = false;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchRoles.fulfilled, (state, action: PayloadAction<Role[]>) => {
-        state.isLoaded = true;
-        state.roles = action.payload;
-        state.errorMessage = null;
+      .addCase(registerUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(fetchRoles.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error loading roles";
+      .addCase(registerUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
       })
-      .addCase(fetchUsers.fulfilled, (state, action: PayloadAction<User[]>) => {
-        state.isLoaded = true;
-        state.users = action.payload;
-        state.errorMessage = null;
-      })
-      .addCase(fetchUsers.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error loading users";
-      })
-      .addCase(updateUser.fulfilled, (state, action: PayloadAction<User>) => {
-        state.users = state.users.map((user) =>
-          user._id === action.payload._id ? action.payload : user
-        );
-        state.successMessage = "Role updated successfully";
-        state.errorMessage = null;
-      })
-      .addCase(updateUser.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error updating role";
-      })
-      .addCase(deleteUser.fulfilled, (state, action: PayloadAction<string>) => {
-        state.users = state.users.filter((user) => user._id !== action.payload);
-        state.successMessage = "User deleted successfully";
-        state.errorMessage = null;
-      })
-      .addCase(deleteUser.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error deleting user";
-      })
+      .addCase(registerUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const { clearMessages } = userSlice.actions;
+export const { resetUserState } = userSlice.actions;
 export default userSlice.reducer;

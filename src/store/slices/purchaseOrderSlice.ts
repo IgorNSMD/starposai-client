@@ -1,5 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { RootState } from "../store";
+import { getActiveContext } from "../../utils/getActiveContext";
+import { TaxRate } from './taxRateSlice'; // ✅ importa correctamente el tipo
 
 export interface Provider {
   _id: string;
@@ -8,13 +11,20 @@ export interface Provider {
 
 // Definimos un tipo general para los items de la PO
 export interface PurchaseOrderItem {
-  type: "product" | "kit" | "service";
+  type: "Product" | "Kit" | "Service";
   referenceId?: string; // ID de producto o kit, si aplica
   sku: string;
   name: string; // Nombre del producto, kit o servicio
   quantity?: number; // No es obligatorio para servicios
+  receivedQuantity?: number; // No es obligatorio para
+  cost: number;
   unitPrice: number;
   subtotal: number;
+  initialWarehouse?: string; // 👈 Nuevo campo para almacén planificado
+  taxRate?: string | TaxRate; // ✅ esta es la línea clave
+  taxAmount?: number;
+  unitPurchase?: string;
+  unitFactor?: number;
   kitComponents?: {
     product: string; // ID del producto
     productName: string;
@@ -26,13 +36,15 @@ export interface PurchaseOrderItem {
 export interface PurchaseOrder {
   _id: string;
   orderNumber?: string;  // 👈 Agregar orderNumber opcional
-  provider: string;  // ✅ Ahora espera solo el `_id`
+  provider: string | Provider; // 👈 esto permite que venga como string o como objeto
   items: PurchaseOrderItem[];
   total: number;
   estimatedDeliveryDate: string;
   status: "pending" | "partial" | "received" | "inactive";
+  isTaxIncluded?: boolean; // ✅ Nuevo campo opcional
   createdBy?: string;
   createdAt?: string;  // 👈 Agregar este campo opcionalmente
+  wasSent?: boolean; // ← nuevo campo
 }
 
 // 🔹 Definir el estado inicial
@@ -53,99 +65,141 @@ const initialState: PurchaseOrderState = {
 };
 
 // ✅ AsyncThunk para obtener una PO por su Order Number
-export const fetchPurchaseOrderByNumber = createAsyncThunk<PurchaseOrder, string>(
-  "purchaseOrders/fetchByNumber",
-  async (orderNumber, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get(`/purchase-orders/order-number/${orderNumber}`);
-      return response.data;
-    } catch (error) {
-      if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || "Error fetching PO");
-      }
-      return rejectWithValue("Unknown error occurred");
-    }
-  }
-);
-
-// ✅ AsyncThunk para obtener todas las PO
-export const fetchPurchaseOrders = createAsyncThunk<PurchaseOrder[], void, { rejectValue: string }>(
-  "purchaseOrders/fetchPurchaseOrders",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get("/purchase-orders");
-      return response.data;
-    } catch (error) {
-        if (axiosInstance.isAxiosError?.(error)) {
-            return rejectWithValue(error.response?.data?.message || " Error change PO");
-         }
-        return rejectWithValue("Unknown error occurred");
-    }
-  }
-);
-
-// ✅ AsyncThunk para crear una nueva PO
-export const createPurchaseOrder = createAsyncThunk<
+// 🔹 Obtener PO por número
+export const fetchPurchaseOrderByNumber = createAsyncThunk<
   PurchaseOrder,
-  { provider: string; items: PurchaseOrderItem[]; estimatedDeliveryDate?: string },
-  { rejectValue: string }
->("purchaseOrders/createPurchaseOrder", async (data, { rejectWithValue }) => {
+  { orderNumber: string },
+  { rejectValue: string; state: RootState }
+>("purchaseOrders/fetchByNumber", async ({ orderNumber }, { getState, rejectWithValue }) => {
   try {
-    console.log('AsyncThunk createPurchaseOrder..', data)
-    const response = await axiosInstance.post("/purchase-orders", data);
-    console.log("🔍 Respuesta de la API en Redux:", response.data);
-    return {
-      ...response.data.purchaseOrder, // ✅ Extrae solo 
-      createdAt: response.data.purchaseOrder.createdAt,// 👈 Asegurar que createdAt se guarde
-      status: response.data.purchaseOrder.status, // 👈 Asegurar que createdAt se guarde
-    };
-} catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error create PO");
-     }
-    return rejectWithValue("Unknown error occurred");
-}
-});
-
-// ✅ AsyncThunk para actualizar una PO
-export const updatePurchaseOrder = createAsyncThunk<
-  PurchaseOrder,
-  { id: string; provider: string; items: PurchaseOrderItem[]; total: number; estimatedDeliveryDate?: string },
-  { rejectValue: string }
->("purchaseOrders/updatePurchaseOrder", async ({ id, ...data }, { rejectWithValue }) => {
-  try {
-    
-    console.log("🔍 AsyncThunk updatePurchaseOrder -> data:", data); // <-- Agrega este log
-    //console.log("🔍 updatePurchaseOrder -> Data enviada:", data); // <-- Agrega este log
-
-    if (!id) {
-      console.error("❌ Error: ID no recibido en el thunk.");
-      return rejectWithValue("El ID de la orden es requerido.");
-    }
-
-    const response = await axiosInstance.put(`/purchase-orders/${id}`, data);
+    //console.log("🔍 Buscando PO por número:", orderNumber);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.get(`/purchase-orders/order-number/${orderNumber}`, {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
+    //console.log("✅ Orden de compra encontrada:", response.data);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error update PO");
+      return rejectWithValue(error.response?.data?.message || "Error fetching PO by number");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
+
+
+
+// 🔹 Obtener todas las POs
+export const fetchPurchaseOrders = createAsyncThunk<
+  PurchaseOrder[],
+  void,
+  { rejectValue: string; state: RootState }
+>("purchaseOrders/fetchAll", async (_, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.get("/purchase-orders", {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error fetching POs");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
+
+
+// 🔹 Crear nueva PO
+export const createPurchaseOrder = createAsyncThunk<
+  PurchaseOrder,
+  {
+    provider: string;
+    items: PurchaseOrderItem[];
+    total: number;
+    estimatedDeliveryDate?: string;
+    createdBy?: string;
+  },
+  { rejectValue: string; state: RootState }
+>("purchaseOrders/create", async (data, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.post("/purchase-orders", {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+    return response.data.purchaseOrder;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error creating PO");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
+
+// 🔹 Actualizar PO
+export const updatePurchaseOrder = createAsyncThunk<
+  PurchaseOrder,
+  {
+    id: string;
+    provider: string;
+    items: PurchaseOrderItem[];
+    total: number;
+    estimatedDeliveryDate?: string;
+  },
+  { rejectValue: string; state: RootState }
+>("purchaseOrders/update", async ({ id, ...data }, { getState, rejectWithValue }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.put(`/purchase-orders/${id}`, {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error updating PO");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
 
 
 // ✅ AsyncThunk para cambiar el estado de una PO
 export const changePurchaseOrderStatus = createAsyncThunk<
   PurchaseOrder,
-  { id: string; status: "pending" | "partial" | "received" | "inactive" }
+  { id: string; status: "pending" | "partial" | "received" | "inactive" },
+  { rejectValue: string }
 >("purchaseOrders/changeStatus", async ({ id, status }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.patch(`/purchase-orders/${id}/status`, { status });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error change PO");
-     }
+      return rejectWithValue(error.response?.data?.message || "Error changing PO status");
+    }
+    return rejectWithValue("Unknown error occurred");
+  }
+});
+
+// 🔹 Marcar PO como enviada
+export const markPurchaseOrderAsSent = createAsyncThunk<
+  PurchaseOrder,
+  { id: string },
+  { rejectValue: string }
+>("purchaseOrders/markAsSent", async ({ id }, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.patch(`/purchase-orders/${id}/mark-sent`);
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error al marcar como enviada");
+    }
     return rejectWithValue("Unknown error occurred");
   }
 });
@@ -182,7 +236,7 @@ const purchaseOrderSlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(createPurchaseOrder.rejected, (state, action) => {
-        console.log('createPurchaseOrder.rejected...')
+        //console.log('createPurchaseOrder.rejected...')
         if (Array.isArray(action.payload)) {
           // 📌 Si el backend devuelve errores en un array, los concatenamos
           state.errorMessage = action.payload.map((err) => `❌ ${err.msg}`).join("\n");
@@ -210,13 +264,26 @@ const purchaseOrderSlice = createSlice({
         state.isLoading = true;
         state.errorMessage = null;
       })
-      .addCase(fetchPurchaseOrderByNumber.fulfilled, (state, action) => {
+      .addCase(fetchPurchaseOrderByNumber.fulfilled, (state,) => {
         state.isLoading = false;
-        console.log("✅ Orden encontrada:", action.payload);
+        //console.log("✅ Orden encontrada:", action.payload);
       })
       .addCase(fetchPurchaseOrderByNumber.rejected, (state, action) => {
         state.isLoading = false;
         state.errorMessage = action.payload as string;
+      })
+      .addCase(markPurchaseOrderAsSent.fulfilled, (state, action) => {
+        const index = state.purchaseOrders.findIndex(po => po._id === action.payload._id);
+        if (index !== -1) {
+          state.purchaseOrders[index] = action.payload;
+        }
+        if (state.purchaseOrderDetail?._id === action.payload._id) {
+          state.purchaseOrderDetail = action.payload;
+        }
+        state.successMessage = "Orden marcada como enviada";
+      })
+      .addCase(markPurchaseOrderAsSent.rejected, (state, action) => {
+        state.errorMessage = action.payload || "Error al marcar como enviada";
       });
   },
 });

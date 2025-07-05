@@ -1,10 +1,24 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector, PayloadAction } from '@reduxjs/toolkit';
 
 import axiosInstance from '../../api/axiosInstance';
+import { RootState } from '../store';
+
+interface CompanyVenue {
+  companyId: string;
+  venueId: string;
+  role: string;
+}
 
 interface AuthState {
   isAuthenticated: boolean;
-  userInfo: { id: string; email: string; role: string } | null;
+  userInfo: {
+    id: string;
+    email: string;
+    activeCompanyId?: string;  // Hacemos este campo opcional
+    activeVenueId?: string;    // Hacemos este campo opcional
+    companyVenues: CompanyVenue[];
+    isOwner: boolean;
+  } | null;
   token: string | null;
   errorMessage: string | null;
   successMessage: string | null; // Nuevo campo para mensajes de éxito
@@ -28,9 +42,14 @@ interface RegisterUserArgs {
 // Interfaz para el payload del login exitoso
 interface LoginSuccessPayload {
   token: string;
-  id: string;
-  email: string;
-  role: string;
+  user: {
+    id: string;
+    email: string;
+    activeCompanyId: string;
+    activeVenueId: string;
+    companyVenues: CompanyVenue[];
+    isOwner: boolean;
+  };
 }
 
 // Thunk para registrar usuario
@@ -59,16 +78,48 @@ export const loginUser = createAsyncThunk<
 >('auth/loginUser', async (credentials, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post('/users/login', credentials);
-    return {
-      ...response.data,
-      role: response.data.role, // Incluye el rol del usuario
-    };
+    localStorage.setItem('token', response.data.token); // <- Esto es clave
+    return response.data;
+    // return {
+    //   ...response.data,
+    //   role: response.data.role, // Incluye el rol del usuario
+    // };
   } catch (error) {
     if (axiosInstance.isAxiosError && axiosInstance.isAxiosError(error)) {
       return rejectWithValue(error.response?.data?.message || 'Error al iniciar sesión');
     }
   }
 });
+
+// Nuevo Selector para obtener el rol actual del usuario
+export const selectCurrentRole = (state: { auth: AuthState }): string | null => {
+  const { userInfo } = state.auth;
+
+  if (userInfo && userInfo.companyVenues && userInfo.activeCompanyId && userInfo.activeVenueId) {
+    const currentVenue = userInfo.companyVenues.find(
+      (venue) =>
+        venue.companyId === userInfo.activeCompanyId &&
+        venue.venueId === userInfo.activeVenueId
+    );
+    return currentVenue?.role || null;
+  }
+  return null;
+};
+
+// export const selectActiveCompanyVenue = (state: RootState) => ({
+//   activeCompanyId: state.auth.activeCompanyId,
+//   activeVenueId: state.auth.activeVenueId,
+// });
+
+// Selector para obtener `activeCompanyId` y `activeVenueId`
+export const selectActiveCompanyVenue = createSelector(
+  (state: RootState) => state.auth.userInfo?.activeCompanyId,
+  (state: RootState) => state.auth.userInfo?.activeVenueId,
+  (activeCompanyId, activeVenueId) => ({
+    activeCompanyId,
+    activeVenueId,
+  })
+);
 
 // Slice de autenticación
 const authSlice = createSlice({
@@ -107,13 +158,9 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action: PayloadAction<LoginSuccessPayload>) => {
         state.isAuthenticated = true;
         state.token = action.payload.token;
-        state.userInfo = {
-          id: action.payload.id,
-          email: action.payload.email,
-          role: action.payload.role,
-        };
+        state.userInfo = action.payload.user;
         state.errorMessage = null;
-        state.successMessage = 'Inicio de sesión exitoso'; // Mensaje de éxito
+        state.successMessage = 'Inicio de sesión exitoso';
       })
       // Login fallido
       .addCase(loginUser.rejected, (state, action: PayloadAction<string | undefined>) => {

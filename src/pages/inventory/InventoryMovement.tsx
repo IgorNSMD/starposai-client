@@ -1,110 +1,469 @@
-import React, { useEffect, useState } from 'react';
-import { Button, TextField, MenuItem, Select, FormControl, InputLabel, Box, Typography, SelectChangeEvent, Grid } from '@mui/material';
+// InventoryMovementsPage.tsx
+import React, { useEffect, useState } from "react";
+import {
+  Box, Button, TextField, Typography, Grid, MenuItem, Paper,
+  Autocomplete,
+  RadioGroup,
+  FormControlLabel,
+  Radio
+} from "@mui/material";
 
-import { createInventoryMovement } from '../../store/slices/inventoryMovementSlice';
-import { fetchWarehouses } from '../../store/slices/warehouseSlice';
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import Tooltip from "@mui/material/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
 
-import { RootState } from '../../store/store';
 import { useAppDispatch, useAppSelector } from "../../store/redux/hooks";
+import { createInventoryMovement, updateInventoryMovement, deleteInventoryMovement, fetchInventoryAdjustments } from "../../store/slices/inventoryMovementSlice";
+import { fetchWarehouses } from "../../store/slices/warehouseSlice";
+import { fetchProducts } from "../../store/slices/productSlice";
+import { fetchKits } from "../../store/slices/kitSlice";
+
+import {
+  formContainer,
+  formTitle,
+  inputField,
+  submitButton,
+  cancelButton,
+  datagridStyle,
+} from "../../styles/AdminStyles";
+import Dialog from "../../components/Dialog"; // tu diálogo estandar
 
 
-const InventoryMovementForm = () => {
+interface InventoryMovementRow {
+  id: string;
+  type: "adjustment", // 👈 forzado y no editable type: "entry" | "exit" | "transfer" | "adjustment" | "disassembly";
+  warehouseId: string;
+  referenceId: string;
+  referenceType: "Product" | "Kit";
+  quantity: number;
+  reason: string;
+  referenceLabel: string;
+  sourceLabel: string;
+}
+
+interface PopulatedMovement {
+  _id: string;
+  type: string;
+  warehouse: string;
+  referenceId: { _id: string; name: string } | string;
+  referenceType: "Product" | "Kit";
+  quantity: number;
+  reason: string;
+  sourceType?: string;
+  sourceId?: { _id: string; orderNumber?: string; invoiceNumber?: string } | string;
+}
+
+interface ItemOption {
+  _id: string;
+  name: string;
+}
+
+const InventoryMovements: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state: RootState) => state.inventorymovements);
-  const { warehouses } = useAppSelector((state: RootState) => state.warehouses);
+  const { warehouses } = useAppSelector((state) => state.warehouses);
+  const { movements , loading } = useAppSelector((state) => state.inventorymovements);
+  const { products } = useAppSelector((state) => state.products);
+  const { kits } = useAppSelector((state) => state.kits);
 
-  const [movementData, setMovementData] = useState<{
-    type: "entry" | "exit" | "transfer" | "adjustment" | "disassembly";
+  const [formData, setFormData] = useState<{
+    type: "adjustment", // 👈 forzado y no editable type: "entry" | "exit" | "transfer" | "adjustment" | "disassembly";
     warehouse: string;
     referenceId: string;
-    referenceType: 'Product' | 'Kit'; // ✅ Esto corrige el error
-    quantity: number; // ✅ Aseguramos que quantity sea un número
+    referenceType: "Product" | "Kit"; // ✅ aquí está el fix
+    quantity: number;
     reason: string;
+    sourceType: "Adjustment"; // 👈 AÑADIR ESTO
   }>({
-    type: "entry", // ✅ Valor inicial válido
-    warehouse: '',
-    referenceId: '',
-    referenceType: 'Product', // ✅ Inicializamos con un valor válido
-    quantity: 0, // ✅ Ahora es un número
-    reason: '',
+    type: "adjustment", //type: "entry",
+    warehouse: "",
+    referenceId: "",
+    referenceType: "Product",
+    quantity: 0,
+    reason: "",
+    sourceType: "Adjustment", // 👈 AÑADIR ESTO
   });
+  
+
+  //const [editing, setEditing] = useState(false); // por si luego agregas edición
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchWarehouses()); // Cargar almacenes al montar el componente
+    dispatch(fetchWarehouses());
+    dispatch(fetchInventoryAdjustments());
+    dispatch(fetchProducts({ status: 'active' }));
+    dispatch(fetchKits());
   }, [dispatch]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
+  const handleDialogOpen = () => {
+    setIsDialogOpen(true);
+  };
+  
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+  };
+  
+  const handleConfirmUpdate = () => {
+    if (editingId) {
+      dispatch(updateInventoryMovement({ id: editingId, updateData: formData })).then(() => {
+        dispatch(fetchInventoryAdjustments());
+        resetForm();
+      });
+    }
+    handleDialogClose();
+  };
+  
+
+  const handleDeleteDialogOpen = (id: string) => {
+    setSelectedId(id);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const handleDeleteDialogClose = () => {
+    setIsDeleteDialogOpen(false);
+    setSelectedId(null);
+  };
+  
+  const handleConfirmDelete = () => {
+    if (selectedId) {
+      dispatch(deleteInventoryMovement(selectedId)).then(() => {
+        dispatch(fetchInventoryAdjustments());
+      });
+    }
+    handleDeleteDialogClose();
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setMovementData(prevState => ({
-      ...prevState,
-      [name]: name === 'quantity' ? Number(value) : value, // Convierte `quantity` a número
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "quantity" ? parseFloat(value) : value,
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(createInventoryMovement(movementData));
+  const handleSubmit = () => {
+    if (editingId) {
+      dispatch(updateInventoryMovement({ id: editingId, updateData: formData })).then(() => {
+        resetForm();
+        dispatch(fetchInventoryAdjustments());
+      });
+    } else {
+      dispatch(createInventoryMovement(formData)).then(() => {
+        resetForm();
+        dispatch(fetchInventoryAdjustments());
+      });
+    }
   };
 
-  const handleReset = () => {
-    setMovementData({
-      type: "entry", // ✅ Valor inicial válido
-      warehouse: '',
-      referenceId: '',
-      referenceType: 'Product',
-      quantity: 0,
-      reason: '',
+  const handleEdit = (row: InventoryMovementRow) => {
+    setEditingId(row.id);
+    setFormData({
+      type: row.type,
+      warehouse: row.warehouseId, // 👈 o asegúrate que venga el `_id`
+      referenceId: row.referenceId,
+      referenceType: row.referenceType,
+      quantity: row.quantity,
+      reason: row.reason,
+      sourceType: "Adjustment", // 👈 necesario porque es parte del tipo
     });
   };
 
+
+  const resetForm = () => {
+    setFormData({
+      type: "adjustment", // 👈 forzado y no editable type: "entry",
+      warehouse: "",
+      referenceId: "",
+      referenceType: "Product",
+      quantity: 0,
+      reason: "",
+      sourceType: "Adjustment", // 👈 AÑADIR ESTO
+    });
+    setEditingId('');
+  };
+
+  const rows = (movements as PopulatedMovement[]).map((m) => {
+    const whName =
+      typeof m.warehouse === "object" && m.warehouse !== null && "name" in m.warehouse
+        ? (m.warehouse as { name: string }).name
+        : warehouses.find((w) => w._id === m.warehouse)?.name || String(m.warehouse);
+
+
+    const referenceLabel =
+      typeof m.referenceId === "object" && m.referenceId !== null && "name" in m.referenceId
+    ? (m.referenceId as { name: string }).name
+    : String(m.referenceId);
+
+
+    // const sourceLabel =
+    //   typeof m.sourceId === "object" && m.sourceType === "PurchaseOrder" && m.sourceId?.orderNumber
+    // ? `PO: ${m.sourceId.orderNumber}`
+    // : typeof m.sourceId === "object" && m.sourceType === "SalesOrder" && m.sourceId?.invoiceNumber
+    // ? `SO: ${m.sourceId.invoiceNumber}`
+    // : "-";
+
+
+    return {
+      id: m._id,
+      type: m.type,
+      warehouseId: m.warehouse, // ✅ conservar el ID para edición
+      warehouseName: whName,
+      referenceId: typeof m.referenceId === "object" ? m.referenceId._id : m.referenceId,
+      referenceType: m.referenceType,
+      quantity: m.quantity,
+      reason: m.reason,
+      referenceLabel,
+    };
+  });
+
+  const columns: GridColDef[] = [
+  { field: "type", headerName: "Type", flex: 0.9, minWidth: 100 },
+  { field: "warehouseName", headerName: "Warehouse", flex: 1.2, minWidth: 140 },
+  { field: "referenceLabel", headerName: "Item", flex: 1.4, minWidth: 160 },
+  { field: "referenceType", headerName: "Ref Type", flex: 0.9, minWidth: 120 },
+  { field: "reason", headerName: "Reason", flex: 1.6, minWidth: 180 },
+  { field: "quantity", headerName: "Qty", flex: 0.8, minWidth: 90 },
+    // { field: "reason", headerName: "Reason", flex: 1.3 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params) => (
+        <>
+          <Tooltip title="Editar">
+            <IconButton color="success" onClick={() => handleEdit(params.row)}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Eliminar">
+            <IconButton color="error" onClick={() => handleDeleteDialogOpen(params.row.id)}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </>
+      ),
+    },
+  ];
+
+  const availableItems: ItemOption[] = (formData.referenceType === "Product"
+    ? products
+    : kits
+  )?.map(({ _id, name }) => ({ _id, name }));
+
   return (
-    <Box sx={{ maxWidth: 600, margin: 'auto', padding: 3, boxShadow: 3, borderRadius: 2, mt: 4  }}>
-      <Typography variant="h6" sx={{ marginBottom: 2,fontWeight: "bold", color: "#666", mb: 2  }}>Registrar Movimiento de Inventario</Typography>
-      {error && <Typography color="error">{error}</Typography>}
-      <form onSubmit={handleSubmit}>
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Tipo de Movimiento</InputLabel>
-          <Select name="type" value={movementData.type} onChange={handleChange}>
-            <MenuItem value="entry">Entrada</MenuItem>
-            <MenuItem value="exit">Salida</MenuItem>
-            <MenuItem value="transfer">Transferencia</MenuItem>
-            <MenuItem value="adjustment">Ajuste</MenuItem>
-            <MenuItem value="disassembly">Desensamblaje</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Selección de Almacén */}
-        <FormControl fullWidth margin="normal">
-          <InputLabel>Seleccionar Almacén</InputLabel>
-          <Select name="warehouse" value={movementData.warehouse} onChange={handleChange}>
-            {warehouses.map((wh) => (
-              <MenuItem key={wh._id} value={wh._id}>
-                {wh.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        
-        <TextField fullWidth label="Referencia ID" name="referenceId" value={movementData.referenceId} onChange={handleChange} margin="normal" />
-        <TextField fullWidth label="Cantidad" type="number" name="quantity" value={movementData.quantity} onChange={handleChange} margin="normal" />
-        <TextField fullWidth label="Razón" name="reason" value={movementData.reason} onChange={handleChange} margin="normal" />
-
-        <Grid container spacing={2} sx={{ mt: 2 }}>
-          <Grid item xs={6}>
-            <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
-              {loading ? 'Registrando...' : 'Registrar Movimiento'}
-            </Button>
+    <Box sx={formContainer}>
+      <Paper sx={{ padding: "20px", marginBottom: "1px", width: "100%" }}>
+        <Typography sx={formTitle}>
+          {editingId ? "Edit Movement" : "Register Inventory Movement"}
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              select
+              label="Movement Type"
+              name="type"
+              fullWidth
+              value={formData.type}
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: "#444444",
+                    "&.Mui-focused": { color: "#47b2e4" },
+                  },
+                },
+              }}
+            >
+              <MenuItem value="adjustment">Adjustment</MenuItem>
+            </TextField>
           </Grid>
-          <Grid item xs={6}>
-            <Button type="button" variant="contained" color="secondary" fullWidth onClick={handleReset}>
-              Limpiar
-            </Button>
+
+          <Grid item xs={12} sm={4}>
+            <TextField
+              select
+              label="Warehouse"
+              name="warehouse"
+              fullWidth
+              value={formData.warehouse}
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: "#444444",
+                    "&.Mui-focused": { color: "#47b2e4" },
+                  },
+                },
+              }}
+            >
+              {warehouses.map((wh) => (
+                <MenuItem key={wh._id} value={wh._id}>
+                  {wh.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <RadioGroup
+              row
+              name="referenceType"
+              value={formData.referenceType}
+              onChange={(e) => {
+                const newType = e.target.value as "Product" | "Kit";
+                setFormData((prev) => ({
+                  ...prev,
+                  referenceType: newType,
+                  referenceId: "", // reinicia la selección
+                }));
+              }}
+            >
+              <FormControlLabel value="Product" control={<Radio />} label="Product" />
+              <FormControlLabel value="Kit" control={<Radio />} label="Kit" />
+            </RadioGroup>
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+          <Autocomplete
+            options={availableItems}
+            getOptionLabel={(item) => item.name}
+            isOptionEqualToValue={(option, value) => option._id === value._id}
+            getOptionKey={(option) => option._id} // opcional si usas MUI 5+
+            value={availableItems.find((item) => item._id === formData.referenceId) || null}
+            onChange={(_, newValue) => {
+              setFormData((prev) => ({
+                ...prev,
+                referenceId: newValue?._id || "",
+              }));
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Reference Item"
+                InputLabelProps={{ shrink: true }}
+                sx={{
+                  ...inputField,
+                  "& label": {
+                    color: "#444444",
+                  },
+                  "& label.Mui-focused": {
+                    color: "#47b2e4",
+                  },
+                }}
+              />
+            )}
+          />
+
+
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Quantity"
+              name="quantity"
+              type="number"
+              fullWidth
+              value={formData.quantity}
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: "#444444",
+                    "&.Mui-focused": { color: "#47b2e4" },
+                  },
+                },
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <TextField
+              label="Reason"
+              name="reason"
+              fullWidth
+              value={formData.reason}
+              onChange={handleChange}
+              sx={inputField}
+              slotProps={{
+                inputLabel: {
+                  shrink: true,
+                  sx: {
+                    color: "#444444",
+                    "&.Mui-focused": { color: "#47b2e4" },
+                  },
+                },
+              }}
+            />
           </Grid>
         </Grid>
 
-      </form>
+        <Box display="flex" gap={2} mt={3}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={editingId ? handleDialogOpen : handleSubmit}
+            startIcon={<SaveIcon />}
+            sx={submitButton}
+            disabled={loading}
+          >
+            {editingId ? "Update" : "Save"}
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={resetForm}
+            startIcon={<CancelIcon />}
+            sx={cancelButton}
+          >
+            Clear
+          </Button>
+        </Box>
+      </Paper>
+      <Paper sx={{ padding: "20px", marginBottom: "1px", width: "100%" }}>
+        <Typography variant="h6" sx={{ padding: "10px", color: "#333333", fontWeight: "bold" }}>
+          Inventory Movement List
+        </Typography>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          autoHeight
+          pageSizeOptions={[5, 10, 20, 100]} // 👈 agregamos 100
+          sx={datagridStyle}
+          disableRowSelectionOnClick
+        />
+      </Paper>
+
+      <Dialog
+        isOpen={isDeleteDialogOpen}
+        title="Confirmar eliminación"
+        message="¿Estás seguro de eliminar este movimiento de inventario?"
+        onClose={handleDeleteDialogClose}
+        onConfirm={handleConfirmDelete}
+      />
+
+      <Dialog
+        isOpen={isDialogOpen}
+        title="Confirm Update"
+        message="Are you sure you want to update this movement?"
+        onClose={handleDialogClose}
+        onConfirm={handleConfirmUpdate}
+      />
+
     </Box>
   );
 };
 
-export default InventoryMovementForm;
+export default InventoryMovements;

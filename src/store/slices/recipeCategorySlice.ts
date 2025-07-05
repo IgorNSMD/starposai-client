@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
-
+import { RootState } from "../store";
+import { getActiveContext } from "../../utils/getActiveContext";
 
 export interface RecipeCategory {
   _id: string;
@@ -31,112 +32,124 @@ const initialState: RecipeCategoryState = {
 
 
 // Async Thunks con tipos definidos
-export const fetchRecipeCategoriesRoot = createAsyncThunk<RecipeCategory[], void, { rejectValue: string }>(
-  "RecipeCategory/fetchRecipeCategoriesRoot",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axiosInstance.get("/recipecategories/root");
-      
-      // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
-      const data = response.data.map((rC: RecipeCategory) => ({
-        _id: rC._id, // Cambia `_id` a `id`
-        name: rC.name, // Conserva el campo `label`
-        description: rC.description, // Conserva el campo `label`
-        parentId: rC.parentId, // Conserva el campo `label`
-      }));
-      console.log('data::', data)  
-      return data; // Devuelve solo `id` y `label`
-    } catch (error) {
-      if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || "Error fetching Menus Root");
-      }
-      return rejectWithValue("Unknown error occurred");
+export const fetchRecipeCategoriesRoot = createAsyncThunk<
+  RecipeCategory[],
+  void,
+  { rejectValue: string; state: RootState }
+>("RecipeCategory/fetchRecipeCategoriesRoot", async (_, { rejectWithValue, getState }) => {
+  try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    if (!activeCompanyId) return rejectWithValue("Company ID no disponible");
+
+    const response = await axiosInstance.get("/recipecategories/root", {
+      params: { companyId: activeCompanyId, venueId: activeVenueId }
+    });
+    return response.data;
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || "Error fetching recipe categories root");
     }
+    return rejectWithValue("Unknown error occurred");
   }
-);
+});
 
 
 // Thunks
 export const fetchRecipeCategories = createAsyncThunk<
   RecipeCategory[],
   void,
-  { rejectValue: string }
->("RecipeCategory/fetchRecipeCategories", async (_, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("RecipeCategory/fetchRecipeCategories", async (_, { rejectWithValue, getState }) => {
   try {
-    //console.log('inicio..fetchMenus')
-    //console.log('Base URL:', axiosInstance.defaults.baseURL);
-    const response = await axiosInstance.get("/recipecategories");
-    //console.log('response.data (fetchMenus) -> ',response.data)
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    if (!activeCompanyId) return rejectWithValue("Company ID no disponible");
+
+    const response = await axiosInstance.get("/recipecategories", {
+      params: { companyId: activeCompanyId, venueId: activeVenueId }
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      console.log('error en axiosInstance -> ', error.response?.data?.message)
-      return rejectWithValue(error.response?.data?.message || " Error fetching recipecategories");
+      return rejectWithValue(error.response?.data?.message || "Error fetching recipecategories");
     }
-    console.log('error..axios')
     return rejectWithValue("Unknown error occurred");
   }
 });
 
 export const createRecipeCategory = createAsyncThunk<
- RecipeCategory,
+  RecipeCategory,
   { name: string; description: string; parentId: string },
-  { rejectValue: string }
->("RecipeCategory/createRecipeCategory", async (data, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("RecipeCategory/createRecipeCategory", async (data, { rejectWithValue, getState }) => {
   try {
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    if (!activeCompanyId) return rejectWithValue("Company ID no disponible");
 
-    const response = await axiosInstance.post("/recipecategories", data );
-
+    const response = await axiosInstance.post("/recipecategories", {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
     return response.data;
-
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error creating menu");
+      return rejectWithValue(error.response?.data?.message || "Error creating recipe category");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
+
 
 export const updateRecipeCategory = createAsyncThunk<
-RecipeCategory,
-  { id: string; name: string; description: string; parentId: string; },
-  { rejectValue: string }
->("RecipeCategory/updateRecipeCategory", async ({ id, name, description, parentId,  }, { rejectWithValue }) => {
+  RecipeCategory,
+  { id: string; name: string; description: string; parentId: string },
+  { rejectValue: string; state: RootState }
+>("RecipeCategory/updateRecipeCategory", async ({ id, ...data }, { rejectWithValue, getState }) => {
   try {
-    console.log('Inicio actualización menu...');
-    // Enviar los datos como multipart/form-data
-    const response = await axiosInstance.put(`/recipecategories/${id}`, { name, description, parentId });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    if (!activeCompanyId) return rejectWithValue("Company ID no disponible");
 
-    console.log('Respuesta del servidor: ', response.data);
+    const response = await axiosInstance.put(`/recipecategories/${id}`, {
+      ...data,
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error updating menu");
+      return rejectWithValue(error.response?.data?.message || "Error updating recipe category");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
+
 
 
 export const deleteRecipeCategory = createAsyncThunk<
   string,
   string,
-  { rejectValue: string }
->("RecipeCategory/deleteRecipeCategory", async (id, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("RecipeCategory/deleteRecipeCategory", async (id, { rejectWithValue, getState }) => {
   try {
-    await axiosInstance.delete(`/recipecategories/${id}`);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    if (!activeCompanyId) return rejectWithValue("Company ID no disponible");
+
+    await axiosInstance.delete(`/recipecategories/${id}`, {
+      data: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
     return id;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting RecipeCategory");
+      return rejectWithValue(error.response?.data?.message || "Error deleting recipe category");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
 
 
+
 // Slice
-const actionSlice = createSlice({
+const recipeCategorySlice = createSlice({
   name: "recipecategories",
   initialState,
   reducers: {
@@ -192,5 +205,5 @@ const actionSlice = createSlice({
   },
 });
 
-export const { clearMessages } = actionSlice.actions;
-export default actionSlice.reducer;
+export const { clearMessages } = recipeCategorySlice.actions;
+export default recipeCategorySlice.reducer;

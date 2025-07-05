@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { RootState } from "../store";
+import { getActiveContext } from "../../utils/getActiveContext";
 
 // Interfaces
 interface Permission {
@@ -12,6 +14,9 @@ interface Action {
   _id: string;
   name: string;
   permissions: Permission[];
+  companyId: string;
+  venueId?: string;
+  global?: boolean;
 }
 
 interface ActionState {
@@ -34,90 +39,172 @@ const initialState: ActionState = {
 
 // Thunks
 export const fetchPermissions = createAsyncThunk<
-  Permission[],
-  void,
-  { rejectValue: string }
->("permissions/fetchPermissions", async (_, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.get("/permissions");
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error fetching permisions");
-    }
-    return rejectWithValue("Unknown error occurred");
-  }
-});
+Permission[], void, 
+{ rejectValue: string; state: RootState }>(
+  "permissions/fetchPermissions",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { activeCompanyId, activeVenueId } = getActiveContext(getState());
 
-// Thunks
+      if (!activeCompanyId || !activeVenueId) {
+        return rejectWithValue("Company ID o Venue ID no encontrados.");
+      }
+
+      const response = await axiosInstance.get(`/permissions`, {
+        params: {
+          companyId: activeCompanyId,
+          venueId: activeVenueId,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || ' (permissions/fetchPermissions)');
+      }
+      return rejectWithValue("Error desconocido");
+    }
+  }
+);
+
 export const fetchActions = createAsyncThunk<
   Action[],
   void,
-  { rejectValue: string }
->("actions/fetchActions", async (_, { rejectWithValue }) => {
-  try {
-    //console.log('inicio..fetchActions')
-    //console.log('Base URL:', axiosInstance.defaults.baseURL);
-    const response = await axiosInstance.get("/actions");
-    //console.log('response.data -> ',response.data)
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      console.log('error en axiosInstance -> ', error.response?.data?.message)
-      return rejectWithValue(error.response?.data?.message || " Error fetching actions");
+  { rejectValue: string; state: RootState }
+>(
+  "actions/fetchActions",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      // 🔍 Obtener companyId y venueId del estado global (Redux)
+      const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+      if (!activeCompanyId || !activeVenueId) {
+        return rejectWithValue("No se pudo obtener companyId o venueId del usuario autenticado.");
+      }
+
+      // 🔍 Realizar la solicitud GET al backend con los parámetros necesarios
+      const response = await axiosInstance.get("/actions", { 
+        params: { 
+          companyId: activeCompanyId, 
+          venueId: activeVenueId 
+        } 
+      });
+
+      return response.data;
+
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error al obtener las acciones.");
+      }
+      return rejectWithValue("Ocurrió un error desconocido al obtener las acciones.");
     }
-    console.log('error..axios')
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
+
 
 export const createAction = createAsyncThunk<
   Action,
-  { name: string; permissions: string[] },
-  { rejectValue: string }
->("actions/createAction", async (data, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.post("/actions", data);
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error creating action");
+  { name: string; permissions: string[]; global?: boolean },
+  { rejectValue: string; state: RootState }
+>(
+  "actions/createAction",
+  async ({ name, permissions, global }, { rejectWithValue, getState }) => {
+    try {
+
+      // 🔍 Obtener companyId y venueId del estado global (Redux)
+      const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+      if (!activeCompanyId || !activeVenueId) {
+        return rejectWithValue("No se pudo obtener companyId o venueId del usuario autenticado.");
+      }
+
+      // 🔍 Realizar la solicitud POST al backend
+      const response = await axiosInstance.post("/actions", {
+        companyId: activeCompanyId,
+        venueId: activeVenueId,
+        name,
+        permissions,
+        global
+      });
+
+      return response.data.action;
+
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error al crear la acción.");
+      }
+      return rejectWithValue("Ocurrió un error desconocido al crear la acción.");
     }
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
 
 export const updateAction = createAsyncThunk<
   Action,
-  { id: string; name: string; permissions: string[] },
-  { rejectValue: string }
->("actions/updateAction", async ({ id, name, permissions }, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.put(`/actions/${id}`, { name, permissions });
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error updating action");
+  { id: string; name: string; permissions: string[]; global?: boolean },
+  { rejectValue: string; state: RootState }
+>(
+  "actions/updateAction",
+  async ({ id, name, permissions, global }, { rejectWithValue, getState }) => {
+    try {
+      // 🔍 Obtener companyId y venueId desde el estado global (Redux)
+      const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+      if (!activeCompanyId || !activeVenueId) {
+        return rejectWithValue("No se pudo obtener companyId o venueId del usuario autenticado.");
+      }
+
+      // 🔍 Realizar la solicitud PUT al backend
+      const response = await axiosInstance.put(`/actions/${id}`, {
+        companyId: activeCompanyId,
+        venueId: activeVenueId,
+        name,
+        permissions,
+        global
+      });
+
+      return response.data.action;
+
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error al actualizar la acción.");
+      }
+      return rejectWithValue("Ocurrió un error desconocido al actualizar la acción.");
     }
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
 
 export const deleteAction = createAsyncThunk<
   string,
   string,
-  { rejectValue: string }
->("actions/deleteAction", async (id, { rejectWithValue }) => {
-  try {
-    await axiosInstance.delete(`/actions/${id}`);
-    return id;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting action");
+  { rejectValue: string; state: RootState }
+>(
+  "actions/deleteAction",
+  async (id, { rejectWithValue, getState }) => {
+    try {
+      // 🔍 Obtener companyId y venueId del estado global (Redux)
+      const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+      if (!activeCompanyId || !activeVenueId) {
+        return rejectWithValue("No se pudo obtener companyId o venueId del usuario autenticado.");
+      }
+
+      // 🔍 Realizar la solicitud DELETE al backend con companyId y venueId en el body
+      await axiosInstance.delete(`/actions/${id}`, {
+        data: { companyId: activeCompanyId, venueId: activeVenueId }
+      });
+
+      return id;  // Devuelve el ID de la acción eliminada para actualizar el estado global
+
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error al eliminar la acción.");
+      }
+      return rejectWithValue("Ocurrió un error desconocido al eliminar la acción.");
     }
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
+
+
+
 
 // Slice
 const actionSlice = createSlice({
@@ -137,38 +224,29 @@ const actionSlice = createSlice({
         state.errorMessage = null;
       })
       .addCase(fetchActions.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error loading roles";
+        state.errorMessage = action.payload || "Error loading actions";
       })
       .addCase(createAction.fulfilled, (state, action: PayloadAction<Action>) => {
         state.actions.push(action.payload);
         state.successMessage = "Action created successfully";
         state.errorMessage = null;
       })
-      .addCase(createAction.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error creating role";
-      })
       .addCase(updateAction.fulfilled, (state, action: PayloadAction<Action>) => {
         state.actions = state.actions.map((act) =>
           act._id === action.payload._id ? action.payload : act
         );
-        state.successMessage = "Role updated successfully";
+        state.successMessage = "Action updated successfully";
         state.errorMessage = null;
-      })
-      .addCase(updateAction.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error updating role";
       })
       .addCase(deleteAction.fulfilled, (state, action: PayloadAction<string>) => {
         state.actions = state.actions.filter((act) => act._id !== action.payload);
-        state.successMessage = "Role deleted successfully";
+        state.successMessage = "Action deleted successfully";
         state.errorMessage = null;
-      })
-      .addCase(deleteAction.rejected, (state, action: PayloadAction<string | undefined>) => {
-        state.errorMessage = action.payload || "Error deleting role";
       })
       .addCase(fetchPermissions.fulfilled, (state, action: PayloadAction<Permission[]>) => {
         state.permissions = action.payload;
         state.errorMessage = null;
-      })
+      });
   },
 });
 

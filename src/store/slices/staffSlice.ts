@@ -1,5 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from "../../api/axiosInstance";
+import { RootState } from "../store";
+import { getActiveContext } from "../../utils/getActiveContext";
+
+
 
 interface Position {
   _id: string;
@@ -9,7 +13,7 @@ interface Position {
 interface Staff {
   _id: string;
   name: string;
-  position: string
+  position: string | Position; // <-- ahora puede ser ID o objeto
 }
 
 interface StaffState {
@@ -32,34 +36,52 @@ const initialState: StaffState = {
 export const fetchPositions = createAsyncThunk<
   Position[],
   void,
-  { rejectValue: string }
->("staffs/fetchPositions", async (_, { rejectWithValue }) => {
-  try {
-    const response = await axiosInstance.get("/positions");
-    // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
-    const data = response.data.map((position: Position) => ({
-      _id: position._id, // Cambia `_id` a `id`
-      name: position.name, // Conserva el campo `label`
-    }));
-    //console.log('data::', data)  
-    return data; // Devuelve solo `id` y `label`
+  { rejectValue: string; state: RootState }  // <- aquí está el fix
+>(
+  "staffs/fetchPositions", 
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const { activeCompanyId, activeVenueId } = getActiveContext(getState());
 
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error fetching Positions");
+      if (!activeCompanyId || !activeVenueId) {
+        return rejectWithValue("Company ID o Venue ID no encontrados.");
+      }
+
+      const response = await axiosInstance.get("/positions", {
+        params: { companyId: activeCompanyId, venueId: activeVenueId },
+      });
+
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || " Error fetching Positions");
+      }
+      return rejectWithValue("Unknown error occurred");
     }
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
+
 
 // Thunks
 export const fetchStaffs = createAsyncThunk<
   Staff[],
   void,
-  { rejectValue: string }
->("staffs/fetchStaffs", async (_, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState  }
+>("staffs/fetchStaffs", async (_, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.get("/staffs");
+
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    if (!activeCompanyId || !activeVenueId) {
+      return rejectWithValue("Company ID o Venue ID no encontrados.");
+    }
+
+    const response = await axiosInstance.get("/staffs", {
+      params: {
+        companyId: activeCompanyId,
+        venueId: activeVenueId,
+      },
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -69,13 +91,62 @@ export const fetchStaffs = createAsyncThunk<
   }
 });
 
+// 🔹 POST
+export const createStaff = createAsyncThunk<
+  Staff,
+  { name: string; position: string },
+  { rejectValue: string; state: RootState }
+>('staffs/createStaff', async (data, { rejectWithValue, getState  }) => {
+  try {
+
+    // Obtenemos los valores del estado de autenticación
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    if (!activeCompanyId || !activeVenueId) {
+      return rejectWithValue('No se pudo obtener companyId o venueId del usuario autenticado.');
+    }
+
+    // Creamos el objeto a enviar
+    const payload = { 
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+      ...data 
+    };
+
+    const response = await axiosInstance.post('/staffs', payload);
+    return response.data;
+
+  } catch (error) {
+    if (axiosInstance.isAxiosError?.(error)) {
+      return rejectWithValue(error.response?.data?.message || 'Error al crear almacén');
+    }
+    return rejectWithValue('Unknown error occurred');
+  }
+});
+
 export const updateStaff = createAsyncThunk<
   Staff,
   { id: string; name: string; position: string },
-  { rejectValue: string }
->("staffs/updateStaff", async ({ id, name, position }, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("staffs/updateStaff", async ({ id, name, position }, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.put(`/staffs/${id}`, { name, position });
+
+    // Obtenemos los valores del estado de autenticación
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+
+    if (!activeCompanyId || !activeVenueId) {
+      return rejectWithValue('No se pudo obtener companyId o venueId del usuario autenticado.');
+    }    
+
+    // Creamos el payload que se enviará al backend
+    const payload = {
+      companyId: activeCompanyId,
+      venueId: activeVenueId,
+      name,
+      position
+    };
+
+    const response = await axiosInstance.put(`/staffs/${id}`, payload);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

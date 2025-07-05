@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosInstance";
+import { RootState } from "../store";
+import { getActiveContext } from "../../utils/getActiveContext";
 
 // Interfaces
 interface Permission {
@@ -33,17 +35,21 @@ const initialState: RoleState = {
 };
 
 // Thunks
+// Thunks
 export const fetchPermissions = createAsyncThunk<
   Permission[],
   void,
-  { rejectValue: string }
->("permissions/fetchPermissions", async (_, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("permissions/fetchPermissions", async (_, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.get("/permissions");
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const response = await axiosInstance.get("/permissions", {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error fetching permisions");
+      return rejectWithValue(error.response?.data?.message || "Error fetching permissions");
     }
     return rejectWithValue("Unknown error occurred");
   }
@@ -52,43 +58,51 @@ export const fetchPermissions = createAsyncThunk<
 // Thunks
 export const fetchRoles = createAsyncThunk<
   Role[],
-  void,
+  { companyId: string; venueId?: string },
   { rejectValue: string }
->("roles/fetchRoles", async (_, { rejectWithValue }) => {
+>("roles/fetchRoles", async ({ companyId, venueId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/roles");
+    const response = await axiosInstance.get("/roles", {
+      params: { companyId, venueId },
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error fetching roles");
+      return rejectWithValue(error.response?.data?.message || "Error fetching roles");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
+
 
 export const createRole = createAsyncThunk<
   Role,
   { name: string; permissions: string[] },
-  { rejectValue: string }
->("roles/createRole", async (data, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("roles/createRole", async (data, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.post("/roles", data);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const payload = { ...data, companyId: activeCompanyId, venueId: activeVenueId };
+    const response = await axiosInstance.post("/roles", payload);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error creating role");
+      return rejectWithValue(error.response?.data?.message || "Error creating role");
     }
     return rejectWithValue("Unknown error occurred");
   }
 });
 
+
 export const updateRole = createAsyncThunk<
   Role,
   { id: string; name: string; permissions: string[] },
-  { rejectValue: string }
->("roles/updateRole", async ({ id, name, permissions }, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("roles/updateRole", async ({ id, name, permissions }, { rejectWithValue, getState }) => {
   try {
-    const response = await axiosInstance.put(`/roles/${id}`, { name, permissions });
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    const payload = { name, permissions, companyId: activeCompanyId, venueId: activeVenueId };
+    const response = await axiosInstance.put(`/roles/${id}`, payload);
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
@@ -101,10 +115,13 @@ export const updateRole = createAsyncThunk<
 export const deleteRole = createAsyncThunk<
   string,
   string,
-  { rejectValue: string }
->("roles/deleteRole", async (id, { rejectWithValue }) => {
+  { rejectValue: string; state: RootState }
+>("roles/deleteRole", async (id, { rejectWithValue, getState }) => {
   try {
-    await axiosInstance.delete(`/roles/${id}`);
+    const { activeCompanyId, activeVenueId } = getActiveContext(getState());
+    await axiosInstance.delete(`/roles/${id}`, {
+      params: { companyId: activeCompanyId, venueId: activeVenueId },
+    });
     return id;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {

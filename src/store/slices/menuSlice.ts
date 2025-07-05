@@ -99,35 +99,47 @@ const initialState: MenuState = {
 };
 
 // Thunks
+// Modificar los Thunks para que reciban `companyId` y `venueId` desde el frontend
+
 export const fetchPermissions = createAsyncThunk<
   Permission[],
-  void,
+  { companyId: string; venueId?: string },
   { rejectValue: string }
->("permissions/fetchPermissions", async (_, { rejectWithValue }) => {
+>('permissions/fetchPermissions', async ({ companyId, venueId }, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get("/permissions");
+    const response = await axiosInstance.get('/permissions', {
+      params: { companyId, venueId },
+    });
     return response.data;
   } catch (error) {
     if (axiosInstance.isAxiosError?.(error)) {
-        return rejectWithValue(error.response?.data?.message || " Error fetching permisions");
+      return rejectWithValue(error.response?.data?.message || 'Error fetching permissions');
     }
-    return rejectWithValue("Unknown error occurred");
+    return rejectWithValue('Unknown error occurred');
   }
 });
 
+
+
 // Async Thunks con tipos definidos
-export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: string }>(
+export const fetchMenusRoot = createAsyncThunk<
+  MenuRoot[],
+  { companyId: string; venueId?: string },
+  { rejectValue: string }
+>(
   "menu/fetchMenusRoot",
-  async (_, { rejectWithValue }) => {
+  async ({ companyId, venueId }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/menus/root");
-      
+      const response = await axiosInstance.get("/menus/root", {
+        params: { companyId, venueId },
+      });
+
       // Mapea los datos para que incluyan solo `id` y `label` con el tipo definido
       const data = response.data.map((menu: MenuRoot) => ({
         id: menu._id, // Cambia `_id` a `id`
         label: menu.label, // Conserva el campo `label`
       }));
-      //console.log('data::', data)  
+
       return data; // Devuelve solo `id` y `label`
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
@@ -138,29 +150,43 @@ export const fetchMenusRoot = createAsyncThunk<MenuRoot[], void, { rejectValue: 
   }
 );
 
-export const fetchMenuRoutes = createAsyncThunk<MenuRoute[], void, { rejectValue: string }>(
+
+export const fetchMenuRoutes = createAsyncThunk<
+  MenuRoute[],
+  { companyId: string; venueId?: string },
+  { rejectValue: string }
+>(
   "menu/fetchMenuRoutes",
-  async (_, { rejectWithValue }) => {
+  async ({ companyId, venueId }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get("/menus/routes");
+      const response = await axiosInstance.get("/menus/routes", {
+        params: { companyId, venueId },
+      });
       return response.data;
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
-        console.log('error en axiosInstance -> ', error.response?.data?.message)
-        return rejectWithValue(error.response?.data?.message || " Error fetching menus routes");
+        console.log('error en axiosInstance -> ', error.response?.data?.message);
+        return rejectWithValue(error.response?.data?.message || "Error fetching menus routes");
       }
-      console.log('error..axios')
+      console.log('error..axios');
       return rejectWithValue("Unknown error occurred");
     }
   }
 );
 
-export const fetchMenuByRole = createAsyncThunk<MenuRole[], string, { rejectValue: string }>(
+
+export const fetchMenuByRole = createAsyncThunk<
+  MenuRole[],
+  { role: string; companyId: string; venueId?: string },
+  { rejectValue: string }
+>(
   "menu/fetchMenuByRole",
-  async (role, { rejectWithValue }) => {
+  async ({ role, companyId, venueId }, { rejectWithValue }) => {
     try {
-      console.log('(fetchMenuByRole)role->',role)
-      const response = await axiosInstance.get(`/menus/role/${role}`);
+      //console.log('(fetchMenuByRole)role->', role);
+      const response = await axiosInstance.get(`/menus/role/${role}`, {
+        params: { companyId, venueId },
+      });
       return response.data; // Devuelve los menús asociados al rol
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
@@ -171,14 +197,19 @@ export const fetchMenuByRole = createAsyncThunk<MenuRole[], string, { rejectValu
   }
 );
 
+
 export const fetchMenuTree = createAsyncThunk<
-MenuTree[],
-void,
-{ rejectValue: string }
->("actions/fetchMenuTree", async (_, { rejectWithValue }) => {
+  MenuTree[],
+  { companyId: string; venueId?: string },
+  { rejectValue: string }
+>(
+  "actions/fetchMenuTree",
+  async ({ companyId, venueId }, { rejectWithValue }) => {
     try {
-      console.log('fetchMenuTree')
-      const response = await axiosInstance.get(`/menus/tree`);
+      //console.log('fetchMenuTree');
+      const response = await axiosInstance.get(`/menus/tree`, {
+        params: { companyId, venueId },
+      });
       return response.data; // Devuelve los menús asociados al rol
     } catch (error) {
       if (axiosInstance.isAxiosError?.(error)) {
@@ -189,128 +220,156 @@ void,
   }
 );
 
+
 // Thunks
 export const fetchMenus = createAsyncThunk<
   Menu[],
-  void,
+  { companyId: string; venueId?: string },
   { rejectValue: string }
->("actions/fetchMenus", async (_, { rejectWithValue }) => {
-  try {
-    //console.log('inicio..fetchMenus')
-    //console.log('Base URL:', axiosInstance.defaults.baseURL);
-    const response = await axiosInstance.get("/menus");
-    //console.log('response.data (fetchMenus) -> ',response.data)
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      console.log('error en axiosInstance -> ', error.response?.data?.message)
-      return rejectWithValue(error.response?.data?.message || " Error fetching menus");
+>(
+  "actions/fetchMenus",
+  async ({ companyId, venueId }, { rejectWithValue }) => {
+    try {
+      //console.log('Inicio fetchMenus');
+      const response = await axiosInstance.get("/menus", {
+        params: { companyId, venueId },
+      });
+      //console.log('response.data (fetchMenus) -> ', response.data);
+      return response.data;
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        console.log('Error en axiosInstance -> ', error.response?.data?.message);
+        return rejectWithValue(error.response?.data?.message || "Error fetching menus");
+      }
+      console.log('Error desconocido al intentar obtener los menús.');
+      return rejectWithValue("Unknown error occurred");
     }
-    console.log('error..axios')
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
+
 
 export const createMenu = createAsyncThunk<
   Menu,
-  { label: string; component: string; parentId: string, sequence: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
+  { companyId: string; venueId?: string; label: string; component: string; parentId: string, sequence: number, path: string, icon: string | File, divider:boolean, permissions: string[] },
   { rejectValue: string }
->("menus/createMenu", async (data, { rejectWithValue }) => {
-  try {
+>(
+  "menus/createMenu",
+  async ({ companyId, venueId, ...data }, { rejectWithValue }) => {
+    try {
+      console.log('Inicio createMenu (Multiempresa)');
 
-    //console.log('inicio..createMenu')
-    const formData = new FormData();
-    formData.append("label", data.label);
-    formData.append("component", data.component);
-    formData.append("parentId", data.parentId);
-    formData.append("sequence", data.sequence.toString());
-    formData.append("path", data.path);
-    formData.append("divider", JSON.stringify(data.divider));
-    formData.append("icon", data.icon); // Archivo
-    data.permissions.forEach((perm, index) => formData.append(`permissions[${index}]`, perm));
+      const formData = new FormData();
+      formData.append("companyId", companyId);
+      if (venueId) formData.append("venueId", venueId);
+      formData.append("label", data.label);
+      formData.append("component", data.component);
+      formData.append("parentId", data.parentId);
+      formData.append("sequence", data.sequence.toString());
+      formData.append("path", data.path);
+      formData.append("divider", JSON.stringify(data.divider));
+      
+      if (data.icon instanceof File) {
+        formData.append("icon", data.icon); // Archivo
+      } else {
+        formData.append("icon", data.icon); // Ruta como string
+      }
 
-    const response = await axiosInstance.post("/menus", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      data.permissions.forEach((perm, index) => formData.append(`permissions[${index}]`, perm));
 
+      const response = await axiosInstance.post("/menus", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    //console.log('response.data (createMenu) 3 ',  response.data)
+      console.log('response.data (createMenu): ', response.data);
+      return response.data;
 
-    return response.data;
-
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || " Error creating menu");
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error creating menu");
+      }
+      return rejectWithValue("Unknown error occurred");
     }
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
+
 
 export const updateMenu = createAsyncThunk<
   Menu,
-  { id: string; label: string; component: string; parentId: string; sequence: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
+  { id: string; companyId: string; venueId?: string; label: string; component: string; parentId: string; sequence: number; path: string; icon: string | File; divider: boolean; permissions: string[] },
   { rejectValue: string }
->("menus/updateMenu", async ({ id, label, component, parentId, sequence, path, icon, divider, permissions }, { rejectWithValue }) => {
-  try {
-    console.log('Inicio actualización menu...');
+>(
+  "menus/updateMenu",
+  async ({ id, companyId, venueId, ...data }, { rejectWithValue }) => {
+    try {
+      //console.log('Inicio actualización menu (Multiempresa)...');
 
-    // Crear el FormData
-    const formData = new FormData();
-    formData.append("label", label);
-    formData.append("component", component);
-    formData.append("parentId", parentId);
-    formData.append("sequence", sequence.toString());
-    formData.append("path", path);
-    formData.append("divider", JSON.stringify(divider));
+      const formData = new FormData();
+      formData.append("companyId", companyId);
+      if (venueId) formData.append("venueId", venueId);
+      formData.append("label", data.label);
+      formData.append("component", data.component);
+      formData.append("parentId", data.parentId);
+      formData.append("sequence", data.sequence.toString());
+      formData.append("path", data.path);
+      formData.append("divider", JSON.stringify(data.divider));
 
-    // Añadir el archivo si es un File
-    if (icon instanceof File) {
-      formData.append("icon", icon);
-    } else {
-      formData.append("icon", icon); // Ruta existente si no se actualiza
+      // Añadir el archivo si es un File o mantener la ruta existente
+      if (data.icon instanceof File) {
+        formData.append("icon", data.icon);
+      } else {
+        formData.append("icon", data.icon); 
+      }
+
+      // Añadir permisos
+      data.permissions.forEach((perm, index) => formData.append(`permissions[${index}]`, perm));
+
+      const response = await axiosInstance.put(`/menus/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      console.log('Respuesta del servidor (updateMenu): ', response.data);
+      return response.data;
+
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error updating menu");
+      }
+      return rejectWithValue("Unknown error occurred");
     }
-
-    // Añadir permisos
-    permissions.forEach((perm, index) => formData.append(`permissions[${index}]`, perm));
-
-    // Enviar los datos como multipart/form-data
-    const response = await axiosInstance.put(`/menus/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    console.log('Respuesta del servidor: ', response.data);
-    return response.data;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error updating menu");
-    }
-    return rejectWithValue("Unknown error occurred");
   }
-});
-
+);
 
 export const deleteMenu = createAsyncThunk<
   string,
-  string,
+  { id: string; companyId: string; venueId?: string },
   { rejectValue: string }
->("actions/deleteAction", async (id, { rejectWithValue }) => {
-  try {
-    await axiosInstance.delete(`/menus/${id}`);
-    return id;
-  } catch (error) {
-    if (axiosInstance.isAxiosError?.(error)) {
-      return rejectWithValue(error.response?.data?.message || "Error deleting menu");
+>(
+  "actions/deleteMenu",
+  async ({ id, companyId, venueId }, { rejectWithValue }) => {
+    try {
+
+      await axiosInstance.delete(`/menus/${id}`, {
+        params: { companyId, venueId },
+      });
+
+      return id; // Devolvemos el ID para actualizar el state
+
+    } catch (error) {
+      if (axiosInstance.isAxiosError?.(error)) {
+        return rejectWithValue(error.response?.data?.message || "Error deleting menu");
+      }
+      return rejectWithValue("Unknown error occurred");
     }
-    return rejectWithValue("Unknown error occurred");
   }
-});
+);
+
 
 const areAllMenusLoaded = (state: MenuState) => {
   return state.isMenuLoaded && state.isMenuByRoleLoaded && state.isMenuTreeLoaded;
 };
 
 // Slice
-const actionSlice = createSlice({
+const menuSlice = createSlice({
   name: "menus",
   initialState,
   reducers: {
@@ -398,5 +457,5 @@ const actionSlice = createSlice({
   },
 });
 
-export const { clearMessages } = actionSlice.actions;
-export default actionSlice.reducer;
+export const { clearMessages } = menuSlice.actions;
+export default menuSlice.reducer;

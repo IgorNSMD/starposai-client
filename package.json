@@ -49,6 +49,7 @@
     "react-router-dom": "^6.27.0",
     "react-spinners": "^0.14.1",
     "react-window": "^1.8.10",
+    "recharts": "^3.0.2",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^3.1.0",
     "socket.io-client": "^4.8.1",

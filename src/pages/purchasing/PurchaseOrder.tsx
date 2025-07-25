@@ -1440,7 +1440,10 @@ const PurchaseOrderPage: React.FC = () => {
           
         
           // Esperar todos los movimientos
-          await Promise.all(movementPromises);
+          //await Promise.all(movementPromises);
+          for (const promise of movementPromises) {
+            await promise;
+          }
         
           // 🔹 Esperar brevemente antes de refrescar (opcional, si aún da problemas)
           await new Promise((resolve) => setTimeout(resolve, 300)); // 300ms de espera

@@ -484,7 +484,12 @@ const Reservation: React.FC = () => {
               rows={rows}
               columns={columns}
               autoHeight
-              pageSizeOptions={[5, 10]}
+              initialState={{
+              pagination: {
+                paginationModel: { pageSize: 25 },
+                },
+              }}
+              pageSizeOptions={[25, 50, 100]}      
               sx={datagridStyle}
               disableRowSelectionOnClick
             />

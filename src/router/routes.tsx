@@ -43,6 +43,8 @@ import KitDisassembly from "../pages/inventory/KitDisassembly";
 import InventoryReviewPage from "../pages/inventory/InventoryReviewPage";
 import SalePOS from "../pages/sales/SalePOS";
 
+import DashboardPage from "../pages/dashboard/Dashboard"; // ajusta el path si es necesario
+
 const routes = [
   { path: '/', element: <HomeLayout /> },
   { path: '/login', element: <Login /> },
@@ -60,6 +62,7 @@ const routes = [
     ),
     children: [
       // Subrutas dentro de "/admin"
+      { index: true, element: <DashboardPage /> }, // esta es la ruta base: "/admin"
       { 
         path: 'sales',  
         element: <BlankOutlet />, // ⬅️ Esto es lo que soluciona el warning

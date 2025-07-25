@@ -34,6 +34,7 @@ import settingReducer from "./slices/settingSlice";
 import venueReducer from "./slices/venueSlice";
 import taxRateReducer from "./slices/taxRateSlice";
 import saleReducer from "./slices/saleSlice"; // Importa el nuevo reducer de ventas|
+import dashboardReducer from "./slices/dashboardSlice"; // Importa el nuevo reducer de ventas|
 
 // Configuración de persistencia
 const persistConfig = {
@@ -78,6 +79,7 @@ const store = configureStore({
     venues: venueReducer, // Reducer para actions
     taxRates: taxRateReducer, 
     sales: saleReducer, // Reducer para acciones de ventas
+    dashboards: dashboardReducer, 
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
